@@ -11,16 +11,35 @@ const { scrapeCEPEA } = require('./scraper');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-/* ─── Segurança ─────────────────────────────────────────────────────────
-   IMPORTANTE: o helmet bloqueava os handlers onclick="" inline do HTML
-   (Content-Security-Policy: script-src-attr 'none').
-   Solução: desativamos apenas o CSP; os demais headers de segurança
-   do helmet permanecem ativos (XSS, HSTS, noSniff, etc.).
-   ──────────────────────────────────────────────────────────────────── */
-app.use(helmet({ contentSecurityPolicy: false }));
+/* ── Segurança: desativa CSP do helmet (temos scripts inline) ── */
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+/* ── CSP explícita e permissiva para permitir scripts inline e CDNs ── */
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' blob: https:",
+      "connect-src 'self' https: wss:",
+      "worker-src 'self' blob:",
+      "frame-src 'none'",
+      "object-src 'none'",
+    ].join('; ')
+  );
+  next();
+});
+
 app.use(compression());
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 /* ─── Frontend estático ──────────────────────────────────────────────── */
