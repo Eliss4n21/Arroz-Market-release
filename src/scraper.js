@@ -22,9 +22,10 @@
 
 const db = require('./db');
 
-let puppeteer, chromium;
-try { puppeteer = require('puppeteer-core'); chromium = require('@sparticuz/chromium'); }
-catch { /* Puppeteer não instalado — só simulação */ }
+// Puppeteer removido — Railway não suporta Chrome headless no plano free.
+// O scraper usa simulação vetorial realista como fallback padrão.
+const puppeteer = null;
+const chromium  = null;
 
 const VOL = 0.006; // 0.6% volatilidade por tick
 

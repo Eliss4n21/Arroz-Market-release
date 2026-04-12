@@ -1388,8 +1388,7 @@ async function buscarSheetsCoT() {
   const r = await fetch(jsonUrl, { cache:'no-store' });
   if (!r.ok) throw new Error('Sheets HTTP ' + r.status);
   const txt = await r.text();
-  // gviz retorna: /*O_o*/
-google.visualization.Query.setResponse({...});
+  // gviz retorna algo como: google.visualization.Query.setResponse({...});
   // Extraímos apenas o JSON do argumento
   const stripped = txt.replace(/^[\s\S]*?setResponse\(/, '').replace(/\);?\s*$/, '');
   const json = JSON.parse(stripped);
@@ -1565,6 +1564,19 @@ function fmtN(n) {
 
 const LSVG = '<svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:currentColor;flex-shrink:0;pointer-events:none"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>';
 
+/* ─── Mapa de tints de thumbnail por categoria ─── */
+const CAT_THUMB_BG = {
+  'Podcast Diário':     'linear-gradient(135deg,#0B1810,#1A3018)',
+  'Curiosidades do Dia':'linear-gradient(135deg,#0B1422,#142240)',
+  'Cotações':           'linear-gradient(135deg,#0B1A0E,#0E2E16)',
+  'Técnico':            'linear-gradient(135deg,#180B22,#2A1040)',
+  'Entrevista':         'linear-gradient(135deg,#1A100B,#2E1E0A)',
+  'Especial':           'linear-gradient(135deg,#1A1A0B,#2E2A0A)',
+};
+function catThumbBg(cat) {
+  return CAT_THUMB_BG[cat] || CAT_THUMB_BG['Podcast Diário'];
+}
+
 /* ─── Mapa de estilos por categoria ─── */
 const CAT_CFG = {
   'Podcast Diário':     { cls:'cat-podcast',   emoji:'🎙️' },
@@ -1640,7 +1652,7 @@ function renderAudios() {
     const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
-        <div class="card-thumb-bg" style="background:${(()=>{const m={'Podcast Diário':'linear-gradient(135deg,#0B1810,#1A3018)','Curiosidades do Dia':'linear-gradient(135deg,#0B1422,#142240)','Cotações':'linear-gradient(135deg,#0B1A0E,#0E2E16)','Técnico':'linear-gradient(135deg,#180B22,#2A1040)','Entrevista':'linear-gradient(135deg,#1A100B,#2E1E0A)','Especial':'linear-gradient(135deg,#1A1A0B,#2E2A0A)'};return m[cat]||m['Podcast Diário'];})()}"><div class="play-sm"><div class="tri-sm"></div></div></div>
+        <div class="card-thumb-bg" style="background:${catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
         <span class="card-dur">${v.dur}</span>
       </div>
       <div class="card-corpo">
