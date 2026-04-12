@@ -314,10 +314,24 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
               </label>
             </div>
 
-            <!-- Player do áudio gravado -->
+            <!-- Player customizado do áudio gravado (sem barra azul completa) -->
             <div id="rec-player-wrap" style="display:none;background:linear-gradient(135deg,#0d1a0e,#080c08);border:1px solid rgba(74,124,89,.25);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:.75rem">
               <div style="font-size:.72rem;color:var(--green2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.6rem">✓ Áudio gravado — pronto para editar</div>
-              <audio id="rec-audio-el" controls style="width:100%;height:36px;accent-color:var(--gold)"></audio>
+              <!-- Player customizado para evitar bug da barra completa -->
+              <audio id="rec-audio-el" preload="none" style="display:none"></audio>
+              <div style="background:rgba(0,0,0,.3);border-radius:4px;padding:.5rem .7rem">
+                <div style="position:relative;height:4px;background:rgba(255,255,255,.15);border-radius:2px;cursor:pointer;margin-bottom:.5rem" id="rec-prog-wrap" onclick="recSeekClick(event)">
+                  <div id="rec-prog-fill" style="position:absolute;left:0;top:0;height:100%;width:0%;background:#6b9b6b;border-radius:2px;pointer-events:none"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                  <button onclick="recPlayerToggle()" id="rec-pp-btn" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.85);width:28px;height:28px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0">
+                    <svg id="rec-ico-play" viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="rec-ico-pause" viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                  </button>
+                  <span id="rec-time-disp" style="font-size:.7rem;color:rgba(255,255,255,.6);white-space:nowrap">0:00 / 0:00</span>
+                  <input type="range" min="0" max="100" value="100" oninput="recVolChange(this.value)" style="width:70px;accent-color:#6b9b6b;flex-shrink:0">
+                </div>
+              </div>
               <div style="display:flex;gap:.6rem;margin-top:.7rem;flex-wrap:wrap">
                 <button onclick="recDownload()" class="btn btn-sec btn-sm">⬇ Baixar MP3</button>
                 <button onclick="recDescartarGravacao()" class="btn btn-danger btn-sm">🗑 Descartar</button>
@@ -384,7 +398,40 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             </div>
             <div id="wrap-hora-agendamento" style="display:none;margin-bottom:.8rem">
               <div class="form-grupo"><label>⏰ Hora de publicação</label>
-                <input type="time" id="v-hora" value="08:00" style="width:160px">
+                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+                  <!-- Display da hora selecionada -->
+                  <div id="hora-display" style="font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--gold);letter-spacing:.05em;min-width:80px">08:00</div>
+                  <!-- Relógio SVG interativo -->
+                  <div style="position:relative;width:140px;height:140px;flex-shrink:0">
+                    <svg id="relogio-svg" viewBox="0 0 140 140" style="width:140px;height:140px;cursor:pointer;user-select:none"
+                      onmousedown="relogioMouseDown(event)" onmousemove="relogioMouseMove(event)" onmouseup="relogioMouseUp(event)"
+                      ontouchstart="relogioTouch(event)" ontouchmove="relogioTouch(event)">
+                      <!-- Face -->
+                      <circle cx="70" cy="70" r="68" fill="var(--dark3)" stroke="rgba(200,168,75,.3)" stroke-width="1.5"/>
+                      <!-- Marcadores de hora -->
+                      <g id="rel-markers"></g>
+                      <!-- Ponteiro de minuto -->
+                      <line id="rel-min" x1="70" y1="70" x2="70" y2="20" stroke="rgba(200,168,75,.6)" stroke-width="1.5" stroke-linecap="round"/>
+                      <!-- Ponteiro de hora -->
+                      <line id="rel-hr" x1="70" y1="70" x2="70" y2="32" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"/>
+                      <!-- Centro -->
+                      <circle cx="70" cy="70" r="4" fill="var(--gold)"/>
+                    </svg>
+                  </div>
+                  <!-- AM/PM e ajuste rápido -->
+                  <div style="display:flex;flex-direction:column;gap:.4rem">
+                    <div style="display:flex;gap:.3rem">
+                      <button onclick="relogioAjustar(-60)" class="btn btn-sec btn-xs">−1h</button>
+                      <button onclick="relogioAjustar(60)"  class="btn btn-sec btn-xs">+1h</button>
+                    </div>
+                    <div style="display:flex;gap:.3rem">
+                      <button onclick="relogioAjustar(-5)"  class="btn btn-sec btn-xs">−5m</button>
+                      <button onclick="relogioAjustar(5)"   class="btn btn-sec btn-xs">+5m</button>
+                    </div>
+                    <div id="rel-modo" style="font-size:.7rem;color:var(--muted);text-align:center">Arraste ponteiro</div>
+                  </div>
+                </div>
+                <input type="hidden" id="v-hora" value="08:00">
               </div>
             </div>
             <div class="form-grupo"><label>Descrição</label><textarea id="v-desc" rows="2" placeholder="Resumo do conteúdo..."></textarea></div>
@@ -1063,6 +1110,62 @@ const REC = {
   editGain: 1.0,
 };
 
+/* ─── Player customizado do gravador (sem bug da barra cheia) ─── */
+const RECP = { playing: false, rafId: null };
+
+function recPlayerToggle() {
+  const a = document.getElementById('rec-audio-el');
+  if (!a.src) return;
+  RECP.playing ? a.pause() : a.play().catch(()=>{});
+}
+
+function recSeekClick(e) {
+  const a = document.getElementById('rec-audio-el');
+  if (!a || !a.duration) return;
+  const rect = document.getElementById('rec-prog-wrap').getBoundingClientRect();
+  a.currentTime = Math.max(0, Math.min(1,(e.clientX-rect.left)/rect.width)) * a.duration;
+}
+
+function recVolChange(v) {
+  const a = document.getElementById('rec-audio-el');
+  if (a) a.volume = parseInt(v)/100;
+}
+
+function recPlayerRaf() {
+  RECP.rafId = requestAnimationFrame(() => {
+    if (!RECP.playing) return;
+    const a = document.getElementById('rec-audio-el');
+    if (!a || !a.duration) { recPlayerRaf(); return; }
+    const pct = a.currentTime / a.duration * 100;
+    document.getElementById('rec-prog-fill').style.width = pct + '%';
+    document.getElementById('rec-time-disp').textContent = recFmt(a.currentTime) + ' / ' + recFmt(a.duration);
+    recPlayerRaf();
+  });
+}
+
+function recInitPlayerEvents() {
+  const a = document.getElementById('rec-audio-el');
+  a.onplay = () => {
+    RECP.playing = true;
+    document.getElementById('rec-ico-play').style.display  = 'none';
+    document.getElementById('rec-ico-pause').style.display = '';
+    cancelAnimationFrame(RECP.rafId); recPlayerRaf();
+  };
+  a.onpause = a.onended = () => {
+    RECP.playing = false;
+    document.getElementById('rec-ico-play').style.display  = '';
+    document.getElementById('rec-ico-pause').style.display = 'none';
+    cancelAnimationFrame(RECP.rafId);
+  };
+  a.onloadedmetadata = () => {
+    a.currentTime = 0;
+    document.getElementById('rec-prog-fill').style.width = '0%';
+    document.getElementById('rec-time-disp').textContent = '0:00 / ' + recFmt(a.duration);
+    document.getElementById('v-dur').value = recFmt(a.duration);
+    document.getElementById('v-url').value = REC.blobUrl;
+  };
+}
+
 function recFmt(sec){ const m=Math.floor(sec/60),s=Math.floor(sec%60); return m+':'+String(s).padStart(2,'0'); }
 
 function recSetStatus(txt, cls='') {
@@ -1154,17 +1257,14 @@ function recOnStop() {
   REC.blobUrl = URL.createObjectURL(REC.blob);
   const audioEl = document.getElementById('rec-audio-el');
   audioEl.src = REC.blobUrl;
+  // Reset visual da barra
+  document.getElementById('rec-prog-fill').style.width = '0%';
+  document.getElementById('rec-time-disp').textContent = '0:00 / 0:00';
   document.getElementById('rec-player-wrap').style.display = 'block';
   recSetStatus('✓ Concluído', 'ok');
   document.getElementById('rec-timer').style.display = 'none';
   document.getElementById('rec-idle-msg').style.display = 'flex';
-  // Preenche duração calculada
-  audioEl.onloadedmetadata = () => {
-    audioEl.currentTime = 0;
-    document.getElementById('v-dur').value = recFmt(audioEl.duration);
-    document.getElementById('v-url').value = REC.blobUrl;
-    recInitEditor(REC.blob);
-  };
+  recInitEditor(REC.blob);
   toast('Gravação concluída! Edite e publique.', 'sucesso');
 }
 
@@ -1359,10 +1459,17 @@ async function editRebuildAudio() {
     REC.editBlobUrl = URL.createObjectURL(b);
     REC.blobUrl = REC.editBlobUrl;
     const audioEl = document.getElementById('rec-audio-el');
+    // Atualiza sem triggar barra cheia
+    RECP.playing = false;
+    cancelAnimationFrame(RECP.rafId);
     audioEl.src = REC.editBlobUrl;
-    audioEl.currentTime = 0;
+    document.getElementById('rec-prog-fill').style.width = '0%';
+    document.getElementById('rec-ico-play').style.display  = '';
+    document.getElementById('rec-ico-pause').style.display = 'none';
     document.getElementById('v-url').value = REC.editBlobUrl;
     document.getElementById('v-dur').value = recFmt(rendered.duration);
+    document.getElementById('rec-time-disp').textContent = '0:00 / ' + recFmt(rendered.duration);
+    document.getElementById('rec-player-wrap').style.display = 'block';
     document.getElementById('edit-end').value = recFmt(EDIT_SEGS.origBuf.duration);
   };
   mr.start(); setTimeout(()=>mr.stop(), rendered.duration*1000+300);
@@ -1390,12 +1497,20 @@ function recDownload() {
 }
 
 function recDescartarGravacao() {
-  document.getElementById('rec-audio-el').src = '';
+  const audioEl = document.getElementById('rec-audio-el');
+  audioEl.pause(); audioEl.src = '';
+  RECP.playing = false;
+  cancelAnimationFrame(RECP.rafId);
+  document.getElementById('rec-prog-fill').style.width = '0%';
+  document.getElementById('rec-time-disp').textContent = '0:00 / 0:00';
+  document.getElementById('rec-ico-play').style.display  = '';
+  document.getElementById('rec-ico-pause').style.display = 'none';
   document.getElementById('rec-player-wrap').style.display = 'none';
   document.getElementById('rec-editor-wrap').style.display = 'none';
   document.getElementById('v-url').value = '';
   document.getElementById('v-dur').value = '';
   REC.blob = null; REC.blobUrl = null; REC.editAudioBuffer = null;
+  EDIT_SEGS.segs = []; EDIT_SEGS.origBuf = null;
   document.getElementById('rec-timer').textContent = '0:00';
   document.getElementById('rec-idle-msg').style.display = 'flex';
   recSetStatus('Aguardando');
@@ -1435,8 +1550,96 @@ function recDrawWave() {
 
 function prevThumb(inp){ const r=new FileReader(); r.onload=e=>{ document.getElementById('thumb-img').src=e.target.result; document.getElementById('thumb-prev').style.display='block'; }; r.readAsDataURL(inp.files[0]); }
 
+/* ═══ RELÓGIO ANALÓGICO ═══ */
+const REL = { h: 8, m: 0, dragging: false };
+
+function relogioInit() {
+  const svg = document.getElementById('relogio-svg');
+  if (!svg) return;
+  const markers = document.getElementById('rel-markers');
+  if (!markers) return;
+  // Marcadores horários com Float32Array para coords
+  const angles = new Float32Array(12);
+  for (let i = 0; i < 12; i++) angles[i] = (i * 30 - 90) * Math.PI / 180;
+  const xs = new Float32Array(12), ys = new Float32Array(12);
+  const xo = new Float32Array(12), yo = new Float32Array(12);
+  for (let i = 0; i < 12; i++) {
+    xs[i] = 70 + Math.cos(angles[i]) * 58;
+    ys[i] = 70 + Math.sin(angles[i]) * 58;
+    xo[i] = 70 + Math.cos(angles[i]) * 50;
+    yo[i] = 70 + Math.sin(angles[i]) * 50;
+  }
+  markers.innerHTML = Array.from({length:12}, (_,i) =>
+    `<line x1="${xo[i].toFixed(1)}" y1="${yo[i].toFixed(1)}" x2="${xs[i].toFixed(1)}" y2="${ys[i].toFixed(1)}" stroke="rgba(200,168,75,.35)" stroke-width="1.5"/>
+     <text x="${(70+Math.cos(angles[i])*40).toFixed(1)}" y="${(70+Math.sin(angles[i])*40+4).toFixed(1)}" text-anchor="middle" font-size="9" fill="rgba(200,168,75,.7)" font-family="DM Sans">${i===0?12:i}</text>`
+  ).join('');
+  relogioAtualizar();
+}
+
+function relogioAtualizar() {
+  const h = REL.h % 12, m = REL.m;
+  // Ângulos em radianos — Float32Array de 2 elementos (hora, minuto)
+  const ang = new Float32Array(2);
+  ang[0] = ((h + m/60) / 12 * 360 - 90) * Math.PI / 180; // hora
+  ang[1] = (m / 60 * 360 - 90) * Math.PI / 180;           // minuto
+  // Coords dos ponteiros (Float32Array para coords x2,y2)
+  const hrX  = 70 + Math.cos(ang[0]) * 36, hrY  = 70 + Math.sin(ang[0]) * 36;
+  const minX = 70 + Math.cos(ang[1]) * 48, minY = 70 + Math.sin(ang[1]) * 48;
+  const hrLine  = document.getElementById('rel-hr');
+  const minLine = document.getElementById('rel-min');
+  if (hrLine)  { hrLine.setAttribute('x2',  hrX.toFixed(1));  hrLine.setAttribute('y2',  hrY.toFixed(1));  }
+  if (minLine) { minLine.setAttribute('x2', minX.toFixed(1)); minLine.setAttribute('y2', minY.toFixed(1)); }
+  const str = String(REL.h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  const disp = document.getElementById('hora-display');
+  const inp  = document.getElementById('v-hora');
+  if (disp) disp.textContent = str;
+  if (inp)  inp.value = str;
+}
+
+function relogioAngleTo(e, svg) {
+  const rect = svg.getBoundingClientRect();
+  const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+  const cl = e.touches ? e.touches[0].clientX : e.clientX;
+  const ct = e.touches ? e.touches[0].clientY : e.clientY;
+  return Math.atan2(ct - cy, cl - cx);
+}
+
+function relogioMouseDown(e) {
+  REL.dragging = true;
+  const dist = Math.hypot((e.touches?e.touches[0].clientX:e.clientX) - (e.currentTarget.getBoundingClientRect().left+70),
+                          (e.touches?e.touches[0].clientY:e.clientY) - (e.currentTarget.getBoundingClientRect().top+70));
+  // Se clicou perto do centro (<25px) → controla hora; senão → minuto
+  REL._mode = dist < 35 ? 'h' : 'm';
+  document.getElementById('rel-modo').textContent = REL._mode==='h' ? 'Ajustando hora' : 'Ajustando minuto';
+  relogioAtualizeFrom(e);
+}
+function relogioMouseMove(e) { if (REL.dragging) relogioAtualizeFrom(e); }
+function relogioMouseUp(e)   { REL.dragging = false; document.getElementById('rel-modo').textContent = 'Arraste ponteiro'; }
+function relogioTouch(e)     { e.preventDefault(); if(e.type==='touchstart') relogioMouseDown(e); else relogioAtualizeFrom(e); }
+
+function relogioAtualizeFrom(e) {
+  const svg = document.getElementById('relogio-svg');
+  const ang = relogioAngleTo(e, svg); // radianos, −π a π
+  const deg = (ang * 180 / Math.PI + 90 + 360) % 360;
+  if (REL._mode === 'h') {
+    REL.h = Math.round(deg / 30) % 12;
+  } else {
+    REL.m = Math.round(deg / 6) % 60;
+  }
+  relogioAtualizar();
+}
+
+function relogioAjustar(minutos) {
+  const total = REL.h * 60 + REL.m + minutos;
+  REL.h = ((Math.floor(total/60) % 24) + 24) % 24;
+  REL.m = ((total % 60) + 60) % 60;
+  relogioAtualizar();
+}
+
 function toggleHoraAgendamento(val) {
-  document.getElementById('wrap-hora-agendamento').style.display = val === 'agendado' ? 'block' : 'none';
+  const el = document.getElementById('wrap-hora-agendamento');
+  el.style.display = val === 'agendado' ? 'block' : 'none';
+  if (val === 'agendado') setTimeout(relogioInit, 50);
 }
 
 async function publicarVideo(){
@@ -1961,6 +2164,7 @@ async function mudarCargo(id,role){
 /* ═══ BOOT ═══ */
 async function iniciar(){
   document.getElementById('v-data').value = new Date().toISOString().split('T')[0];
+  recInitPlayerEvents();
   
   /* Carrega dados reais da API */
   await carregarVideosAdmin();

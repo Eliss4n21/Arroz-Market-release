@@ -347,37 +347,21 @@ body {
   pointer-events: none;
 }
 .btn-play {
-  width: 82px; height: 82px; background: rgba(200,168,75,.12);
-  border-radius: 50%;
+  width: 64px; height: 64px;
   display: flex; align-items: center; justify-content: center; transition: all .3s;
 }
-.v-area:hover .btn-play { background: rgba(200,168,75,.28); transform: scale(1.1); box-shadow: 0 0 28px rgba(200,168,75,.18); }
-/* Ícone microfone */
+.v-area:hover .btn-play { transform: scale(1.12); }
+/* Ícone triângulo play */
 .tri {
-  width: 28px; height: 28px;
-  background: var(--gold);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 2 0v8a1 1 0 0 1-2 0V4zm-6 8a7 7 0 0 0 14 0h-2a5 5 0 0 1-10 0H5zm7 9v-2h-2v2H8v2h8v-2h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 2 0v8a1 1 0 0 1-2 0V4zm-6 8a7 7 0 0 0 14 0h-2a5 5 0 0 1-10 0H5zm7 9v-2h-2v2H8v2h8v-2h-2z'/%3E%3C/svg%3E") center/contain no-repeat;
+  width: 0; height: 0;
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 30px solid var(--gold);
+  margin-left: 5px;
+  filter: drop-shadow(0 0 8px rgba(200,168,75,.6));
+  transition: filter .3s;
 }
-/* Pulso de onda sonora no destaque */
-.v-fundo-wave {
-  display: flex; align-items: flex-end; gap: 3px; height: 32px;
-  justify-content: center; margin-top: 8px;
-}
-.v-fundo-wave span {
-  display: block; width: 3px; background: var(--gold); border-radius: 2px; opacity: .55;
-  animation: waveBar .9s ease-in-out infinite alternate;
-}
-.v-fundo-wave span:nth-child(1){height:8px;  animation-delay:0s}
-.v-fundo-wave span:nth-child(2){height:18px; animation-delay:.1s}
-.v-fundo-wave span:nth-child(3){height:12px; animation-delay:.2s}
-.v-fundo-wave span:nth-child(4){height:22px; animation-delay:.05s}
-.v-fundo-wave span:nth-child(5){height:14px; animation-delay:.15s}
-.v-fundo-wave span:nth-child(6){height:20px; animation-delay:.25s}
-.v-fundo-wave span:nth-child(7){height:10px; animation-delay:.08s}
-.v-fundo-wave span:nth-child(8){height:16px; animation-delay:.18s}
-.v-fundo-wave span:nth-child(9){height:8px;  animation-delay:.3s}
-@keyframes waveBar { from{transform:scaleY(.3)} to{transform:scaleY(1)} }
+.v-area:hover .tri { filter: drop-shadow(0 0 14px rgba(200,168,75,.9)); }
 .v-titulo-t { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--cream); text-align: center; padding: 0 2.5rem; line-height: 1.3; }
 .v-data-t { font-size: .8rem; color: var(--gold); letter-spacing: .06em; }
 .v-rodape { padding: 1.4rem 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
@@ -556,6 +540,66 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 /* ════════════════════════════════
    MODAL
 ════════════════════════════════ */
+/* ════ PLAYER EMBUTIDO NO DESTAQUE ════ */
+#dest-player {
+  display: none; flex-direction: column;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(200,168,75,.15);
+}
+#dest-player.vis { display: flex; }
+#dest-waveform-wrap {
+  position: relative; height: 52px; background: rgba(0,0,0,.3);
+  cursor: pointer; overflow: hidden;
+}
+#dest-waveform-canvas { width:100%; height:100%; display:block; }
+#dest-prog-line {
+  position:absolute; top:0; width:2px; height:100%;
+  background: rgba(200,168,75,.8); pointer-events:none; left:0%;
+}
+#dest-controls {
+  display:flex; align-items:center; gap:.7rem;
+  padding:.5rem 1.2rem; flex-wrap:wrap;
+}
+.dest-btn {
+  background:none; border:none; cursor:pointer;
+  color:rgba(255,255,255,.85); width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:4px; transition:color .15s; padding:0; flex-shrink:0;
+}
+.dest-btn:hover { color:var(--gold); }
+.dest-btn svg { width:18px; height:18px; fill:currentColor; }
+#dest-time { font-size:.72rem; color:rgba(255,255,255,.7); white-space:nowrap; }
+#dest-spacer { flex:1; }
+#dest-vol-slider {
+  -webkit-appearance:none; width:70px; height:3px;
+  border-radius:3px; background:rgba(255,255,255,.25); outline:none; cursor:pointer;
+}
+#dest-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:11px; height:11px;
+  border-radius:50%; background:var(--gold); cursor:pointer;
+}
+/* Pulso de onda — barras animadas (fallback quando não toca) */
+.v-fundo-wave {
+  display: flex; align-items: flex-end; gap: 3px; height: 32px;
+  justify-content: center; margin-top: 8px;
+}
+.v-fundo-wave span {
+  display: block; width: 3px; background: var(--gold); border-radius: 2px; opacity: .55;
+  animation: waveBar .9s ease-in-out infinite alternate;
+}
+.v-fundo-wave span:nth-child(1){height:8px;  animation-delay:0s}
+.v-fundo-wave span:nth-child(2){height:18px; animation-delay:.1s}
+.v-fundo-wave span:nth-child(3){height:12px; animation-delay:.2s}
+.v-fundo-wave span:nth-child(4){height:22px; animation-delay:.05s}
+.v-fundo-wave span:nth-child(5){height:14px; animation-delay:.15s}
+.v-fundo-wave span:nth-child(6){height:20px; animation-delay:.25s}
+.v-fundo-wave span:nth-child(7){height:10px; animation-delay:.08s}
+.v-fundo-wave span:nth-child(8){height:16px; animation-delay:.18s}
+.v-fundo-wave span:nth-child(9){height:8px;  animation-delay:.3s}
+.v-fundo-wave.tocando span { animation-duration: .4s; opacity: .9; }
+@keyframes waveBar { from{transform:scaleY(.25)} to{transform:scaleY(1)} }
+
+/* Modal apenas para episódios dos cards (não o destaque) */
 #modal {
   display: none; position: fixed; inset: 0; z-index: 600;
   background: rgba(0,0,0,.88); backdrop-filter: blur(6px);
@@ -569,26 +613,24 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 .btn-fechar:hover { background: rgba(200,168,75,.25); }
 .modal-player { background: #0B0B09; position: relative; overflow: hidden; }
 .audio-modal-player { aspect-ratio: unset; min-height: 220px; }
-/* ── PLAYER DE ÁUDIO CUSTOMIZADO ── */
+/* ── PLAYER DE ÁUDIO CUSTOMIZADO (modal cards) ── */
 #am-player-wrap { position: relative; display: flex; flex-direction: column; min-height: 220px; }
 #am-cover-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1.5rem 1rem; gap: 1rem; background: linear-gradient(160deg,#0d1a0e 0%,#0B0B09 60%,#111008 100%); }
-#am-cover-art { width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; position: relative; }
+#am-cover-art { width: 90px; height: 90px; display: flex; align-items: center; justify-content: center; }
 #am-cover-art svg { width: 90px; height: 90px; }
 #am-ep-info { text-align: center; }
 #am-ep-titulo { font-family: 'Playfair Display', serif; font-size: .88rem; color: var(--cream); line-height: 1.4; max-width: 480px; margin-bottom: .5rem; }
-/* Equalizador animado */
 #am-eq-bars { display: flex; align-items: flex-end; gap: 3px; height: 18px; justify-content: center; opacity: 0; transition: opacity .3s; }
 #am-eq-bars.ativo { opacity: 1; }
 #am-eq-bars span { display: block; width: 3px; background: var(--gold); border-radius: 2px; animation: eq 0.8s ease-in-out infinite alternate; }
-#am-eq-bars span:nth-child(1){ height:6px;  animation-delay:0s;    }
-#am-eq-bars span:nth-child(2){ height:14px; animation-delay:.15s;  }
-#am-eq-bars span:nth-child(3){ height:10px; animation-delay:.3s;   }
-#am-eq-bars span:nth-child(4){ height:16px; animation-delay:.1s;   }
-#am-eq-bars span:nth-child(5){ height:8px;  animation-delay:.25s;  }
+#am-eq-bars span:nth-child(1){ height:6px;  animation-delay:0s; }
+#am-eq-bars span:nth-child(2){ height:14px; animation-delay:.15s; }
+#am-eq-bars span:nth-child(3){ height:10px; animation-delay:.3s; }
+#am-eq-bars span:nth-child(4){ height:16px; animation-delay:.1s; }
+#am-eq-bars span:nth-child(5){ height:8px;  animation-delay:.25s; }
 @keyframes eq { from { transform: scaleY(.4); } to { transform: scaleY(1); } }
 #am-no-url { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: 2.5rem; background: #0B0B09; color: var(--muted); font-size: .85rem; min-height: 180px; }
 #am-no-url strong { font-family: 'Playfair Display',serif; color: var(--gold); font-size: 1.1rem; }
-/* barra de controles */
 #am-controls { position: relative; background: rgba(11,11,9,.96); padding: .55rem .9rem .6rem; display: flex; flex-direction: column; gap: .4rem; }
 #am-progress-wrap { position: relative; height: 4px; background: rgba(255,255,255,.18); border-radius: 2px; cursor: pointer; }
 #am-progress-wrap:hover { height: 6px; margin-top: -1px; }
@@ -888,14 +930,49 @@ footer strong { color: var(--gold); }
       <div class="v-cab-t"><span id="destCatEmoji">🎙️</span> <span id="destCatLabel">Podcast do Dia</span> — <span style="color:var(--gold)" id="dataHoje"></span></div>
       <div class="badge-nova"><div class="tk-dot"></div>Novo episódio disponível</div>
     </div>
-    <div class="v-area" id="vAreaDest" onclick="abrirAudioDestaque()">
-      <div class="v-fundo">
-        <div class="btn-play"><div class="tri"></div></div>
+    <div class="v-area" id="vAreaDest">
+      <div class="v-fundo" id="vFundoDest">
+        <div class="btn-play" id="destPlayBtn" onclick="destToggle()" style="cursor:pointer">
+          <div class="tri" id="destTriIcon"></div>
+        </div>
         <div class="v-titulo-t" id="tituloDest">Carregando...</div>
         <div class="v-data-t" id="dataVid"></div>
-        <div class="v-fundo-wave">
+        <div class="v-fundo-wave" id="destWave">
           <span></span><span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <!-- Player embutido — aparece ao clicar play -->
+      <div id="dest-player">
+        <audio id="dest-audio-el" preload="none" style="display:none"></audio>
+        <div id="dest-waveform-wrap" onmousedown="destSeek(event)">
+          <canvas id="dest-waveform-canvas"></canvas>
+          <div id="dest-prog-line"></div>
+        </div>
+        <div id="dest-controls">
+          <button class="dest-btn" onclick="destSkip(-15)" title="Voltar 15s">
+            <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="sans-serif">15</text></svg>
+          </button>
+          <button class="dest-btn" id="dest-pp-btn" onclick="destToggle()" title="Play/Pause">
+            <svg id="dest-ico-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="dest-ico-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+          <button class="dest-btn" onclick="destSkip(30)" title="Avançar 30s">
+            <svg viewBox="0 0 24 24"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="15.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="sans-serif">30</text></svg>
+          </button>
+          <span id="dest-time">0:00 / 0:00</span>
+          <div id="dest-spacer"></div>
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <svg style="width:14px;height:14px;fill:rgba(255,255,255,.5)" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+            <input type="range" id="dest-vol-slider" min="0" max="100" value="100" oninput="destVol(this.value)">
+          </div>
+          <select onchange="destSpeed(this.value)" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:.68rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif">
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
         </div>
       </div>
     </div>
@@ -1243,6 +1320,7 @@ function notifLocal(titulo, corpo) {
   });
 
   setTimeout(function() {
+    try { destInitEvents(); } catch(e) {}
     try { carregarCotacoes(); } catch(e) { try { renderTicker(); renderTabCot(); } catch(_){} }
     try { carregarAudios(); }   catch(e) {}
     try { renderEspecialista(); } catch(e) {}
@@ -1571,11 +1649,18 @@ function renderDestaque() {
   const vFundo = document.querySelector('#vAreaDest .v-fundo');
   if (vFundo) {
     if (dest.thumb) {
-      vFundo.style.background = `url(${JSON.stringify(dest.thumb)}) center/cover no-repeat`;
-      vFundo.style.backgroundBlendMode = 'multiply';
+      vFundo.style.background = `linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)), url(${JSON.stringify(dest.thumb)}) center/cover no-repeat`;
     } else {
       vFundo.style.background = catTints[cat] || catTints['Podcast Diário'];
     }
+  }
+  // Pré-carrega waveform se o episódio tem URL
+  if (dest.url) { DEST.waveData = null; destLoadWaveform(dest.url); }
+  // Atualiza src do player embutido
+  const destAudio = document.getElementById('dest-audio-el');
+  if (destAudio && dest.url && destAudio.src !== dest.url) {
+    destAudio.src = dest.url;
+    DEST.audioCtx = null;
   }
 
   /* atualiza o like do destaque com o do vídeo real */
@@ -1583,9 +1668,223 @@ function renderDestaque() {
   renderLikeDest();
 }
 
+/* ═══ PLAYER EMBUTIDO NO DESTAQUE ═══ */
+const DEST = {
+  playing: false, rafId: null,
+  audioCtx: null, analyser: null, srcNode: null,
+  waveData: null,   // Float32Array com forma de onda pré-calculada
+  waveVec:  null,   // Float32Array vetorial para render
+};
+
+/* Pré-calcula forma de onda usando Float32Array — O(n) única vez */
+async function destLoadWaveform(url) {
+  if (!url) return;
+  try {
+    const res = await fetch(url);
+    const arrayBuf = await res.arrayBuffer();
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await actx.decodeAudioData(arrayBuf);
+    const raw = buf.getChannelData(0);
+    const W   = 800; // pontos vetoriais
+    const step = Math.ceil(raw.length / W);
+    // Float32Array: min/max por bloco
+    const mins = new Float32Array(W);
+    const maxs = new Float32Array(W);
+    for (let x = 0; x < W; x++) {
+      let mn = 1, mx = -1;
+      const base = x * step;
+      for (let i = 0; i < step; i++) {
+        const s = raw[base + i] || 0;
+        if (s < mn) mn = s;
+        if (s > mx) mx = s;
+      }
+      mins[x] = mn; maxs[x] = mx;
+    }
+    DEST.waveData = { mins, maxs, W };
+    actx.close();
+    destDrawStaticWave();
+  } catch(e) { /* sem áudio — waveform vazia */ }
+}
+
+function destDrawStaticWave() {
+  const canvas = document.getElementById('dest-waveform-canvas');
+  if (!canvas || !DEST.waveData) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width  = canvas.offsetWidth  * dpr;
+  canvas.height = canvas.offsetHeight * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  const { mins, maxs, W: wW } = DEST.waveData;
+  ctx.clearRect(0,0,W,H);
+  // Fundo leve
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  ctx.fillRect(0,0,W,H);
+  // Parte já tocada (dourado)
+  const audio = document.getElementById('dest-audio-el');
+  const pct = (audio && audio.duration) ? audio.currentTime / audio.duration : 0;
+  const splitX = Math.floor(pct * W);
+  for (let x = 0; x < W; x++) {
+    const xi = Math.floor(x * wW / W);
+    const y1 = ((1 - maxs[xi]) / 2) * H;
+    const y2 = ((1 - mins[xi]) / 2) * H;
+    ctx.strokeStyle = x < splitX ? 'rgba(200,168,75,.9)' : 'rgba(200,168,75,.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+  }
+  // Linha de progresso
+  document.getElementById('dest-prog-line').style.left = (pct * 100) + '%';
+}
+
+function destRaf() {
+  DEST.rafId = requestAnimationFrame(() => {
+    if (!DEST.playing) return;
+    const audio = document.getElementById('dest-audio-el');
+    const dur = audio.duration || 1;
+    const cur = audio.currentTime;
+    const pct = cur / dur;
+    // Atualiza tempo
+    document.getElementById('dest-time').textContent = amFmt(cur) + ' / ' + amFmt(dur);
+    // Redesenha waveform com progresso real
+    if (DEST.waveData) destDrawStaticWave();
+    else document.getElementById('dest-prog-line').style.left = (pct*100)+'%';
+    // Anima barras de onda no destaque conforme áudio
+    if (DEST.analyser) {
+      const data = new Uint8Array(DEST.analyser.frequencyBinCount);
+      DEST.analyser.getByteFrequencyData(data);
+      // Usa Float32Array vetorial — médias por banda
+      const spans = document.querySelectorAll('#destWave span');
+      const n = spans.length;
+      const bSize = Math.floor(data.length / n);
+      const vec = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let sum = 0;
+        for (let j = 0; j < bSize; j++) sum += data[i * bSize + j];
+        vec[i] = sum / bSize;
+      }
+      for (let i = 0; i < n; i++) {
+        const h = Math.max(4, (vec[i] / 255) * 32);
+        spans[i].style.height = h + 'px';
+        spans[i].style.animationDuration = '0s'; // para quando tocando usa altura real
+      }
+    }
+    destRaf();
+  });
+}
+
+function destToggle() {
+  const audio = document.getElementById('dest-audio-el');
+  if (!audio.src || audio.src === window.location.href) {
+    // Nenhum áudio carregado — abre modal dos cards como fallback
+    const v = S.vidDest;
+    if (v && v.url) {
+      audio.src = v.url;
+      destIniciarAudioCtx(audio);
+    } else { toast('Este episódio não possui áudio gravado.', ''); return; }
+  }
+  if (DEST.playing) {
+    audio.pause();
+  } else {
+    audio.play().catch(() => toast('Erro ao reproduzir áudio.',''));
+  }
+}
+
+function destIniciarAudioCtx(audio) {
+  if (DEST.audioCtx) return;
+  try {
+    DEST.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    DEST.analyser = DEST.audioCtx.createAnalyser();
+    DEST.analyser.fftSize = 64;
+    const src = DEST.audioCtx.createMediaElementSource(audio);
+    src.connect(DEST.analyser);
+    DEST.analyser.connect(DEST.audioCtx.destination);
+  } catch(e) {}
+}
+
+function destSkip(s) {
+  const a = document.getElementById('dest-audio-el');
+  if (a) a.currentTime = Math.max(0, Math.min(a.duration||0, a.currentTime+s));
+}
+function destVol(v) {
+  const a = document.getElementById('dest-audio-el');
+  if (a) a.volume = parseInt(v)/100;
+}
+function destSpeed(v) {
+  const a = document.getElementById('dest-audio-el');
+  if (a) a.playbackRate = parseFloat(v);
+}
+function destSeek(e) {
+  const a = document.getElementById('dest-audio-el');
+  if (!a || !a.duration) return;
+  const rect = document.getElementById('dest-waveform-wrap').getBoundingClientRect();
+  a.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * a.duration;
+}
+
+/* Inicializa eventos do player embutido */
+function destInitEvents() {
+  const audio = document.getElementById('dest-audio-el');
+  audio.onplay = () => {
+    DEST.playing = true;
+    document.getElementById('dest-ico-play').style.display  = 'none';
+    document.getElementById('dest-ico-pause').style.display = '';
+    document.getElementById('dest-player').classList.add('vis');
+    document.getElementById('destWave').classList.add('tocando');
+    // Troca ícone no botão grande para pause
+    document.getElementById('destTriIcon').style.cssText = 'width:4px;height:36px;background:var(--gold);border-radius:2px;box-shadow:10px 0 0 var(--gold);margin-left:4px';
+    cancelAnimationFrame(DEST.rafId); destRaf();
+  };
+  audio.onpause = () => {
+    DEST.playing = false;
+    document.getElementById('dest-ico-play').style.display  = '';
+    document.getElementById('dest-ico-pause').style.display = 'none';
+    document.getElementById('destWave').classList.remove('tocando');
+    // Restaura triângulo
+    document.getElementById('destTriIcon').style.cssText = '';
+    cancelAnimationFrame(DEST.rafId);
+    if (DEST.waveData) destDrawStaticWave();
+  };
+  audio.onended = () => {
+    DEST.playing = false;
+    document.getElementById('dest-ico-play').style.display  = '';
+    document.getElementById('dest-ico-pause').style.display = 'none';
+    document.getElementById('destWave').classList.remove('tocando');
+    document.getElementById('destTriIcon').style.cssText = '';
+    cancelAnimationFrame(DEST.rafId);
+  };
+  audio.onloadedmetadata = () => {
+    document.getElementById('dest-time').textContent = '0:00 / ' + amFmt(audio.duration);
+    destIniciarAudioCtx(audio);
+  };
+}
+
 function abrirAudioDestaque() {
   const v = S.vidDest || (S.vids && S.vids[0]);
-  if (v) abrirAudio(v);
+  if (!v) return;
+  const audio = document.getElementById('dest-audio-el');
+  if (v.url) {
+    if (audio.src !== v.url) {
+      audio.src = v.url;
+      DEST.audioCtx = null; // reset para criar novo nó
+    }
+    destToggle();
+    // Pré-calcula forma de onda se ainda não foi feito
+    if (!DEST.waveData) destLoadWaveform(v.url);
+  } else {
+    toast('Este episódio ainda não possui áudio gravado.', '');
+  }
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('aberto');
+  document.body.style.overflow = '';
+  const a = document.getElementById('am-audio-el');
+  if (a) { a.pause(); }
+  cancelAnimationFrame(AM.rafId);
+  AM.playing = false;
+  document.getElementById('am-ico-play').style.display  = '';
+  document.getElementById('am-ico-pause').style.display = 'none';
+  document.getElementById('am-eq-bars').classList.remove('ativo');
+  if (S.G._modalViews) { S.G._modalViews.destroy(); S.G._modalViews = null; }
 }
 
 function fmtN(n) {
