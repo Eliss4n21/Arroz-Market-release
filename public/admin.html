@@ -289,7 +289,15 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
         <div class="card" style="margin-bottom:1.2rem">
           <div class="card-cab">
             <div class="card-titulo">🎙️ Estúdio de Gravação</div>
-            <div id="rec-status-badge" style="font-size:.72rem;color:var(--muted);padding:.2rem .7rem;background:var(--dark3);border-radius:3px;border:1px solid rgba(255,255,255,.06)">Aguardando</div>
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <!-- Upload externo -->
+              <label style="display:flex;align-items:center;gap:.4rem;padding:.3rem .8rem;background:var(--dark3);border:1px solid rgba(200,168,75,.22);color:var(--gold);border-radius:var(--r);cursor:pointer;font-size:.75rem;transition:all .2s" onmouseover="this.style.background='var(--gold-dim)'" onmouseout="this.style.background='var(--dark3)'">
+                <svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+                Importar áudio
+                <input type="file" id="ext-audio-input" accept="audio/*,.mp3,.wav,.ogg,.webm,.m4a,.aac,.flac" style="display:none" onchange="extAudioImport(this)">
+              </label>
+              <div id="rec-status-badge" style="font-size:.72rem;color:var(--muted);padding:.2rem .7rem;background:var(--dark3);border-radius:3px;border:1px solid rgba(255,255,255,.06)">Aguardando</div>
+            </div>
           </div>
           <div class="card-corpo">
             <!-- Visualizador de onda -->
@@ -346,9 +354,16 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             <div class="card-cab"><div class="card-titulo">✂️ Editor de Cortes</div><span style="font-size:.72rem;color:var(--muted)">Defina início e fim para cortar silêncios</span></div>
             <div class="card-corpo">
               <!-- Timeline visual -->
-              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:60px;margin-bottom:.8rem;overflow:hidden" id="edit-timeline" onmousedown="editTimelineClick(event)" onmousemove="editTimelineHover(event)">
+              <!-- Timeline: arraste para selecionar intervalo de corte -->
+              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:60px;margin-bottom:.8rem;overflow:hidden;user-select:none"
+                id="edit-timeline"
+                onmousedown="editDragStart(event)"
+                onmousemove="editDragMove(event)"
+                onmouseup="editDragEnd(event)"
+                onmouseleave="editDragEnd(event)">
                 <canvas id="edit-canvas" style="width:100%;height:100%;display:block;cursor:crosshair"></canvas>
-                <div id="edit-sel" style="position:absolute;top:0;height:100%;background:rgba(200,168,75,.18);border-left:2px solid var(--gold);border-right:2px solid var(--gold);pointer-events:none;display:none"></div>
+                <div id="edit-sel-overlay" style="position:absolute;top:0;height:100%;background:rgba(74,180,100,.2);border-left:2px solid rgba(74,200,100,.85);border-right:2px solid rgba(74,200,100,.85);pointer-events:none;display:none"></div>
+                <div id="edit-sel" style="position:absolute;top:0;height:100%;background:rgba(200,168,75,.12);border-left:2px solid var(--gold);border-right:2px solid var(--gold);pointer-events:none;display:none"></div>
                 <div id="edit-playhead" style="position:absolute;top:0;width:2px;height:100%;background:var(--green2);pointer-events:none;left:0%"></div>
               </div>
               <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem">
@@ -1404,19 +1419,18 @@ function editDrawSegments() {
 
 function editSegTimelineClick(e) {
   if (!EDIT_SEGS.origBuf) return;
-  const rect = document.getElementById('edit-timeline').getBoundingClientRect();
-  const ratio = (e.clientX - rect.left) / rect.width;
-  const t = ratio * EDIT_SEGS.origBuf.duration;
-  // Verifica clique em botão de restaurar segmento removido
-  const H = rect.height, dur = EDIT_SEGS.origBuf.duration;
-  for (let i=0; i<EDIT_SEGS.segs.length; i++) {
+  const ratio = editRatioFromEvent(e);
+  const dur   = EDIT_SEGS.origBuf.duration;
+  const t     = ratio * dur;
+  for (let i = 0; i < EDIT_SEGS.segs.length; i++) {
     const seg = EDIT_SEGS.segs[i];
     if (seg.ativo) continue;
     const cx = ((seg.s + seg.e) / 2) / dur;
-    if (Math.abs(ratio - cx) < 0.04) { seg.ativo = true; editDrawSegments(); editRebuildAudio(); return; }
+    if (Math.abs(ratio - cx) < 0.04) {
+      seg.ativo = true; editDrawSegments(); editRebuildAudio(); return;
+    }
   }
-  // Senão move playhead
-  document.getElementById('edit-playhead').style.left = (ratio*100)+'%';
+  document.getElementById('edit-playhead').style.left = (ratio * 100) + '%';
   const audioEl = document.getElementById('rec-audio-el');
   if (audioEl && audioEl.duration) audioEl.currentTime = t;
 }
@@ -1443,6 +1457,7 @@ async function editApplyCut() {
   }
   EDIT_SEGS.segs = novoSegs;
   editDrawSegments();
+  editHideSelOverlay();
   await editRebuildAudio();
   toast('Corte aplicado! O trecho está marcado em vermelho — clique ↺ para restaurar.','sucesso');
 }
@@ -1500,22 +1515,163 @@ async function editRebuildAudio() {
   liveCtx.close();
 }
 
-function editTimelineHover(e) {
+/* ═══════════════════════════════════════════════════════
+   TIMELINE — SELEÇÃO POR ARRASTO (drag-select)
+   Estado vetorial: Float32Array[2] = [startRatio, endRatio]
+   ═══════════════════════════════════════════════════════ */
+const DRAG = { active: false, startR: 0, vec: new Float32Array(2) };
+
+function editRatioFromEvent(e) {
+  const rect = document.getElementById('edit-timeline').getBoundingClientRect();
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  return Math.max(0, Math.min(1, (cx - rect.left) / rect.width));
+}
+
+function editDragStart(e) {
   if (!EDIT_SEGS.origBuf) return;
-  const canvas = document.getElementById('edit-canvas');
-  const rect   = document.getElementById('edit-timeline').getBoundingClientRect();
-  const ratio  = (e.clientX - rect.left) / rect.width;
-  const dur    = EDIT_SEGS.origBuf.duration;
+  // Verifica se clicou num botão de restaurar — prioridade máxima
+  const ratio = editRatioFromEvent(e);
+  const dur   = EDIT_SEGS.origBuf.duration;
+  for (let i = 0; i < EDIT_SEGS.segs.length; i++) {
+    const seg = EDIT_SEGS.segs[i];
+    if (seg.ativo) continue;
+    const cx = ((seg.s + seg.e) / 2) / dur;
+    if (Math.abs(ratio - cx) < 0.04) {
+      seg.ativo = true;
+      editDrawSegments();
+      editRebuildAudio();
+      return;
+    }
+  }
+  // Inicia drag de seleção
+  DRAG.active  = true;
+  DRAG.startR  = ratio;
+  DRAG.vec[0]  = ratio;
+  DRAG.vec[1]  = ratio;
+  editUpdateSelOverlay(ratio, ratio);
+  document.getElementById('edit-canvas').style.cursor = 'col-resize';
+}
+
+function editDragMove(e) {
+  if (!EDIT_SEGS.origBuf) {
+    // só hover para cursor pointer nos botões de restaurar
+    editTimelineHover(e); return;
+  }
+  const ratio = editRatioFromEvent(e);
+  // Hover cursor sobre botões de restaurar
+  const dur = EDIT_SEGS.origBuf.duration;
   let onBtn = false;
   for (const seg of EDIT_SEGS.segs) {
     if (seg.ativo) continue;
     const cx = ((seg.s + seg.e) / 2) / dur;
     if (Math.abs(ratio - cx) < 0.04) { onBtn = true; break; }
   }
-  canvas.style.cursor = onBtn ? 'pointer' : 'crosshair';
+  if (!DRAG.active) {
+    document.getElementById('edit-canvas').style.cursor = onBtn ? 'pointer' : 'crosshair';
+    return;
+  }
+  // Arraste ativo — atualiza seleção vetorial
+  DRAG.vec[0] = Math.min(DRAG.startR, ratio);
+  DRAG.vec[1] = Math.max(DRAG.startR, ratio);
+  editUpdateSelOverlay(DRAG.vec[0], DRAG.vec[1]);
 }
 
-function editTimelineClick(e) { editSegTimelineClick(e); }
+function editDragEnd(e) {
+  if (!DRAG.active || !EDIT_SEGS.origBuf) { DRAG.active = false; return; }
+  DRAG.active = false;
+  document.getElementById('edit-canvas').style.cursor = 'crosshair';
+  const dur = EDIT_SEGS.origBuf.duration;
+  // Atualiza inputs de tempo a partir do Float32Array vetorial
+  const s = DRAG.vec[0] * dur;
+  const en = DRAG.vec[1] * dur;
+  if (en - s < 0.05) {
+    // Clique simples sem arrastar → move playhead
+    const audioEl = document.getElementById('rec-audio-el');
+    if (audioEl && audioEl.duration) audioEl.currentTime = s;
+    document.getElementById('edit-playhead').style.left = (DRAG.vec[0] * 100) + '%';
+    editHideSelOverlay();
+    return;
+  }
+  document.getElementById('edit-start').value = recFmtD(s);
+  document.getElementById('edit-end').value   = recFmtD(en);
+  // Mantém overlay visível como indicação da seleção
+}
+
+function editUpdateSelOverlay(r0, r1) {
+  const ov = document.getElementById('edit-sel-overlay');
+  if (!ov) return;
+  const pct0 = (r0 * 100).toFixed(2), pct1 = (r1 * 100).toFixed(2);
+  ov.style.display = 'block';
+  ov.style.left    = pct0 + '%';
+  ov.style.width   = (r1 - r0) * 100 + '%';
+}
+
+function editHideSelOverlay() {
+  const ov = document.getElementById('edit-sel-overlay');
+  if (ov) ov.style.display = 'none';
+}
+
+function editTimelineHover(e) {
+  if (!EDIT_SEGS.origBuf) return;
+  const canvas = document.getElementById('edit-canvas');
+  const ratio  = editRatioFromEvent(e);
+  const dur    = EDIT_SEGS.origBuf.duration;
+  for (const seg of EDIT_SEGS.segs) {
+    if (seg.ativo) continue;
+    const cx = ((seg.s + seg.e) / 2) / dur;
+    if (Math.abs(ratio - cx) < 0.04) { canvas.style.cursor = 'pointer'; return; }
+  }
+  canvas.style.cursor = DRAG.active ? 'col-resize' : 'crosshair';
+}
+
+function editTimelineClick(e) { editDragStart(e); }
+
+/* ═══ IMPORTAR ÁUDIO EXTERNO ═══ */
+async function extAudioImport(inp) {
+  const file = inp.files[0];
+  if (!file) return;
+  const allowed = ['audio/mpeg','audio/mp3','audio/wav','audio/ogg','audio/webm','audio/mp4','audio/aac','audio/flac','audio/x-flac'];
+  if (!allowed.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|webm|m4a|aac|flac)$/i)) {
+    toast('Formato não suportado. Use MP3, WAV, OGG, WEBM, M4A, AAC ou FLAC.','erro'); return;
+  }
+  if (file.size > 300 * 1024 * 1024) { toast('Arquivo maior que 300 MB.','erro'); return; }
+
+  recSetStatus('📂 Importando...', 'pause');
+  toast('Carregando áudio: ' + file.name, '');
+
+  try {
+    REC.blob    = file;
+    REC.blobUrl = URL.createObjectURL(file);
+
+    // Atualiza player customizado
+    const audioEl = document.getElementById('rec-audio-el');
+    RECP.playing  = false;
+    cancelAnimationFrame(RECP.rafId);
+    audioEl.src   = REC.blobUrl;
+    document.getElementById('rec-prog-fill').style.width = '0%';
+    document.getElementById('rec-ico-play').style.display  = '';
+    document.getElementById('rec-ico-pause').style.display = 'none';
+
+    // Preenche nome do episódio com o nome do arquivo (sem extensão)
+    const nomeSemExt = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g,' ');
+    const tituloEl   = document.getElementById('v-titulo');
+    if (tituloEl && !tituloEl.value) tituloEl.value = nomeSemExt;
+
+    document.getElementById('rec-player-wrap').style.display = 'block';
+    document.getElementById('rec-idle-msg').style.display    = 'none';
+    document.getElementById('rec-timer').style.display       = 'none';
+    recSetStatus('✓ Áudio importado', 'ok');
+
+    // Decodifica e inicializa editor
+    await recInitEditor(file);
+    toast('✅ Áudio importado com sucesso!', 'sucesso');
+  } catch(e) {
+    recSetStatus('Erro ao importar', '');
+    toast('Erro: ' + e.message, 'erro');
+  }
+  // Reseta o input para permitir importar o mesmo arquivo novamente
+  inp.value = '';
+}
 
 function setEditVol(v) {
   document.getElementById('edit-vol-val').textContent = parseFloat(v).toFixed(1)+'×';
