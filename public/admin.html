@@ -346,15 +346,15 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             <div class="card-cab"><div class="card-titulo">✂️ Editor de Cortes</div><span style="font-size:.72rem;color:var(--muted)">Defina início e fim para cortar silêncios</span></div>
             <div class="card-corpo">
               <!-- Timeline visual -->
-              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:60px;margin-bottom:.8rem;overflow:hidden;cursor:crosshair" id="edit-timeline" onmousedown="editTimelineClick(event)">
-                <canvas id="edit-canvas" style="width:100%;height:100%;display:block"></canvas>
+              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:60px;margin-bottom:.8rem;overflow:hidden" id="edit-timeline" onmousedown="editTimelineClick(event)" onmousemove="editTimelineHover(event)">
+                <canvas id="edit-canvas" style="width:100%;height:100%;display:block;cursor:crosshair"></canvas>
                 <div id="edit-sel" style="position:absolute;top:0;height:100%;background:rgba(200,168,75,.18);border-left:2px solid var(--gold);border-right:2px solid var(--gold);pointer-events:none;display:none"></div>
                 <div id="edit-playhead" style="position:absolute;top:0;width:2px;height:100%;background:var(--green2);pointer-events:none;left:0%"></div>
               </div>
               <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem">
                 <div style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted)">
-                  Corte: <input type="text" id="edit-start" value="0:00" style="background:var(--dark3);border:1px solid rgba(200,168,75,.18);color:var(--cream);padding:.3rem .6rem;border-radius:3px;font-size:.78rem;width:60px;outline:none;text-align:center">
-                  até <input type="text" id="edit-end" value="0:00" style="background:var(--dark3);border:1px solid rgba(200,168,75,.18);color:var(--cream);padding:.3rem .6rem;border-radius:3px;font-size:.78rem;width:60px;outline:none;text-align:center">
+                  Corte: <input type="text" id="edit-start" value="0:00.0" style="background:var(--dark3);border:1px solid rgba(200,168,75,.18);color:var(--cream);padding:.3rem .6rem;border-radius:3px;font-size:.78rem;width:72px;outline:none;text-align:center">
+                  até <input type="text" id="edit-end" value="0:00.0" style="background:var(--dark3);border:1px solid rgba(200,168,75,.18);color:var(--cream);padding:.3rem .6rem;border-radius:3px;font-size:.78rem;width:72px;outline:none;text-align:center">
                 </div>
                 <button onclick="editSelectAll()" class="btn btn-sec btn-xs">Selecionar tudo</button>
                 <button onclick="editApplyCut()" class="btn btn-prim btn-sm">✂️ Aplicar corte</button>
@@ -427,6 +427,11 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
                     <div style="display:flex;gap:.3rem">
                       <button onclick="relogioAjustar(-5)"  class="btn btn-sec btn-xs">−5m</button>
                       <button onclick="relogioAjustar(5)"   class="btn btn-sec btn-xs">+5m</button>
+                    </div>
+                    <!-- AM / PM -->
+                    <div style="display:flex;gap:.3rem;margin-top:.2rem">
+                      <button id="btn-am" onclick="relogioSetAmPm('am')" class="btn btn-prim btn-xs" style="min-width:36px">AM</button>
+                      <button id="btn-pm" onclick="relogioSetAmPm('pm')" class="btn btn-sec btn-xs" style="min-width:36px">PM</button>
                     </div>
                     <div id="rel-modo" style="font-size:.7rem;color:var(--muted);text-align:center">Arraste ponteiro</div>
                   </div>
@@ -1278,8 +1283,8 @@ async function recInitEditor(blob) {
   EDIT_SEGS.segs = [{ s: 0, e: decoded.duration, ativo: true }];
   editDrawSegments();
   const dur = decoded.duration;
-  document.getElementById('edit-start').value = '0:00';
-  document.getElementById('edit-end').value = recFmt(dur);
+  document.getElementById('edit-start').value = '0:00.0';
+  document.getElementById('edit-end').value = recFmtD(dur);
 }
 
 function editDrawWaveform() {
@@ -1308,14 +1313,28 @@ function editDrawWaveform() {
 }
 
 function editParseTime(str) {
-  const parts = str.split(':').map(Number);
-  return parts.length===2 ? parts[0]*60+parts[1] : parseFloat(str)||0;
+  // Suporta: "1:23", "1:23.4", "83.4", "83"
+  str = str.trim();
+  if (str.includes(':')) {
+    const [mPart, sPart] = str.split(':');
+    return parseInt(mPart||0)*60 + parseFloat(sPart||0);
+  }
+  return parseFloat(str) || 0;
+}
+
+/* Formata com décimos: 1:23.4 */
+function recFmtD(sec) {
+  if (isNaN(sec) || sec < 0) return '0:00.0';
+  const m  = Math.floor(sec / 60);
+  const s  = Math.floor(sec % 60);
+  const d  = Math.floor((sec % 1) * 10);
+  return m + ':' + String(s).padStart(2,'0') + '.' + d;
 }
 
 function editSelectAll() {
   if (!REC.editAudioBuffer) return;
-  document.getElementById('edit-start').value = '0:00';
-  document.getElementById('edit-end').value = recFmt(REC.editAudioBuffer.duration);
+  document.getElementById('edit-start').value = '0:00.0';
+  document.getElementById('edit-end').value = recFmtD(REC.editAudioBuffer.duration);
   document.getElementById('edit-sel').style.display = 'none';
 }
 
@@ -1363,19 +1382,23 @@ function editDrawSegments() {
   }
   ctx.stroke();
 
-  // Hachura sobre segmentos removidos
+  // Segmentos removidos + botão restaurar
   EDIT_SEGS.segs.forEach((seg,i) => {
     if (seg.ativo) return;
     const x1 = (seg.s / dur) * W, x2 = (seg.e / dur) * W;
-    ctx.fillStyle = 'rgba(192,74,74,.28)';
+    ctx.fillStyle = 'rgba(192,74,74,.22)';
     ctx.fillRect(x1, 0, x2-x1, H);
-    // Botão de restaurar (círculo ✕→✓)
+    // Círculo restaurar — maior para clique fácil
     const cx = (x1+x2)/2, cy = H/2;
-    ctx.fillStyle = 'rgba(74,124,89,.85)';
-    ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(50,160,80,.95)';
+    ctx.beginPath(); ctx.arc(cx, cy, 14, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.3)'; ctx.lineWidth = 1;
+    ctx.stroke();
     ctx.fillStyle = '#fff';
-    ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('↺', cx, cy);
+    ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('↺', cx, cy+1);
+    ctx.font = '8.5px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.75)';
+    ctx.fillText('restaurar', cx, cy + 22);
   });
 }
 
@@ -1470,11 +1493,26 @@ async function editRebuildAudio() {
     document.getElementById('v-dur').value = recFmt(rendered.duration);
     document.getElementById('rec-time-disp').textContent = '0:00 / ' + recFmt(rendered.duration);
     document.getElementById('rec-player-wrap').style.display = 'block';
-    document.getElementById('edit-end').value = recFmt(EDIT_SEGS.origBuf.duration);
+    document.getElementById('edit-end').value = recFmtD(EDIT_SEGS.origBuf.duration);
   };
   mr.start(); setTimeout(()=>mr.stop(), rendered.duration*1000+300);
   await new Promise(r=>setTimeout(r,200));
   liveCtx.close();
+}
+
+function editTimelineHover(e) {
+  if (!EDIT_SEGS.origBuf) return;
+  const canvas = document.getElementById('edit-canvas');
+  const rect   = document.getElementById('edit-timeline').getBoundingClientRect();
+  const ratio  = (e.clientX - rect.left) / rect.width;
+  const dur    = EDIT_SEGS.origBuf.duration;
+  let onBtn = false;
+  for (const seg of EDIT_SEGS.segs) {
+    if (seg.ativo) continue;
+    const cx = ((seg.s + seg.e) / 2) / dur;
+    if (Math.abs(ratio - cx) < 0.04) { onBtn = true; break; }
+  }
+  canvas.style.cursor = onBtn ? 'pointer' : 'crosshair';
 }
 
 function editTimelineClick(e) { editSegTimelineClick(e); }
@@ -1551,7 +1589,21 @@ function recDrawWave() {
 function prevThumb(inp){ const r=new FileReader(); r.onload=e=>{ document.getElementById('thumb-img').src=e.target.result; document.getElementById('thumb-prev').style.display='block'; }; r.readAsDataURL(inp.files[0]); }
 
 /* ═══ RELÓGIO ANALÓGICO ═══ */
-const REL = { h: 8, m: 0, dragging: false };
+const REL = { h: 8, m: 0, dragging: false, _mode: 'm', ampm: 'am' };
+
+function relogioSetAmPm(val) {
+  const wasAm = REL.ampm === 'am';
+  REL.ampm = val;
+  // Ajusta hora: AM→PM adiciona 12, PM→AM subtrai 12
+  if (val === 'pm' && wasAm  && REL.h < 12)  REL.h += 12;
+  if (val === 'am' && !wasAm && REL.h >= 12) REL.h -= 12;
+  if (REL.h === 24) REL.h = 0;
+  const btnAm = document.getElementById('btn-am');
+  const btnPm = document.getElementById('btn-pm');
+  if (btnAm) { btnAm.className = val==='am' ? 'btn btn-prim btn-xs' : 'btn btn-sec btn-xs'; }
+  if (btnPm) { btnPm.className = val==='pm' ? 'btn btn-prim btn-xs' : 'btn btn-sec btn-xs'; }
+  relogioAtualizar();
+}
 
 function relogioInit() {
   const svg = document.getElementById('relogio-svg');
@@ -1578,22 +1630,29 @@ function relogioInit() {
 
 function relogioAtualizar() {
   const h = REL.h % 12, m = REL.m;
-  // Ângulos em radianos — Float32Array de 2 elementos (hora, minuto)
   const ang = new Float32Array(2);
-  ang[0] = ((h + m/60) / 12 * 360 - 90) * Math.PI / 180; // hora
-  ang[1] = (m / 60 * 360 - 90) * Math.PI / 180;           // minuto
-  // Coords dos ponteiros (Float32Array para coords x2,y2)
+  ang[0] = ((h + m/60) / 12 * 360 - 90) * Math.PI / 180;
+  ang[1] = (m / 60 * 360 - 90) * Math.PI / 180;
   const hrX  = 70 + Math.cos(ang[0]) * 36, hrY  = 70 + Math.sin(ang[0]) * 36;
   const minX = 70 + Math.cos(ang[1]) * 48, minY = 70 + Math.sin(ang[1]) * 48;
   const hrLine  = document.getElementById('rel-hr');
   const minLine = document.getElementById('rel-min');
-  if (hrLine)  { hrLine.setAttribute('x2',  hrX.toFixed(1));  hrLine.setAttribute('y2',  hrY.toFixed(1));  }
+  if (hrLine)  { hrLine.setAttribute('x2', hrX.toFixed(1));  hrLine.setAttribute('y2', hrY.toFixed(1));  }
   if (minLine) { minLine.setAttribute('x2', minX.toFixed(1)); minLine.setAttribute('y2', minY.toFixed(1)); }
-  const str = String(REL.h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  // Sincroniza ampm com hora real
+  REL.ampm = REL.h < 12 ? 'am' : 'pm';
+  const dispH = REL.h % 12 || 12;
+  const str24 = String(REL.h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  const str12 = String(dispH).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' ' + REL.ampm.toUpperCase();
   const disp = document.getElementById('hora-display');
   const inp  = document.getElementById('v-hora');
-  if (disp) disp.textContent = str;
-  if (inp)  inp.value = str;
+  if (disp) disp.textContent = str12;
+  if (inp)  inp.value = str24;
+  // Atualiza visual dos botões AM/PM
+  const btnAm = document.getElementById('btn-am');
+  const btnPm = document.getElementById('btn-pm');
+  if (btnAm) btnAm.className = REL.ampm==='am' ? 'btn btn-prim btn-xs' : 'btn btn-sec btn-xs';
+  if (btnPm) btnPm.className = REL.ampm==='pm' ? 'btn btn-prim btn-xs' : 'btn btn-sec btn-xs';
 }
 
 function relogioAngleTo(e, svg) {
@@ -1687,9 +1746,11 @@ async function publicarVideo(){
   const status = document.getElementById('v-status').value;
   const hora   = status === 'agendado' ? (document.getElementById('v-hora').value || '08:00') : null;
 
-  const thumbEl = document.getElementById('thumb-img');
-  const thumbData = (thumbEl && thumbEl.src && !thumbEl.src.endsWith('/admin.html'))
-    ? thumbEl.src
+  const thumbEl  = document.getElementById('thumb-img');
+  const thumbSrc = thumbEl && thumbEl.src || '';
+  const thumbOk  = thumbSrc && thumbSrc.startsWith('data:') || thumbSrc.startsWith('blob:');
+  const thumbData = thumbOk
+    ? thumbSrc
     : getThumbPadraoParaCat(document.getElementById('v-cat').value);
 
   const novo = {

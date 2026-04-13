@@ -1582,12 +1582,66 @@ function renderTabCot() {
 }
 
 /* ═══ VÍDEOS ═══ */
+/* Lê thumbnails padrão salvos pelo admin */
+function getThumbsPadraoPublico() {
+  try { return JSON.parse(localStorage.getItem('am_thumbs_padrao') || '{}'); } catch(e) { return {}; }
+}
+function getThumbPadraoPublico(cat) {
+  const saved = getThumbsPadraoPublico();
+  const key = (cat || 'Podcast Diário').replace(/\s+/g,'_');
+  return saved[key] || '';
+}
+
 async function carregarAudios() {
-  try {
-    S.vids = await apiFetch('GET', '/audios'); // array com {id,titulo,data,dur,url,cat,status,views,likes}
-  } catch {
+  // 1. Busca da API
+  let apiVids = [];
+  try { apiVids = await apiFetch('GET', '/audios'); } catch(e) {}
+
+  // 2. Lê do localStorage (salvo pelo admin) — contém url blob e thumb
+  let localVids = [];
+  try { localVids = JSON.parse(localStorage.getItem('am_v') || '[]'); } catch(e) {}
+
+  // 3. Merge vetorial: para cada vídeo da API, enriquece com dados locais
+  //    Para episódios só no local (novos ainda não na API), inclui também
+  const thumbsMap = getThumbsPadraoPublico();
+
+  if (apiVids.length > 0) {
+    // Float32Array de ids para lookup O(n) vetorial
+    const apiIds = new Float32Array(apiVids.map(v => v.id));
+    const localMap = {};
+    for (const lv of localVids) localMap[lv.id] = lv;
+
+    S.vids = apiVids.map(v => {
+      const lv  = localMap[v.id] || {};
+      // Usa url local se a API não tem (blob gravado)
+      const url   = v.url || lv.url || '';
+      // Thumb: manual > padrão local > padrão por categoria
+      const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
+      const thumb = lv.thumb || v.thumb || thumbsMap[catKey] || '';
+      return { ...v, url, thumb };
+    });
+
+    // Episódios apenas no local (ainda não enviados para API)
+    for (const lv of localVids) {
+      const inApi = apiIds.some ? [...apiIds].includes(lv.id) : Array.from(apiIds).includes(lv.id);
+      if (!inApi && (lv.status === 'pub' || !lv.status)) {
+        const catKey = (lv.cat || 'Podcast Diário').replace(/\s+/g,'_');
+        S.vids.unshift({ ...lv, thumb: lv.thumb || thumbsMap[catKey] || '' });
+      }
+    }
+  } else if (localVids.length > 0) {
+    // Só local disponível
+    S.vids = localVids
+      .filter(v => v.status === 'pub' || !v.status)
+      .map(v => {
+        const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
+        return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
+      });
+  } else {
+    // Fallback hardcoded
     S.vids = VIDS_LOCAL;
   }
+
   renderAudios();
   renderDestaque();
   atualizarContadoresFiltro();
