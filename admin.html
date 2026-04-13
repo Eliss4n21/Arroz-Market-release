@@ -148,7 +148,66 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(200,168,75,.2);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:rgba(200,168,75,.4)}
-@media(max-width:900px){#sidebar{display:none}.metricas-grid{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+/* ── Botão hamburguer admin ── */
+#adm-menu-btn {
+  display: none; background: none; border: none; cursor: pointer;
+  flex-direction: column; gap: 5px; padding: 4px;
+}
+#adm-menu-btn span {
+  display: block; width: 20px; height: 2px;
+  background: var(--gold); border-radius: 2px; transition: all .3s;
+}
+#adm-menu-btn.aberto span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#adm-menu-btn.aberto span:nth-child(2) { opacity: 0; }
+#adm-menu-btn.aberto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media(max-width:900px) {
+  #sidebar { display: none; position: fixed; top: var(--topbar); left: 0; bottom: 0; z-index: 500; width: 260px; overflow-y: auto; transition: transform .28s cubic-bezier(.22,1,.36,1); transform: translateX(-100%); }
+  #sidebar.aberto { display: flex; transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.5); }
+  #adm-menu-btn { display: flex; }
+  .metricas-grid { grid-template-columns: 1fr 1fr; }
+  .grid2 { grid-template-columns: 1fr; }
+  #conteudo { padding: 1rem; }
+  .painel-titulo { font-size: 1.2rem; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-row3 { grid-template-columns: 1fr; }
+  .tabela-adm th:nth-child(5), .tabela-adm td:nth-child(5),
+  .tabela-adm th:nth-child(6), .tabela-adm td:nth-child(6) { display: none; }
+}
+@media(max-width:600px) {
+  :root { --topbar: 52px; --sidebar: 240px; }
+  .metricas-grid { grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .metrica { padding: .8rem; }
+  .metrica-val { font-size: 1.4rem; }
+  .top-logo em { display: none; }
+  .top-badge { display: none; }
+  .btn-ver-site { display: none; }
+  .top-right { gap: .5rem; }
+  .grid3 { grid-template-columns: 1fr; }
+  /* Estúdio */
+  #rec-canvas { height: 70px !important; }
+  .form-grupo input, .form-grupo select, .form-grupo textarea { font-size: .82rem; }
+  /* Editor de cortes */
+  #edit-timeline { height: 50px !important; }
+  /* Relógio */
+  #relogio-svg { width: 110px !important; height: 110px !important; }
+  /* Thumb grid */
+  #thumb-cat-grid { grid-template-columns: 1fr 1fr !important; }
+  /* Timeline especialista */
+  .tl-item-form { grid-template-columns: 70px 1fr auto; }
+  /* Tabelas — oculta mais colunas */
+  .tabela-adm th:nth-child(4), .tabela-adm td:nth-child(4) { display: none; }
+}
+@media(max-width:480px) {
+  .metricas-grid { grid-template-columns: 1fr; }
+  .acoes { flex-wrap: wrap; }
+  #thumb-cat-grid { grid-template-columns: 1fr !important; }
+  .tl-item-form { grid-template-columns: 1fr auto; }
+  /* Cotações ao vivo */
+  .cotacao-grid { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:700px){.tl-item-form{grid-template-columns:70px 1fr auto}}
+
 /* ── PRÉ-VISUALIZAÇÃO ADMIN ── */
 .adm-player-wrap { aspect-ratio:16/9; max-width:480px; border-radius:var(--r); overflow:hidden; border:1px solid var(--gold-b); position:relative; background:#000; }
 .adm-thumb-screen { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
@@ -197,7 +256,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
 
 <div style="display:flex;flex-direction:column;height:100%;opacity:0;transition:opacity .4s" id="app-wrap">
   <div id="topbar">
-    <div style="display:flex;align-items:center;gap:1rem">
+    <div style="display:flex;align-items:center;gap:.8rem">
+      <button id="adm-menu-btn" onclick="admToggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
       <div class="top-logo">Arroz<span>Market</span><em>Admin</em></div>
       <div class="top-badge"><div class="live-dot"></div>Cotações ao vivo</div>
     </div>
@@ -981,12 +1043,43 @@ function sair(){
   toast('Sessão encerrada.','ouro');
 }
 
+/* ═══ SIDEBAR MOBILE ═══ */
+function admToggleSidebar() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('adm-menu-btn');
+  const open = sb.classList.toggle('aberto');
+  btn.classList.toggle('aberto', open);
+  // Overlay de fechamento
+  let ov = document.getElementById('adm-sidebar-ov');
+  if (open) {
+    if (!ov) {
+      ov = document.createElement('div');
+      ov.id = 'adm-sidebar-ov';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:499;background:rgba(0,0,0,.5)';
+      ov.onclick = admToggleSidebar;
+      document.body.appendChild(ov);
+    }
+  } else if (ov) {
+    ov.remove();
+  }
+}
+function admFecharSidebar() {
+  const sb  = document.getElementById('sidebar');
+  const btn = document.getElementById('adm-menu-btn');
+  sb.classList.remove('aberto');
+  btn.classList.remove('aberto');
+  const ov = document.getElementById('adm-sidebar-ov');
+  if (ov) ov.remove();
+}
+
 /* ═══ NAV ═══ */
 function mostrar(id,el){
   document.querySelectorAll('.painel').forEach(p=>p.classList.remove('ativo'));
   document.querySelectorAll('.sb-item').forEach(s=>s.classList.remove('ativo'));
   const p=document.getElementById(id); if(p) p.classList.add('ativo');
   if(el) el.classList.add('ativo');
+  // Fecha sidebar no mobile
+  if (window.innerWidth <= 900) admFecharSidebar();
 }
 
 /* ═══ TOAST ═══ */

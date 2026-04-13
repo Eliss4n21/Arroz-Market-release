@@ -329,15 +329,16 @@ body {
   padding: .28rem .75rem; border-radius: 2px;
 }
 .v-area {
-  position: relative; background: #000; min-height: 180px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; overflow: hidden;
+  position: relative; background: #000; min-height: 320px;
+  display: flex; align-items: stretch; justify-content: center;
+  cursor: pointer; overflow: hidden; flex-direction: column;
 }
 .v-fundo {
   position: absolute; inset: 0;
   background: linear-gradient(135deg,#0B1810 0%,#162B14 55%,#0B1810 100%);
   display: flex; align-items: center; justify-content: center;
   flex-direction: column; gap: 1.1rem; padding: 2rem;
+  background-size: cover; background-position: center;
 }
 /* Ondas de áudio decorativas no destaque */
 .v-fundo::before {
@@ -406,7 +407,7 @@ body {
 }
 .card-v:hover { border-color: rgba(200,168,75,.32); transform: translateY(-4px); }
 .card-thumb { height: 80px; background: var(--dark3); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.card-thumb-bg { position: absolute; inset: 0; background: linear-gradient(135deg,#0B1810,#1A3018); display: flex; align-items: center; justify-content: center; }
+.card-thumb-bg { position: absolute; inset: 0; background: linear-gradient(135deg,#0B1810,#1A3018); display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; }
 .play-sm { width: 38px; height: 38px; background: rgba(200,168,75,.18); border: 1px solid rgba(200,168,75,.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 /* Ícone microfone pequeno nos cards */
 .tri-sm {
@@ -709,23 +710,147 @@ footer { text-align: center; padding: 2rem 3rem; border-top: 1px solid rgba(200,
 footer strong { color: var(--gold); }
 
 /* ════════════════════════════════
-   MOBILE
+   MOBILE — RESPONSIVO COMPLETO
 ════════════════════════════════ */
-@media (max-width: 768px) {
-  #nav { padding: 0 1rem; }
-  .nav-data { display: none; }
-  .nav-links { gap: 1rem; }
-  .pagina { padding-left: 1rem; padding-right: 1rem; padding-top: calc(var(--top) + 2rem); }
-  .bio-grid { grid-template-columns: 1fr; }
-  .bio-card { position: static; }
-  .estats { gap: 1rem; }
-  #menuPerfil { right: 1rem; }
-  .grade-v { grid-template-columns: 1fr 1fr; }
+
+/* ── Hamburguer menu (hidden on desktop) ── */
+#nav-hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 4px; background: none; border: none;
+  flex-shrink: 0;
 }
+#nav-hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--gold); border-radius: 2px; transition: all .3s;
+}
+#nav-hamburger.aberto span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#nav-hamburger.aberto span:nth-child(2) { opacity: 0; }
+#nav-hamburger.aberto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Drawer mobile ── */
+#nav-drawer {
+  display: none; position: fixed;
+  top: var(--nh); left: 0; right: 0; z-index: 290;
+  background: rgba(11,11,9,.98); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(200,168,75,.15);
+  padding: .8rem 1.2rem 1.2rem; flex-direction: column; gap: .2rem;
+}
+#nav-drawer.aberto { display: flex; animation: entrar .2s ease; }
+#nav-drawer a {
+  color: var(--muted); text-decoration: none;
+  font-size: .85rem; font-weight: 400; letter-spacing: .07em; text-transform: uppercase;
+  padding: .7rem .4rem; border-bottom: 1px solid rgba(200,168,75,.06);
+  cursor: pointer; transition: color .2s;
+}
+#nav-drawer a:last-child { border-bottom: none; }
+#nav-drawer a.ativo, #nav-drawer a:hover { color: var(--gold); }
+[data-tema="claro"] #nav-drawer { background: rgba(245,245,240,.98); }
+
+@media (max-width: 768px) {
+  /* Nav */
+  #nav { padding: 0 1rem; }
+  .nav-links { display: none; } /* oculta links inline no mobile */
+  .nav-data { display: none; }
+  #nav-hamburger { display: flex; }
+
+  /* Páginas */
+  .pagina {
+    padding-left: 1rem; padding-right: 1rem;
+    padding-top: calc(var(--top) + 1.5rem);
+    padding-bottom: 4rem;
+  }
+
+  /* Hero */
+  .hero { padding: 1rem 0 .2rem; margin-bottom: 2rem; }
+  .hero h1 { font-size: clamp(1.7rem,8vw,3rem); }
+
+  /* Card destaque */
+  .v-dest { margin-bottom: 2rem; }
+  .v-area { min-height: 240px; }
+  .v-cab { flex-wrap: wrap; gap: .5rem; padding: .9rem 1rem; }
+  .v-cab-t { font-size: .9rem; }
+  .badge-nova { font-size: .62rem; }
+  .v-rodape { padding: 1rem; flex-direction: column; align-items: flex-start; gap: .8rem; }
+  .estats { flex-wrap: wrap; gap: .8rem; }
+  .estat-n { font-size: 1rem; }
+
+  /* Player embutido */
+  #dest-controls { padding: .4rem .8rem; gap: .5rem; flex-wrap: wrap; }
+  #dest-waveform-wrap { height: 40px; }
+  #dest-vol-pct { display: none; }
+  #dest-spacer { display: none; }
+
+  /* Grade episódios */
+  .grade-v { grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .filtros-ep { gap: .3rem; }
+  .fil-ep { font-size: .68rem; padding: .28rem .6rem; }
+
+  /* Seção técnico */
+  .grade-tec { grid-template-columns: 1fr; }
+
+  /* Seção preços */
+  .b-graf { padding: 1.2rem; }
+  .filtros { gap: .3rem; }
+  .fil-btn { font-size: .68rem; padding: .3rem .7rem; }
+
+  /* Tabelas */
+  table.tab th, table.tab td { padding: .65rem .8rem; font-size: .78rem; }
+  table.tab th:nth-child(5), table.tab td:nth-child(5),
+  table.tab th:nth-child(6), table.tab td:nth-child(6) { display: none; }
+
+  /* Bio */
+  .bio-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .bio-card { position: static; }
+
+  /* Modal */
+  .modal-inner { width: 96vw; }
+  .modal-cab { padding: .8rem 1rem; }
+  #am-bottom { gap: .4rem; }
+  #am-vol-slider { width: 50px; }
+
+  /* Menu perfil */
+  #menuPerfil { right: 1rem; min-width: 200px; }
+
+  /* Footer */
+  footer { padding: 1.5rem 1rem; font-size: .7rem; }
+}
+
 @media (max-width: 480px) {
-  .nav-links { gap: .5rem; }
-  .nav-links a { font-size: .7rem; }
+  :root { --nh: 56px; }
+  .nav-data { display: none; }
+  .logo { font-size: 1.1rem; }
+
+  /* Hero compacto */
+  .hero h1 { font-size: 1.6rem; }
+  .hero p { font-size: .85rem; }
+  .tag { font-size: .6rem; }
+
+  /* Card destaque */
+  .v-area { min-height: 200px; }
+  .btn-play { width: 44px; height: 44px; }
+  .tri { border-top-width: 13px; border-bottom-width: 13px; border-left-width: 22px; }
+  .v-titulo-t { font-size: 1rem; padding: 0 1rem; }
+
+  /* Grade — coluna única */
   .grade-v { grid-template-columns: 1fr; }
+  .card-thumb { height: 70px; }
+
+  /* Filtros scroll horizontal */
+  .filtros-ep { padding-bottom: .4rem; }
+
+  /* Preços — esconde colunas menos importantes */
+  .b-graf canvas { height: 160px !important; }
+
+  /* Tabela simplificada */
+  table.tab th:nth-child(4), table.tab td:nth-child(4) { display: none; }
+
+  /* Stats do destaque */
+  .estats { gap: .6rem; }
+  .estat-n { font-size: .9rem; }
+  .estat-l { font-size: .6rem; }
+
+  /* Paginação */
+  #ep-paginacao button { font-size: .68rem; padding: .3rem .65rem; }
 }
 </style>
 </head>
@@ -742,11 +867,24 @@ footer strong { color: var(--gold); }
   </ul>
   <div class="nav-dir">
     <div class="nav-data" id="navData"></div>
+    <!-- Hamburguer — visível só no mobile -->
+    <button id="nav-hamburger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div id="avatarBtn" onclick="toggleMenu(event)">
-      <!-- Conteúdo injetado por JS: iniciais ou ícone SVG -->
+      <!-- Conteúdo injetado por JS -->
     </div>
   </div>
 </nav>
+
+<!-- Drawer mobile -->
+<div id="nav-drawer">
+  <a class="ativo" onclick="ir('inicio',this);fecharDrawer()">Início</a>
+  <a onclick="ir('tecnico',this);fecharDrawer()">Técnico</a>
+  <a onclick="ir('precos',this);fecharDrawer()">Preços</a>
+  <a onclick="ir('especialista',this);fecharDrawer()">Especialista</a>
+</div>
+
 <div id="menuPerfil"><!-- injetado por JS --></div>
 
 <!-- ════ TICKER ════ -->
@@ -963,8 +1101,9 @@ footer strong { color: var(--gold); }
           <span id="dest-time">0:00 / 0:00</span>
           <div id="dest-spacer"></div>
           <div style="display:flex;align-items:center;gap:.4rem">
-            <svg style="width:14px;height:14px;fill:rgba(255,255,255,.5)" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
-            <input type="range" id="dest-vol-slider" min="0" max="100" value="100" oninput="destVol(this.value)">
+            <svg id="dest-vol-icon" onclick="destMuteToggle()" style="width:14px;height:14px;fill:rgba(255,255,255,.6);cursor:pointer;flex-shrink:0" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.97z"/></svg>
+            <input type="range" id="dest-vol-slider" min="0" max="100" value="100" oninput="destVol(this.value)" style="accent-color:var(--gold)">
+            <span id="dest-vol-pct" style="font-size:.65rem;color:rgba(255,255,255,.5);min-width:30px">100%</span>
           </div>
           <select onchange="destSpeed(this.value)" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:.68rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif">
             <option value="0.75">0.75×</option>
@@ -1151,7 +1290,7 @@ const POLS = {
 const S = {
   usuario:  JSON.parse(localStorage.getItem('am_u')   || 'null'),
   token:    localStorage.getItem('am_tok') || null,
-  tema:     localStorage.getItem('am_tema') || 'claro',
+  tema:     localStorage.getItem('am_tema') || 'escuro',
   cor:      localStorage.getItem('am_cor')  || '#C8A84B',
   G:        {},          /* gráficos Chart.js */
   vids:     [],          /* lista de vídeos   */
@@ -1339,8 +1478,23 @@ function renderData() {
   document.getElementById('dataVid').textContent  = 'Publicado hoje às 08h00';
 }
 
-/* ═══ NAVEGAÇÃO ═══ */
+/* ═══ DRAWER MOBILE ═══ */
+function toggleDrawer() {
+  const d = document.getElementById('nav-drawer');
+  const h = document.getElementById('nav-hamburger');
+  const open = d.classList.toggle('aberto');
+  h.classList.toggle('aberto', open);
+}
+function fecharDrawer() {
+  document.getElementById('nav-drawer').classList.remove('aberto');
+  document.getElementById('nav-hamburger').classList.remove('aberto');
+}
+// Fecha drawer ao navegar
+const _irOrig = ir;
 function ir(id, el) {
+  fecharDrawer();
+  _irOrig(id, el);
+}
   document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
   document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('ativo'));
   document.getElementById(id).classList.add('ativa');
@@ -1672,7 +1826,10 @@ function renderDestaque() {
   const dEl = document.getElementById('durDest');
   const vEl = document.getElementById('viewsDest');
   if (tEl) tEl.textContent = dest.titulo;
-  if (dEl) dEl.textContent = dest.dur || '--:--';
+  if (dEl) {
+    const d = dest.dur || '';
+    dEl.textContent = (d && d !== 'Infinity:NaN' && d !== 'undefined') ? d : '--:--';
+  }
   if (vEl) vEl.textContent = fmtN(dest.views || 0);
 
   /* Categoria dinâmica no cabeçalho do destaque */
@@ -1859,9 +2016,32 @@ function destSkip(s) {
   const a = document.getElementById('dest-audio-el');
   if (a) a.currentTime = Math.max(0, Math.min(a.duration||0, a.currentTime+s));
 }
+function destMuteToggle() {
+  const a = document.getElementById('dest-audio-el');
+  if (!a) return;
+  const sl = document.getElementById('dest-vol-slider');
+  if (a.volume > 0) {
+    a._prevVol = a.volume;
+    a.volume = 0;
+    if (sl) { sl.value = 0; destVolUpdateUI(0); }
+  } else {
+    a.volume = a._prevVol || 1;
+    if (sl) { sl.value = Math.round(a.volume * 100); destVolUpdateUI(Math.round(a.volume*100)); }
+  }
+}
+function destVolUpdateUI(pct) {
+  const pctEl = document.getElementById('dest-vol-pct');
+  const sl    = document.getElementById('dest-vol-slider');
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (sl)    sl.style.background = `linear-gradient(to right, var(--gold) ${pct}%, rgba(255,255,255,.2) ${pct}%)`;
+  const icon = document.getElementById('dest-vol-icon');
+  if (icon) icon.style.opacity = pct === 0 ? '.3' : '1';
+}
 function destVol(v) {
   const a = document.getElementById('dest-audio-el');
-  if (a) a.volume = parseInt(v)/100;
+  const pct = parseInt(v);
+  if (a) a.volume = pct / 100;
+  destVolUpdateUI(pct);
 }
 function destSpeed(v) {
   const a = document.getElementById('dest-audio-el');
@@ -2037,7 +2217,7 @@ function renderAudios() {
     const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
-        <div class="card-thumb-bg" style="background:${v.thumb ? 'url('+JSON.stringify(v.thumb)+') center/cover no-repeat' : catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
+        <div class="card-thumb-bg" style="${v.thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(v.thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
         <span class="card-dur">${v.dur}</span>
       </div>
       <div class="card-corpo">
@@ -2120,7 +2300,7 @@ const AM = {
 
 /* Converte segundos → mm:ss */
 function amFmt(s) {
-  if (isNaN(s) || s < 0) return '0:00';
+  if (!isFinite(s) || isNaN(s) || s < 0) return '0:00';
   const m = Math.floor(s / 60), ss = Math.floor(s % 60);
   return m + ':' + String(ss).padStart(2,'0');
 }
