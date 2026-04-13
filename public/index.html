@@ -1460,6 +1460,17 @@ function notifLocal(titulo, corpo) {
 
   setTimeout(function() {
     try { destInitEvents(); } catch(e) {}
+    // Mostra episódios locais imediatamente enquanto API carrega
+    try {
+      const localVids = JSON.parse(localStorage.getItem('am_v') || '[]');
+      if (localVids.length > 0) {
+        S.vids = localVids.filter(v => v.status === 'pub' || !v.status);
+        if (S.vids.length > 0) { renderAudios(); renderDestaque(); atualizarContadoresFiltro(); }
+      } else {
+        S.vids = VIDS_LOCAL;
+        renderAudios(); renderDestaque(); atualizarContadoresFiltro();
+      }
+    } catch(e) { S.vids = VIDS_LOCAL; try { renderAudios(); renderDestaque(); } catch(_){} }
     try { carregarCotacoes(); } catch(e) { try { renderTicker(); renderTabCot(); } catch(_){} }
     try { carregarAudios(); }   catch(e) {}
     try { renderEspecialista(); } catch(e) {}
@@ -1482,22 +1493,24 @@ function renderData() {
 function toggleDrawer() {
   const d = document.getElementById('nav-drawer');
   const h = document.getElementById('nav-hamburger');
+  if (!d) return;
   const open = d.classList.toggle('aberto');
-  h.classList.toggle('aberto', open);
+  if (h) h.classList.toggle('aberto', open);
 }
 function fecharDrawer() {
-  document.getElementById('nav-drawer').classList.remove('aberto');
-  document.getElementById('nav-hamburger').classList.remove('aberto');
+  const d = document.getElementById('nav-drawer');
+  const h = document.getElementById('nav-hamburger');
+  if (d) d.classList.remove('aberto');
+  if (h) h.classList.remove('aberto');
 }
-// Fecha drawer ao navegar
-const _irOrig = ir;
+
+/* ═══ NAVEGAÇÃO ═══ */
 function ir(id, el) {
   fecharDrawer();
-  _irOrig(id, el);
-}
   document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
-  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('ativo'));
-  document.getElementById(id).classList.add('ativa');
+  document.querySelectorAll('.nav-links a, #nav-drawer a').forEach(a => a.classList.remove('ativo'));
+  const pg = document.getElementById(id);
+  if (pg) pg.classList.add('ativa');
   if (el) el.classList.add('ativo');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (id === 'precos' && !S.G.linha) initGraficos();
@@ -1755,44 +1768,36 @@ async function carregarAudios() {
   let localVids = [];
   try { localVids = JSON.parse(localStorage.getItem('am_v') || '[]'); } catch(e) {}
 
-  // 3. Merge vetorial: para cada vídeo da API, enriquece com dados locais
-  //    Para episódios só no local (novos ainda não na API), inclui também
   const thumbsMap = getThumbsPadraoPublico();
 
+  // Helper: aplica thumb padrão por categoria
+  function comThumb(v) {
+    const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
+    return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
+  }
+
   if (apiVids.length > 0) {
-    // Float32Array de ids para lookup O(n) vetorial
-    const apiIds = new Float32Array(apiVids.map(v => v.id));
+    // Mapa de ids locais para enriquecimento (url blob, thumb)
     const localMap = {};
     for (const lv of localVids) localMap[lv.id] = lv;
+    const apiIdSet = new Set(apiVids.map(v => v.id));
 
     S.vids = apiVids.map(v => {
-      const lv  = localMap[v.id] || {};
-      // Usa url local se a API não tem (blob gravado)
-      const url   = v.url || lv.url || '';
-      // Thumb: manual > padrão local > padrão por categoria
-      const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
-      const thumb = lv.thumb || v.thumb || thumbsMap[catKey] || '';
-      return { ...v, url, thumb };
+      const lv = localMap[v.id] || {};
+      return comThumb({ ...v, url: v.url || lv.url || '', thumb: lv.thumb || v.thumb || '' });
     });
 
-    // Episódios apenas no local (ainda não enviados para API)
+    // Episódios apenas no local (ainda não na API)
     for (const lv of localVids) {
-      const inApi = apiIds.some ? [...apiIds].includes(lv.id) : Array.from(apiIds).includes(lv.id);
-      if (!inApi && (lv.status === 'pub' || !lv.status)) {
-        const catKey = (lv.cat || 'Podcast Diário').replace(/\s+/g,'_');
-        S.vids.unshift({ ...lv, thumb: lv.thumb || thumbsMap[catKey] || '' });
+      if (!apiIdSet.has(lv.id) && (lv.status === 'pub' || !lv.status)) {
+        S.vids.unshift(comThumb(lv));
       }
     }
   } else if (localVids.length > 0) {
-    // Só local disponível
     S.vids = localVids
       .filter(v => v.status === 'pub' || !v.status)
-      .map(v => {
-        const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
-        return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
-      });
+      .map(comThumb);
   } else {
-    // Fallback hardcoded
     S.vids = VIDS_LOCAL;
   }
 

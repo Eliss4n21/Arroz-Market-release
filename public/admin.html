@@ -440,7 +440,9 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
                   Volume final: <input type="range" id="edit-vol" min="0" max="2" step="0.05" value="1" oninput="setEditVol(this.value)" style="accent-color:var(--gold);width:80px"> <span id="edit-vol-val">1.0×</span>
                 </label>
               </div>
-              <div style="font-size:.72rem;color:var(--muted)">Clique na linha do tempo para mover o cursor. Após cortar, o áudio de saída será atualizado acima.</div>
+              <div style="font-size:.72rem;color:var(--muted)">
+                💡 <strong style="color:var(--amber)">Arraste para selecionar o trecho a REMOVER</strong>, depois clique ✂️ Aplicar corte. O trecho selecionado (verde) será eliminado. Clique ↺ para restaurar.
+              </div>
             </div>
           </div>
         </div>
