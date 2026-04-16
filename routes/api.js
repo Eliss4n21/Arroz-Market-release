@@ -205,7 +205,7 @@ router.get('/audios/:fname', (req, res) => {
   const fpath = path.join(AUDIO_DIR, fname);
   if (!fs.existsSync(fpath)) return res.status(404).json({ erro: 'Áudio não encontrado.' });
   const ext  = path.extname(fname).toLowerCase();
-  const mime = { '.webm':'audio/webm', '.ogg':'audio/ogg', '.mp3':'audio/mpeg', '.wav':'audio/wav', '.m4a':'audio/mp4' };
+  const mime = { '.webm':'audio/webm', '.ogg':'audio/ogg', '.mp3':'audio/mpeg', '.wav':'audio/wav', '.m4a':'audio/mp4', '.aac':'audio/aac' };
   res.setHeader('Content-Type', mime[ext] || 'application/octet-stream');
   res.setHeader('Cache-Control', 'public, max-age=31536000');
   res.sendFile(fpath);

@@ -21,6 +21,7 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
+@media(max-width:900px){html,body{overflow:auto;height:auto}}
 body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;font-size:14px;display:flex;flex-direction:column}
 #login-screen{position:fixed;inset:0;z-index:9999;background:var(--dark);display:flex;align-items:center;justify-content:center}
 .login-box{width:380px;background:var(--dark2);border:1px solid var(--gold-b);border-radius:8px;padding:2.5rem 2rem;text-align:center}
@@ -162,6 +163,8 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
 #adm-menu-btn.aberto span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
 @media(max-width:900px) {
+  #app { overflow-y: auto; }
+  #conteudo { overflow-y: auto; }
   #sidebar { display: none; position: fixed; top: var(--topbar); left: 0; bottom: 0; z-index: 500; width: 260px; overflow-y: auto; transition: transform .28s cubic-bezier(.22,1,.36,1); transform: translateX(-100%); }
   #sidebar.aberto { display: flex; transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,.5); }
   #adm-menu-btn { display: flex; }
@@ -173,6 +176,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
   .form-row3 { grid-template-columns: 1fr; }
   .tabela-adm th:nth-child(5), .tabela-adm td:nth-child(5),
   .tabela-adm th:nth-child(6), .tabela-adm td:nth-child(6) { display: none; }
+  /* Estúdio mobile */
+  .adm-player-wrap { max-width: 100%; }
+  #rec-player-wrap { padding: .7rem .8rem; }
+  #rec-editor-wrap .card-corpo { padding: .9rem .8rem; }
 }
 @media(max-width:600px) {
   :root { --topbar: 52px; --sidebar: 240px; }
@@ -185,10 +192,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
   .top-right { gap: .5rem; }
   .grid3 { grid-template-columns: 1fr; }
   /* Estúdio */
-  #rec-canvas { height: 70px !important; }
-  .form-grupo input, .form-grupo select, .form-grupo textarea { font-size: .82rem; }
-  /* Editor de cortes */
-  #edit-timeline { height: 50px !important; }
+  #rec-canvas { height: 80px !important; }
+  .form-grupo input, .form-grupo select, .form-grupo textarea { font-size: .88rem; }
+  /* Editor de cortes — mais alto para toque */
+  #edit-timeline { height: 64px !important; touch-action: none; }
   /* Relógio */
   #relogio-svg { width: 110px !important; height: 110px !important; }
   /* Thumb grid */
@@ -197,6 +204,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
   .tl-item-form { grid-template-columns: 70px 1fr auto; }
   /* Tabelas — oculta mais colunas */
   .tabela-adm th:nth-child(4), .tabela-adm td:nth-child(4) { display: none; }
+  /* Controles do estúdio */
+  #btn-rec, #btn-rec-pause, #btn-rec-stop { padding: .6rem 1rem; font-size: .85rem; }
+  /* Editor inputs de tempo */
+  #edit-start, #edit-end { width: 78px; }
 }
 @media(max-width:480px) {
   .metricas-grid { grid-template-columns: 1fr; }
@@ -205,6 +216,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
   .tl-item-form { grid-template-columns: 1fr auto; }
   /* Cotações ao vivo */
   .cotacao-grid { grid-template-columns: 1fr 1fr; }
+  /* Busca de episódios */
+  #buscaV { width: 100% !important; }
+  /* Cabeçalho de gerenciar podcasts */
+  #p-videos > div:first-of-type { flex-direction: column; align-items: stretch; }
 }
 @media(max-width:700px){.tl-item-form{grid-template-columns:70px 1fr auto}}
 
@@ -417,12 +432,15 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             <div class="card-corpo">
               <!-- Timeline visual -->
               <!-- Timeline: arraste para selecionar intervalo de corte -->
-              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:60px;margin-bottom:.8rem;overflow:hidden;user-select:none"
+              <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.1);border-radius:4px;height:64px;margin-bottom:.8rem;overflow:hidden;user-select:none;touch-action:none"
                 id="edit-timeline"
                 onmousedown="editDragStart(event)"
                 onmousemove="editDragMove(event)"
                 onmouseup="editDragEnd(event)"
-                onmouseleave="editDragEnd(event)">
+                onmouseleave="editDragEnd(event)"
+                ontouchstart="editTouchStart(event)"
+                ontouchmove="editTouchMove(event)"
+                ontouchend="editTouchEnd(event)">
                 <canvas id="edit-canvas" style="width:100%;height:100%;display:block;cursor:crosshair"></canvas>
                 <div id="edit-sel-overlay" style="position:absolute;top:0;height:100%;background:rgba(74,180,100,.2);border-left:2px solid rgba(74,200,100,.85);border-right:2px solid rgba(74,200,100,.85);pointer-events:none;display:none"></div>
                 <div id="edit-sel" style="position:absolute;top:0;height:100%;background:rgba(200,168,75,.12);border-left:2px solid var(--gold);border-right:2px solid var(--gold);pointer-events:none;display:none"></div>
@@ -1565,49 +1583,86 @@ async function editRebuildAudio() {
   const totalDur = ativos.reduce((a,s) => a+(s.e-s.s), 0);
   if (totalDur <= 0) return;
 
-  const actx = new OfflineAudioContext(buf.numberOfChannels, Math.ceil(totalDur * buf.sampleRate), buf.sampleRate);
+  // ── Renderiza segmentos ativos num OfflineAudioContext ──
+  const sr  = buf.sampleRate;
+  const nCh = buf.numberOfChannels;
+  const totalSamples = Math.ceil(totalDur * sr);
+  const actx = new OfflineAudioContext(nCh, totalSamples, sr);
+
   let offset = 0;
   for (const seg of ativos) {
     const src = actx.createBufferSource();
     src.buffer = buf;
-    const gn = actx.createGain(); gn.gain.value = gain;
-    src.connect(gn); gn.connect(actx.destination);
+    const gn = actx.createGain();
+    gn.gain.value = gain;
+    src.connect(gn);
+    gn.connect(actx.destination);
     src.start(offset, seg.s, seg.e - seg.s);
     offset += seg.e - seg.s;
   }
+
   const rendered = await actx.startRendering();
   REC.editAudioBuffer = rendered;
 
-  // Converte para blob e atualiza player
-  const liveCtx = new AudioContext();
-  const bufSrc = liveCtx.createBufferSource(); bufSrc.buffer = rendered;
-  const dest = liveCtx.createMediaStreamDestination();
-  bufSrc.connect(dest); bufSrc.start();
-  const mr = new MediaRecorder(dest.stream); const cks = [];
-  mr.ondataavailable = ev => cks.push(ev.data);
-  mr.onstop = () => {
-    const b = new Blob(cks, { type: mr.mimeType });
-    REC.blob = b;
-    if (REC.editBlobUrl) URL.revokeObjectURL(REC.editBlobUrl);
-    REC.editBlobUrl = URL.createObjectURL(b);
-    REC.blobUrl = REC.editBlobUrl;
-    const audioEl = document.getElementById('rec-audio-el');
-    // Atualiza sem triggar barra cheia
-    RECP.playing = false;
-    cancelAnimationFrame(RECP.rafId);
-    audioEl.src = REC.editBlobUrl;
-    document.getElementById('rec-prog-fill').style.width = '0%';
-    document.getElementById('rec-ico-play').style.display  = '';
-    document.getElementById('rec-ico-pause').style.display = 'none';
-    document.getElementById('v-url').value = REC.editBlobUrl;
-    document.getElementById('v-dur').value = recFmt(rendered.duration);
-    document.getElementById('rec-time-disp').textContent = '0:00 / ' + recFmt(rendered.duration);
-    document.getElementById('rec-player-wrap').style.display = 'block';
-    document.getElementById('edit-end').value = recFmtD(EDIT_SEGS.origBuf.duration);
-  };
-  mr.start(); setTimeout(()=>mr.stop(), rendered.duration*1000+300);
-  await new Promise(r=>setTimeout(r,200));
-  liveCtx.close();
+  // ── Converte AudioBuffer → WAV Blob (sem MediaRecorder) ──
+  function audioBufferToWavBlob(buffer) {
+    const numCh   = buffer.numberOfChannels;
+    const length  = buffer.length;
+    const sRate   = buffer.sampleRate;
+    const bytesPerSample = 2; // PCM 16-bit
+    const blockAlign = numCh * bytesPerSample;
+    const byteRate   = sRate * blockAlign;
+    const dataSize   = length * blockAlign;
+    const ab = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(ab);
+
+    function writeStr(off, str) { for(let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
+    writeStr(0,  'RIFF');
+    view.setUint32(4,  36 + dataSize, true);
+    writeStr(8,  'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1,  true);   // PCM
+    view.setUint16(22, numCh, true);
+    view.setUint32(24, sRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Interleave channels
+    let offset2 = 44;
+    for (let i = 0; i < length; i++) {
+      for (let c = 0; c < numCh; c++) {
+        const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
+        view.setInt16(offset2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset2 += 2;
+      }
+    }
+    return new Blob([ab], { type: 'audio/wav' });
+  }
+
+  const wavBlob = audioBufferToWavBlob(rendered);
+  REC.blob = wavBlob;
+
+  if (REC.editBlobUrl) URL.revokeObjectURL(REC.editBlobUrl);
+  REC.editBlobUrl = URL.createObjectURL(wavBlob);
+  REC.blobUrl     = REC.editBlobUrl;
+
+  // Atualiza player sem triggar barra cheia
+  RECP.playing = false;
+  cancelAnimationFrame(RECP.rafId);
+  const audioEl = document.getElementById('rec-audio-el');
+  audioEl.src = REC.editBlobUrl;
+  document.getElementById('rec-prog-fill').style.width   = '0%';
+  document.getElementById('rec-ico-play').style.display  = '';
+  document.getElementById('rec-ico-pause').style.display = 'none';
+  document.getElementById('v-url').value  = REC.editBlobUrl;
+  document.getElementById('v-dur').value  = recFmt(rendered.duration);
+  document.getElementById('rec-time-disp').textContent = '0:00 / ' + recFmt(rendered.duration);
+  document.getElementById('rec-player-wrap').style.display = 'block';
+  document.getElementById('edit-end').value = recFmtD(EDIT_SEGS.origBuf.duration);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1690,6 +1745,20 @@ function editDragEnd(e) {
   document.getElementById('edit-start').value = recFmtD(s);
   document.getElementById('edit-end').value   = recFmtD(en);
   // Mantém overlay visível como indicação da seleção
+}
+
+/* ── Wrappers de touch para a timeline de cortes ── */
+function editTouchStart(e) {
+  e.preventDefault();
+  if (e.touches && e.touches[0]) editDragStart(e.touches[0]);
+}
+function editTouchMove(e) {
+  e.preventDefault();
+  if (e.touches && e.touches[0]) editDragMove(e.touches[0]);
+}
+function editTouchEnd(e) {
+  const touch = (e.changedTouches && e.changedTouches[0]) || {};
+  editDragEnd(touch);
 }
 
 function editUpdateSelOverlay(r0, r1) {
@@ -1970,13 +2039,13 @@ async function publicarVideo(){
     try {
       toast('📤 Enviando áudio...', '');
       const safeTitle = titulo.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 40);
-      const ext       = REC.blob.type.includes('ogg') ? '.ogg' : '.webm';
+      const ext       = REC.blob.type.includes('ogg') ? '.ogg' : REC.blob.type.includes('wav') ? '.wav' : '.webm';
       const fname     = `${safeTitle}_${Date.now()}${ext}`;
       const res = await fetch('/api/admin/audios/upload', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + S.token,
-          'Content-Type': REC.blob.type || 'audio/webm',
+          'Authorization': 'Bearer ' + adminToken,
+          'Content-Type': REC.blob.type || 'audio/wav',
           'X-Filename': fname,
         },
         body: REC.blob,

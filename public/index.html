@@ -549,7 +549,7 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 }
 #dest-player.vis { display: flex; }
 #dest-waveform-wrap {
-  position: relative; height: 52px; background: rgba(0,0,0,.3);
+  position: relative; height: 72px; background: rgba(0,0,0,.3);
   cursor: pointer; overflow: hidden;
 }
 #dest-waveform-canvas { width:100%; height:100%; display:block; }
@@ -559,24 +559,25 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 }
 #dest-controls {
   display:flex; align-items:center; gap:.7rem;
-  padding:.5rem 1.2rem; flex-wrap:wrap;
+  padding:.7rem 1.4rem; flex-wrap:wrap; min-height: 52px;
 }
 .dest-btn {
   background:none; border:none; cursor:pointer;
-  color:rgba(255,255,255,.85); width:30px; height:30px;
+  color:rgba(255,255,255,.85); width:36px; height:36px;
   display:flex; align-items:center; justify-content:center;
   border-radius:4px; transition:color .15s; padding:0; flex-shrink:0;
 }
 .dest-btn:hover { color:var(--gold); }
-.dest-btn svg { width:18px; height:18px; fill:currentColor; }
-#dest-time { font-size:.72rem; color:rgba(255,255,255,.7); white-space:nowrap; }
+.dest-btn svg { width:20px; height:20px; fill:currentColor; }
+#dest-time { font-size:.74rem; color:rgba(255,255,255,.7); white-space:nowrap; }
 #dest-spacer { flex:1; }
 #dest-vol-slider {
-  -webkit-appearance:none; width:70px; height:3px;
+  -webkit-appearance:none; width:80px; height:3px;
   border-radius:3px; background:rgba(255,255,255,.25); outline:none; cursor:pointer;
+  accent-color: var(--gold);
 }
 #dest-vol-slider::-webkit-slider-thumb {
-  -webkit-appearance:none; width:11px; height:11px;
+  -webkit-appearance:none; width:13px; height:13px;
   border-radius:50%; background:var(--gold); cursor:pointer;
 }
 /* Pulso de onda — barras animadas (fallback quando não toca) */
@@ -774,9 +775,10 @@ footer strong { color: var(--gold); }
   .estats { flex-wrap: wrap; gap: .8rem; }
   .estat-n { font-size: 1rem; }
 
-  /* Player embutido */
-  #dest-controls { padding: .4rem .8rem; gap: .5rem; flex-wrap: wrap; }
-  #dest-waveform-wrap { height: 40px; }
+  /* Player embutido destaque */
+  #dest-controls { padding: .5rem .9rem; gap: .45rem; flex-wrap: wrap; min-height: 48px; }
+  #dest-waveform-wrap { height: 52px; }
+  #dest-vol-slider { width: 60px; }
   #dest-vol-pct { display: none; }
   #dest-spacer { display: none; }
 
@@ -802,11 +804,20 @@ footer strong { color: var(--gold); }
   .bio-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .bio-card { position: static; }
 
-  /* Modal */
+  /* Modal áudio */
   .modal-inner { width: 96vw; }
   .modal-cab { padding: .8rem 1rem; }
-  #am-bottom { gap: .4rem; }
-  #am-vol-slider { width: 50px; }
+  #am-bottom { gap: .4rem; flex-wrap: wrap; }
+  #am-vol-slider { width: 55px; }
+  #am-cover-screen { padding: 1.4rem 1rem .8rem; gap: .7rem; }
+  #am-cover-art { width: 72px; height: 72px; }
+  #am-cover-art svg { width: 72px; height: 72px; }
+  #am-ep-titulo { font-size: .82rem; }
+  #am-progress-wrap { height: 5px; }
+  .am-btn { width: 30px; height: 30px; }
+  .am-btn svg { width: 17px; height: 17px; }
+  #am-time { font-size: .68rem; }
+  #am-speed { font-size: .65rem; }
 
   /* Menu perfil */
   #menuPerfil { right: 1rem; min-width: 200px; }
@@ -851,6 +862,19 @@ footer strong { color: var(--gold); }
 
   /* Paginação */
   #ep-paginacao button { font-size: .68rem; padding: .3rem .65rem; }
+
+  /* Modal — ocupa tela toda no celular pequeno */
+  .modal-inner { width: 100vw; border-radius: 0; }
+  #modal { align-items: flex-end; }
+  #modal.aberto .modal-inner { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-top-left-radius: 12px; border-top-right-radius: 12px; max-height: 92vh; overflow-y: auto; }
+  #am-cover-screen { padding: 1rem .8rem .6rem; }
+  #am-cover-art { width: 60px; height: 60px; }
+  #am-cover-art svg { width: 60px; height: 60px; }
+
+  /* Player destaque — waveform maior para toque fácil */
+  #dest-waveform-wrap { height: 60px; }
+  #dest-controls { padding: .45rem .7rem; gap: .35rem; }
+  .dest-btn { width: 34px; height: 34px; }
 }
 </style>
 </head>
@@ -931,7 +955,7 @@ footer strong { color: var(--gold); }
         <audio id="am-audio-el" preload="none" style="display:none"></audio>
         <!-- Controles -->
         <div id="am-controls">
-          <div id="am-progress-wrap" onmousedown="amSeek(event)">
+          <div id="am-progress-wrap" onmousedown="amSeek(event)" ontouchstart="amSeekTouch(event)">
             <div id="am-buf"></div>
             <div id="am-prog"></div>
           </div>
@@ -1083,7 +1107,7 @@ footer strong { color: var(--gold); }
       <!-- Player embutido — aparece ao clicar play -->
       <div id="dest-player">
         <audio id="dest-audio-el" preload="none" style="display:none"></audio>
-        <div id="dest-waveform-wrap" onmousedown="destSeek(event)">
+        <div id="dest-waveform-wrap" onmousedown="destSeek(event)" ontouchstart="destSeek(event)">
           <canvas id="dest-waveform-canvas"></canvas>
           <div id="dest-prog-line"></div>
         </div>
@@ -1760,11 +1784,11 @@ function getThumbPadraoPublico(cat) {
 }
 
 async function carregarAudios() {
-  // 1. Busca da API
+  // 1. Busca da API (fonte de verdade — contém urls /audios/... do servidor)
   let apiVids = [];
   try { apiVids = await apiFetch('GET', '/audios'); } catch(e) {}
 
-  // 2. Lê do localStorage (salvo pelo admin) — contém url blob e thumb
+  // 2. Lê do localStorage (salvo pelo admin) — pode conter url real do servidor
   let localVids = [];
   try { localVids = JSON.parse(localStorage.getItem('am_v') || '[]'); } catch(e) {}
 
@@ -1776,27 +1800,37 @@ async function carregarAudios() {
     return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
   }
 
+  // Helper: verifica se URL é válida para o site público (não blob:)
+  function urlValida(url) {
+    if (!url || typeof url !== 'string') return false;
+    if (url.startsWith('blob:')) return false; // blob URLs do admin não funcionam no site
+    return url.length > 4;
+  }
+
   if (apiVids.length > 0) {
-    // Mapa de ids locais para enriquecimento (url blob, thumb)
+    // Mapa de ids locais para enriquecimento (thumb, url blob como fallback)
     const localMap = {};
     for (const lv of localVids) localMap[lv.id] = lv;
     const apiIdSet = new Set(apiVids.map(v => v.id));
 
     S.vids = apiVids.map(v => {
       const lv = localMap[v.id] || {};
-      return comThumb({ ...v, url: v.url || lv.url || '', thumb: lv.thumb || v.thumb || '' });
+      // Prioridade: url do servidor (API) > url local válida
+      const url = urlValida(v.url) ? v.url : (urlValida(lv.url) ? lv.url : '');
+      return comThumb({ ...v, url, thumb: lv.thumb || v.thumb || '' });
     });
 
     // Episódios apenas no local (ainda não na API)
     for (const lv of localVids) {
       if (!apiIdSet.has(lv.id) && (lv.status === 'pub' || !lv.status)) {
-        S.vids.unshift(comThumb(lv));
+        const url = urlValida(lv.url) ? lv.url : '';
+        S.vids.unshift(comThumb({ ...lv, url }));
       }
     }
   } else if (localVids.length > 0) {
     S.vids = localVids
       .filter(v => v.status === 'pub' || !v.status)
-      .map(comThumb);
+      .map(v => comThumb({ ...v, url: urlValida(v.url) ? v.url : '' }));
   } else {
     S.vids = VIDS_LOCAL;
   }
@@ -2056,7 +2090,8 @@ function destSeek(e) {
   const a = document.getElementById('dest-audio-el');
   if (!a || !a.duration) return;
   const rect = document.getElementById('dest-waveform-wrap').getBoundingClientRect();
-  a.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * a.duration;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  a.currentTime = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * a.duration;
 }
 
 /* Inicializa eventos do player embutido */
@@ -2347,6 +2382,12 @@ function amSeek(e) {
   const rect = document.getElementById('am-progress-wrap').getBoundingClientRect();
   const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
   a.currentTime = ratio * a.duration;
+}
+
+/* Seek via touch no mobile */
+function amSeekTouch(e) {
+  e.preventDefault();
+  if (e.touches && e.touches[0]) amSeek(e.touches[0]);
 }
 
 /* Skip ±segundos */
