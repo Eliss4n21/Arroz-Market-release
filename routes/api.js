@@ -190,7 +190,8 @@ router.post('/admin/audios/upload', autenticar, soAdmin, (req, res) => {
       if (buf.length === 0) return res.status(400).json({ erro: 'Arquivo vazio.' });
       if (buf.length > 200 * 1024 * 1024) return res.status(413).json({ erro: 'Arquivo maior que 200 MB.' });
       fs.writeFileSync(fpath, buf);
-      const url = `/audios/${fname}`;
+      // URL pública — acessível via /api/audios/:fname
+      const url = `/api/audios/${fname}`;
       res.json({ ok: true, url, size: buf.length, fname });
     } catch (e) {
       res.status(500).json({ erro: e.message });
@@ -206,9 +207,34 @@ router.get('/audios/:fname', (req, res) => {
   if (!fs.existsSync(fpath)) return res.status(404).json({ erro: 'Áudio não encontrado.' });
   const ext  = path.extname(fname).toLowerCase();
   const mime = { '.webm':'audio/webm', '.ogg':'audio/ogg', '.mp3':'audio/mpeg', '.wav':'audio/wav', '.m4a':'audio/mp4', '.aac':'audio/aac' };
-  res.setHeader('Content-Type', mime[ext] || 'application/octet-stream');
-  res.setHeader('Cache-Control', 'public, max-age=31536000');
-  res.sendFile(fpath);
+  const contentType = mime[ext] || 'application/octet-stream';
+  const stat = fs.statSync(fpath);
+  const total = stat.size;
+
+  // Suporte a Range requests — essencial para iOS/Safari e seek em áudio
+  const range = req.headers.range;
+  if (range) {
+    const parts = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(parts[0], 10);
+    const end   = parts[1] ? parseInt(parts[1], 10) : total - 1;
+    const chunkSize = end - start + 1;
+    res.writeHead(206, {
+      'Content-Range':  `bytes ${start}-${end}/${total}`,
+      'Accept-Ranges':  'bytes',
+      'Content-Length': chunkSize,
+      'Content-Type':   contentType,
+      'Cache-Control':  'public, max-age=31536000',
+    });
+    fs.createReadStream(fpath, { start, end }).pipe(res);
+  } else {
+    res.writeHead(200, {
+      'Content-Length': total,
+      'Content-Type':   contentType,
+      'Accept-Ranges':  'bytes',
+      'Cache-Control':  'public, max-age=31536000',
+    });
+    fs.createReadStream(fpath).pipe(res);
+  }
 });
 
 module.exports = router;

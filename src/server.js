@@ -63,6 +63,23 @@ cron.schedule(`*/${minutos} * * * *`, () => {
   scrapeCEPEA().catch(() => {});
 });
 
+/* ─── Migração: corrige URLs de áudio legadas /audios/ → /api/audios/ ─── */
+(function migrateAudioUrls() {
+  try {
+    const db = require('../src/db');
+    const vids = db.getAllVideos();
+    let changed = false;
+    for (const v of vids) {
+      if (v.url && v.url.startsWith('/audios/') && !v.url.startsWith('/api/')) {
+        db.updateVideo(v.id, { url: '/api' + v.url });
+        changed = true;
+        console.log(`[Migração] URL corrigida: ${v.id} → /api${v.url}`);
+      }
+    }
+    if (changed) console.log('[Migração] URLs de áudio atualizadas.');
+  } catch(e) { console.warn('[Migração]', e.message); }
+})();
+
 /* ─── Inicia o servidor ──────────────────────────────────────────────── */
 app.listen(PORT, () => {
   console.log(`\n🌾  ArrozMarket — http://localhost:${PORT}`);
