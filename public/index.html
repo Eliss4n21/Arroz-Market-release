@@ -363,22 +363,38 @@ body {
   display: flex; align-items: center; justify-content: center;
   transition: all .3s; flex-shrink: 0;
   box-shadow: 0 0 24px rgba(200,168,75,.18);
+  overflow: hidden; /* impede que ícone pause vaze */
+  position: relative;
 }
 .v-area:hover .btn-play {
   transform: scale(1.1);
   background: rgba(200,168,75,.28);
   box-shadow: 0 0 32px rgba(200,168,75,.35);
 }
+/* Ícone play — triângulo */
 .tri {
   width: 0; height: 0;
   border-top: 16px solid transparent;
   border-bottom: 16px solid transparent;
   border-left: 28px solid var(--gold);
-  margin-left: 6px;
+  margin-left: 6px; flex-shrink: 0;
   filter: drop-shadow(0 0 6px rgba(200,168,75,.5));
   transition: filter .3s;
 }
 .v-area:hover .tri { filter: drop-shadow(0 0 12px rgba(200,168,75,.85)); }
+/* Ícone pause — duas barras via pseudo-elementos no #destPlayBtn */
+#destPlayBtn.pausado .tri { display: none; }
+#destPlayBtn.pausado::before,
+#destPlayBtn.pausado::after {
+  content: '';
+  display: block; width: 5px; height: 26px;
+  background: var(--gold); border-radius: 2px;
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  box-shadow: 0 0 6px rgba(200,168,75,.5);
+}
+#destPlayBtn.pausado::before { left: 22px; }
+#destPlayBtn.pausado::after  { left: 33px; }
 
 /* Pulso de onda — fica ABAIXO do ícone de play */
 .v-fundo-wave {
@@ -944,6 +960,9 @@ footer strong { color: var(--gold); }
   .btn-play { width: 44px; height: 44px; }
   .tri { border-top-width: 13px; border-bottom-width: 13px; border-left-width: 22px; }
   .v-titulo-t { font-size: 1rem; padding: 0 1rem; }
+  /* Pause inline — ajuste para btn menor */
+  #destPlayBtn.pausado::before { width: 4px; height: 18px; left: 14px; }
+  #destPlayBtn.pausado::after  { width: 4px; height: 18px; left: 22px; }
 
   /* Grade — coluna única */
   .grade-v { grid-template-columns: 1fr; }
@@ -1203,7 +1222,7 @@ footer strong { color: var(--gold); }
       <div class="v-fundo" id="vFundoDest">
         <!-- Play centralizado -->
         <div class="btn-play" id="destPlayBtn" onclick="destToggle()" style="cursor:pointer">
-          <div class="tri" id="destTriIcon"></div>
+          <div class="tri"></div>
         </div>
         <!-- Pulso sonoro — direto abaixo do botão play -->
         <div class="v-fundo-wave" id="destWave">
@@ -1910,7 +1929,9 @@ async function carregarAudios() {
   // Helper: aplica thumb padrão por categoria
   function comThumb(v) {
     const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
-    return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
+    // Prioridade: thumb individual > thumb de categoria do admin > vazio (usa gradiente CSS)
+    const thumb = v.thumb || thumbsMap[catKey] || '';
+    return { ...v, thumb };
   }
 
   // Helper: verifica se URL é válida para o site público (não blob:)
@@ -2211,14 +2232,15 @@ function destSeek(e) {
 /* Inicializa eventos do player embutido */
 function destInitEvents() {
   const audio = document.getElementById('dest-audio-el');
+  const playBtn = document.getElementById('destPlayBtn');
+
   audio.onplay = () => {
     DEST.playing = true;
     document.getElementById('dest-ico-play').style.display  = 'none';
     document.getElementById('dest-ico-pause').style.display = '';
     document.getElementById('dest-player').classList.add('vis');
     document.getElementById('destWave').classList.add('tocando');
-    // Troca ícone no botão grande para pause
-    document.getElementById('destTriIcon').style.cssText = 'width:4px;height:36px;background:var(--gold);border-radius:2px;box-shadow:10px 0 0 var(--gold);margin-left:4px';
+    if (playBtn) playBtn.classList.add('pausado');
     cancelAnimationFrame(DEST.rafId); destRaf();
   };
   audio.onpause = () => {
@@ -2226,17 +2248,16 @@ function destInitEvents() {
     document.getElementById('dest-ico-play').style.display  = '';
     document.getElementById('dest-ico-pause').style.display = 'none';
     document.getElementById('destWave').classList.remove('tocando');
-    // Restaura triângulo
-    document.getElementById('destTriIcon').style.cssText = '';
+    if (playBtn) playBtn.classList.remove('pausado');
     cancelAnimationFrame(DEST.rafId);
-    if (DEST.waveData) destDrawStaticWave();
+    destDrawStaticWave();
   };
   audio.onended = () => {
     DEST.playing = false;
     document.getElementById('dest-ico-play').style.display  = '';
     document.getElementById('dest-ico-pause').style.display = 'none';
     document.getElementById('destWave').classList.remove('tocando');
-    document.getElementById('destTriIcon').style.cssText = '';
+    if (playBtn) playBtn.classList.remove('pausado');
     cancelAnimationFrame(DEST.rafId);
   };
   audio.onloadedmetadata = () => {
@@ -2347,6 +2368,9 @@ function renderAudios() {
   const empty = document.getElementById('ep-empty');
   if (empty) empty.style.display = lista.length === 0 ? 'block' : 'none';
 
+  // Relê mapa de thumbs de categoria em tempo de renderização
+  const thumbsMap = getThumbsPadraoPublico();
+
   // ── Paginação ──
   const totalPags = Math.ceil(lista.length / EP_POR_PAG) || 1;
   EP_PAG = Math.max(1, Math.min(EP_PAG, totalPags));
@@ -2357,21 +2381,22 @@ function renderAudios() {
   const infoEl = document.getElementById('ep-pag-info');
   const prevEl = document.getElementById('ep-prev');
   const nextEl = document.getElementById('ep-next');
-  if (pagEl) {
-    pagEl.style.display = lista.length > EP_POR_PAG ? 'flex' : 'none';
-  }
+  if (pagEl) pagEl.style.display = lista.length > EP_POR_PAG ? 'flex' : 'none';
   if (infoEl) infoEl.textContent = `Pág. ${EP_PAG} / ${totalPags}`;
   if (prevEl) prevEl.disabled = EP_PAG <= 1;
   if (nextEl) nextEl.disabled = EP_PAG >= totalPags;
+
   g.innerHTML = pagLista.map(v => {
     const curtido = S.curtidos[v.id] || false;
     const cat = v.cat || 'Podcast Diário';
     const cfg = CAT_CFG[cat] || { cls:'cat-podcast', emoji:'🎙️' };
-    /* escape seguro para uso no atributo onclick */
-    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat}));
+    // Thumb: individual > categoria > gradiente CSS
+    const catKey = cat.replace(/\s+/g,'_');
+    const thumb = v.thumb || thumbsMap[catKey] || '';
+    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
-        <div class="card-thumb-bg" style="${v.thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(v.thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
+        <div class="card-thumb-bg" style="${thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
         <span class="card-dur">${v.dur}</span>
       </div>
       <div class="card-corpo">

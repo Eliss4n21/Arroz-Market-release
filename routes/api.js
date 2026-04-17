@@ -109,13 +109,23 @@ router.get('/audios/:id/curtida', autenticar, (req, res) => {
 router.get('/admin/audios',    autenticar, soAdmin, (_, res) => res.json(db.getAllVideos()));
 
 router.post('/admin/audios',   autenticar, soAdmin, (req, res) => {
-  const { titulo, data, dur, url, cat, status, desc } = req.body;
+  const { titulo, data, dur, url, cat, status, desc, views, likes } = req.body;
   if (!titulo || !data) return res.status(400).json({ erro:'Título e data obrigatórios.' });
-  res.status(201).json(db.addVideo({ id:db.nextId(), titulo, data, dur:dur||'00:00', url:url||'', cat:cat||'Podcast Diário', status:status||'pub', desc:desc||'', views:0, likes:0 }));
+  // views e likes base vêm do admin (já calculados vetorialmente); fallback 0 se ausentes
+  const baseViews = Number.isFinite(+views) && +views >= 0 ? Math.round(+views) : 0;
+  const baseLikes = Number.isFinite(+likes) && +likes >= 0 ? Math.round(+likes) : 0;
+  res.status(201).json(db.addVideo({
+    id: db.nextId(), titulo, data,
+    dur: dur||'00:00', url: url||'', cat: cat||'Podcast Diário',
+    status: status||'pub', desc: desc||'',
+    views: baseViews, likes: baseLikes,
+  }));
 });
 
 router.put('/admin/audios/:id', autenticar, soAdmin, (req, res) => {
-  const v = db.updateVideo(parseInt(req.params.id), req.body);
+  // Remove views e likes do body para que edições de metadados não resetem contadores
+  const { views: _v, likes: _l, ...safeBody } = req.body;
+  const v = db.updateVideo(parseInt(req.params.id), safeBody);
   if (!v) return res.status(404).json({ erro:'Áudio não encontrado.' });
   res.json(v);
 });

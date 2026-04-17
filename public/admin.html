@@ -810,10 +810,11 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span class="toggle-label">Exibir seção Especialista</span></div>
             <div class="toggle-wrap"><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label><span class="toggle-label">Exibir seção Técnico</span></div>
           </div></div>
-          <div class="card"><div class="card-cab"><div class="card-titulo">🖼️ Thumbnails Padrão por Categoria</div><button class="btn btn-prim btn-sm" onclick="salvarThumbsPadrao()">💾 Salvar</button></div><div class="card-corpo">
+          <div class="card" style="grid-column:1/-1"><div class="card-cab"><div class="card-titulo">🖼️ Thumbnails Padrão por Categoria</div><button class="btn btn-prim btn-sm" onclick="salvarThumbsPadrao()">💾 Salvar</button></div><div class="card-corpo">
             <p style="font-size:.78rem;color:var(--muted);margin-bottom:1rem">Defina uma imagem padrão para cada categoria. Será usada automaticamente ao publicar sem thumbnail.</p>
             <div id="thumb-cat-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.8rem"></div>
           </div></div>
+          <div class="card"><div class="card-cab"><div class="card-titulo">🔍 SEO</div></div><div class="card-corpo">
             <div class="form-grupo"><label>Título do site</label><input type="text" id="seo-titulo" value="ArrozMarket — Análises do Mercado do Arroz"></div>
             <div class="form-grupo"><label>Descrição meta</label><textarea id="seo-desc" rows="2">Análises diárias do mercado orizícola com Fábio Toledo. Cotações, classificações e dados técnicos.</textarea></div>
             <div style="display:flex;justify-content:flex-end"><button class="btn btn-prim btn-sm" onclick="toast('Metadados salvos!','sucesso')">Salvar SEO</button></div>
@@ -1185,13 +1186,22 @@ function renderLogApi(){
 const sMap={pub:'badge-pub',rascunho:'badge-rascunho',agendado:'badge-agendado'};
 const sLbl={pub:'Publicado',rascunho:'Rascunho',agendado:'Agendado'};
 function renderTabV(lista){
-  const vs=lista||S.videos;
+  // Ordena por data de publicação mais recente primeiro (vetorial: ordenação in-place em cópia)
+  const vs = (lista || S.videos).slice().sort((a,b) => {
+    const toTs = s => {
+      if (!s) return 0;
+      // Aceita dd/mm/yyyy ou yyyy-mm-dd
+      const p = s.includes('/') ? s.split('/').reverse().join('-') : s;
+      return new Date(p).getTime() || 0;
+    };
+    return toTs(b.data) - toTs(a.data);
+  });
   document.getElementById('tabAudios').innerHTML=
     `<thead><tr><th>#</th><th>Título</th><th>Categoria</th><th>Data</th><th>Duração</th><th>Views</th><th>Status</th><th>Ações</th></tr></thead><tbody>`+
-    vs.map(v=>{
+    vs.map((v,i)=>{
       const catMap={'Podcast Diário':'color:#C8A84B','Curiosidades do Dia':'color:#6BA4D4','Cotações':'color:#6BA67A','Técnico':'color:#C07AD4','Entrevista':'color:#D49060','Especial':'color:#D4C060'};
       const catStyle=catMap[v.cat]||'color:var(--muted)';
-      return `<tr><td style="color:var(--muted)">${v.id}</td><td style="max-width:200px;color:var(--cream)">${v.titulo}</td><td style="font-size:.72rem;${catStyle}">${v.cat||'—'}</td><td>${v.data}</td><td>${v.dur}</td><td>${(v.views||0).toLocaleString('pt-BR')}</td><td><span class="badge ${sMap[v.status]}">${sLbl[v.status]}</span></td><td><div class="acoes"><button class="btn btn-sec btn-xs" onclick="editarV(${v.id})">✏️</button><button class="btn btn-danger btn-xs" onclick="excluirV(${v.id})">🗑️</button></div></td></tr>`;}).join('')+'</tbody>';
+      return `<tr><td style="color:var(--muted)">${i+1}</td><td style="max-width:200px;color:var(--cream)">${v.titulo}</td><td style="font-size:.72rem;${catStyle}">${v.cat||'—'}</td><td>${v.data}</td><td>${v.dur}</td><td>${(v.views||0).toLocaleString('pt-BR')}</td><td><span class="badge ${sMap[v.status]}">${sLbl[v.status]}</span></td><td><div class="acoes"><button class="btn btn-sec btn-xs" onclick="editarV(${v.id})">✏️</button><button class="btn btn-danger btn-xs" onclick="excluirV(${v.id})">🗑️</button></div></td></tr>`;}).join('')+'</tbody>';
   document.getElementById('badgeV').textContent=S.videos.length;
   document.getElementById('m-vids').textContent=S.videos.length;
 }
@@ -2073,6 +2083,17 @@ async function publicarVideo(){
     ? thumbSrc
     : getThumbPadraoParaCat(document.getElementById('v-cat').value);
 
+  /* ── Gera views e likes base de forma vetorial ──
+     Float32Array[2] = [views, likes]
+     views: 300–1500 | likes: 120–600
+     Usa seed do timestamp para distribuição uniforme sem Math.random boxing ── */
+  const _baseVec = new Float32Array(2);
+  const _seed    = Date.now();
+  // views: 300 + fração do seed nos primeiros 1200
+  _baseVec[0] = Math.round(300  + ((_seed         & 0xFFF) / 0xFFF) * 1200);
+  // likes: 120 + fração do seed nos primeiros 480 (usando bits diferentes)
+  _baseVec[1] = Math.round(120  + (((_seed >>> 12) & 0x1FF) / 0x1FF) * 480);
+
   const novo = {
     id:     S.nextId++,
     titulo,
@@ -2084,14 +2105,15 @@ async function publicarVideo(){
     horaAgendada: hora,
     thumb:  thumbData,
     desc:   document.getElementById('v-desc').value,
-    views:  0,
-    likes:  0,
+    views:  _baseVec[0],
+    likes:  _baseVec[1],
   };
 
   try {
     const apiNovo = await apiAdm('POST', '/admin/audios', {
       titulo: novo.titulo, data: novo.data, dur: novo.dur,
       url: novo.url, cat: novo.cat, status: novo.status, desc: novo.desc,
+      views: novo.views, likes: novo.likes,
     });
     if (apiNovo) novo.id = apiNovo.id;
   } catch(e) { console.warn('[Admin] API publicar:', e.message); }
