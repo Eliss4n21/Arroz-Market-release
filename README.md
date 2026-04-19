@@ -1,213 +1,137 @@
-# 🌾 ArrozMarket
+# 🌾 ArrozMarket v1.1
 
-Plataforma de análises diárias do mercado orizícola brasileiro.  
-Stack: **Node.js + Express + Puppeteer** (backend) · **HTML/CSS/JS puro** (frontend)
-
----
-
-## 📁 Estrutura de Pastas
-
-```
-arrozmarket/
-├── src/
-│   ├── server.js      ← Servidor Express (ponto de entrada)
-│   ├── db.js          ← Banco de dados em arquivo JSON
-│   └── scraper.js     ← Puppeteer: coleta cotações do CEPEA
-├── routes/
-│   └── api.js         ← Todas as rotas REST (/api/...)
-├── middleware/
-│   └── auth.js        ← Verificação de token JWT
-├── public/
-│   ├── index.html     ← Site principal (frontend)
-│   └── admin.html     ← Painel administrativo
-├── data/              ← Criado automaticamente (banco local)
-│   └── db.json        ← Dados persistidos (não sobe no Git)
-├── .env.example       ← Modelo de variáveis de ambiente
-├── .gitignore
-├── package.json
-└── README.md
-```
+Plataforma de podcasts e cotações do mercado orizícola brasileiro.  
+**Autor:** Fábio Toledo — São Gabriel, RS
 
 ---
 
-## 🚀 Rodar Localmente (primeira vez)
+## 🚀 Deploy no Hostgator VPS
 
-### 1. Pré-requisitos
-- [Node.js 18+](https://nodejs.org) instalado
-- [Git](https://git-scm.com) instalado
+### Pré-requisitos no servidor
+- Plano **VPS ou Cloud Hosting** (não funciona no compartilhado)
+- Acesso SSH
+- Node.js ≥ 18 instalado
+- PM2 para manter o processo ativo
 
-### 2. Clonar e instalar
+### Passo a passo
+
+**1. Instalar Node.js e PM2 (primeira vez)**
 ```bash
-git clone https://github.com/SEU_USUARIO/arrozmarket.git
-cd arrozmarket
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm install -g pm2
+```
+
+**2. Fazer upload dos arquivos**
+- Via FTP/SFTP: envie a pasta do projeto para `/home/SEU_USUARIO/arrozmarket`
+- Ou via Git: `git clone SEU_REPO /home/SEU_USUARIO/arrozmarket`
+
+**3. Instalar dependências**
+```bash
+cd /home/SEU_USUARIO/arrozmarket
 npm install
 ```
 
-### 3. Configurar variáveis de ambiente
+**4. Configurar variáveis de ambiente**
 ```bash
-# Copia o modelo
 cp .env.example .env
-
-# Abre o .env e edita:
-# JWT_SECRET → gere uma string aleatória com:
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+nano .env
+# Edite JWT_SECRET, PORT, DATA_DIR e CORS_ORIGIN
 ```
 
-Seu `.env` ficará assim:
-```env
-PORT=3000
-JWT_SECRET=cole_aqui_a_string_gerada_acima
-JWT_EXPIRES=7d
-CEPEA_URL=https://www.cepea.esalq.usp.br/br/indicador/arroz.aspx
-SCRAPE_INTERVAL_MIN=30
-NODE_ENV=development
-```
-
-### 4. Iniciar
+**5. Criar pasta de dados persistente**
 ```bash
-npm run dev       # desenvolvimento (reinicia ao salvar)
-# ou
-npm start         # produção
+mkdir -p /home/SEU_USUARIO/arrozmarket_data/audios
 ```
 
-Acesse: **http://localhost:3000**  
-Admin:  **http://localhost:3000/admin.html**  
-Login admin: `fabio@arrozmarket.com.br` / `admin123`
-
----
-
-## ☁️ Deploy no Railway (GitHub)
-
-### Passo 1 — Subir no GitHub
+**6. Iniciar com PM2**
 ```bash
-git init
-git add .
-git commit -m "primeiro commit"
-git branch -M main
-git remote add origin https://github.com/SEU_USUARIO/arrozmarket.git
-git push -u origin main
+pm2 start src/server.js --name arrozmarket
+pm2 save          # persiste entre reinicializações
+pm2 startup       # configura autostart no boot
 ```
 
-### Passo 2 — Criar projeto no Railway
-1. Acesse [railway.app](https://railway.app) e faça login com GitHub
-2. Clique em **"New Project"**
-3. Selecione **"Deploy from GitHub repo"**
-4. Escolha o repositório `arrozmarket`
-5. Railway detecta Node.js automaticamente e inicia o build
+**7. Configurar Nginx como proxy reverso** (Hostgator VPS usa cPanel/WHM com Nginx)
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+}
+```
 
-### Passo 3 — Configurar variáveis de ambiente no Railway
-No painel do Railway, clique no serviço → **Variables** → adicione:
+**8. SSL (HTTPS)**
+No cPanel do Hostgator: **SSL/TLS → AutoSSL** ou use Let's Encrypt gratuito.
 
-| Variável               | Valor                                |
-|------------------------|--------------------------------------|
-| `JWT_SECRET`           | (string gerada com crypto acima)     |
-| `JWT_EXPIRES`          | `7d`                                 |
-| `CEPEA_URL`            | `https://www.cepea.esalq.usp.br/br/indicador/arroz.aspx` |
-| `SCRAPE_INTERVAL_MIN`  | `30`                                 |
-| `NODE_ENV`             | `production`                         |
+---
 
-> ⚠️ O Railway define `PORT` automaticamente. Não adicione PORT manualmente.
+## 📁 Estrutura de pastas
 
-### Passo 4 — Domínio público
-1. No Railway: **Settings → Networking → Generate Domain**
-2. Seu site estará em: `https://arrozmarket-xxxx.up.railway.app`
+```
+arrozmarket/
+├── public/          ← arquivos servidos ao browser
+│   ├── index.html
+│   ├── admin.html
+│   ├── robots.txt
+│   └── sitemap.xml
+├── routes/
+│   └── api.js       ← todas as rotas REST
+├── src/
+│   ├── server.js    ← entrada principal
+│   ├── db.js        ← banco JSON
+│   └── scraper.js   ← cotações reais (cheerio + fetch)
+├── data/            ← criada automaticamente
+│   ├── db.json      ← banco de dados
+│   └── audios/      ← arquivos de áudio enviados
+├── .env             ← variáveis de ambiente (NÃO versionar)
+└── package.json
+```
 
-### Passo 5 — Atualizar o site
+---
+
+## ⚙️ Variáveis de ambiente
+
+| Variável | Descrição | Exemplo |
+|----------|-----------|---------|
+| `PORT` | Porta do servidor | `3000` |
+| `JWT_SECRET` | Chave secreta JWT (64+ chars) | `abc123...` |
+| `JWT_EXPIRES` | Expiração do token | `7d` |
+| `NODE_ENV` | Ambiente | `production` |
+| `DATA_DIR` | Pasta persistente de dados | `/home/user/arrozmarket_data` |
+| `CORS_ORIGIN` | Domínio autorizado | `https://www.arrozmarket.com.br` |
+| `SCRAPE_INTERVAL_MIN` | Intervalo de scraping (min) | `60` |
+
+---
+
+## 📈 Cotações reais
+
+O scraper usa **fetch + cheerio** para raspar o site Notícias Agrícolas.  
+Funciona em qualquer VPS sem Chrome headless.  
+Se o scraping falhar, usa simulação vetorial como fallback automático.
+
+Para alterar o intervalo: edite `SCRAPE_INTERVAL_MIN` no `.env` e reinicie:
 ```bash
-git add .
-git commit -m "atualização"
-git push
-```
-O Railway faz deploy automático a cada push! 🎉
-
----
-
-## 🔌 API REST — Referência
-
-### Públicas (sem login)
-```
-GET  /api/cotacoes          → cotações atuais
-GET  /api/videos            → vídeos publicados
-POST /api/auth/login        → { email, senha } → { usuario, token }
-POST /api/auth/registro     → { nome, email, senha } → { usuario, token }
-```
-
-### Autenticadas (header: `Authorization: Bearer TOKEN`)
-```
-GET  /api/me                → dados do usuário logado
-PUT  /api/me                → { nome?, senhaAtual?, senhaNova? }
-POST /api/videos/:id/curtir → dar/tirar curtida
-GET  /api/videos/:id/curtida→ { curtido: true/false }
-```
-
-### Admin only
-```
-GET    /api/admin/videos          → todos os vídeos
-POST   /api/admin/videos          → criar vídeo
-PUT    /api/admin/videos/:id      → editar vídeo
-DELETE /api/admin/videos/:id      → apagar vídeo
-PUT    /api/admin/cotacoes        → { cotacoes: [...] }
-GET    /api/admin/usuarios        → lista de usuários
-PUT    /api/admin/usuarios/:id/role → { role: "admin"|"user" }
-GET    /api/admin/config          → configurações do site
-PUT    /api/admin/config          → salvar configurações
-POST   /api/admin/scrape          → força coleta CEPEA agora
+pm2 restart arrozmarket
 ```
 
 ---
 
-## 🔧 Sobre o Scraping CEPEA
+## 🔐 Segurança
 
-O `scraper.js` funciona assim:
+- Troque a senha do admin em: **Admin → Configurações → Alterar Senha**
+- O login padrão é: `admin@arrozmarket.com.br` / `admin123`
+- **OBRIGATÓRIO:** troque a senha antes de colocar no ar
 
+---
+
+## 🔄 Atualizações
+
+```bash
+cd /home/SEU_USUARIO/arrozmarket
+git pull              # ou re-envie os arquivos via FTP
+npm install           # se package.json mudou
+pm2 restart arrozmarket
 ```
-[Cron: a cada 30min]
-      ↓
-Puppeteer abre Chrome invisível
-      ↓
-Acessa site do CEPEA
-      ↓
-Lê tabela de preços
-      ↓
-Salva em db.json
-      ↓
-/api/cotacoes retorna os dados atualizados
-```
-
-**Enquanto a credencial CEPEA não estiver disponível**, o scraper usa **simulação com Float32Array** — todos os preços variam simultaneamente, simulando o comportamento real do mercado.
-
-Para ativar o scraping real, basta obter acesso em [cepea.esalq.usp.br](https://www.cepea.esalq.usp.br) e configurar o seletor CSS correto no `src/scraper.js`.
-
----
-
-## 👤 Usuário Admin padrão
-
-| Campo  | Valor                         |
-|--------|-------------------------------|
-| E-mail | `fabio@arrozmarket.com.br`    |
-| Senha  | `admin123`                    |
-| Role   | `admin`                       |
-
-> ⚠️ **Troque a senha após o primeiro acesso** em: Admin → Configurações → Alterar senha
-
----
-
-## 🎨 Personalização de Cores
-
-No site, clique no ícone de perfil → **Configurações** → escolha uma das 10 cores predefinidas ou use o seletor de cor personalizada.
-
----
-
-## ❓ Problemas Comuns
-
-**`Cannot find module 'puppeteer-core'`**  
-→ Rode `npm install` novamente.
-
-**Site abre mas API retorna erro**  
-→ Verifique se o `.env` existe e se `JWT_SECRET` está preenchido.
-
-**No Railway: build falha**  
-→ Confirme que `package.json` está na raiz do repositório (não dentro de subpasta).
-
-**Dados somem ao reiniciar no Railway**  
-→ Normal — o Railway não persiste `/tmp`. Para persistência real, adicione um banco **PostgreSQL** pelo próprio painel do Railway (gratuito no plano Hobby) e adapte o `src/db.js`.

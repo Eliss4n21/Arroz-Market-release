@@ -2,42 +2,27 @@
 const fs   = require('fs');
 const path = require('path');
 
-// No Railway (/tmp é gravável); localmente usa data/db.json
-const DB_PATH = process.env.NODE_ENV === 'production'
-  ? '/tmp/arrozmarket_db.json'
-  : path.join(__dirname, '../data/db.json');
+/*
+ * Dados persistem em data/ (local e Railway com Volume).
+ * No Railway free/hobby os dados resetam no deploy — ok para dev.
+ * No VPS: configure DATA_DIR no .env para pasta fora de public_html.
+ */
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
+const DB_PATH  = path.join(DATA_DIR, 'db.json');
+const AUDIO_DIR = process.env.AUDIO_DIR || path.join(DATA_DIR, 'audios');
 
-if (process.env.NODE_ENV !== 'production') {
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-}
+[DATA_DIR, AUDIO_DIR].forEach(d => {
+  try { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); } catch(e) {}
+});
 
-/* ── Senha hash de "admin123" gerada com bcrypt salt=10 ── */
-const ADMIN_HASH = '$2a$10$wN2sY2K7DoZcMX.3k/aBAO6BkfcjmC4bg3C8Ofsg0S7XBsRLkdbni'; /* hash de 'admin123' */
+const ADMIN_HASH = '$2a$10$wN2sY2K7DoZcMX.3k/aBAO6BkfcjmC4bg3C8Ofsg0S7XBsRLkdbni';
 
 const DEFAULT = {
   usuarios: [
-    /* ─────────────────────────────────────────────────────────────
-       ADMIN PADRÃO — acesse com:
-         E-mail : admin@arrozmarket.com.br
-         Senha  : admin123
-       Troque a senha após o primeiro login em Configurações.
-    ───────────────────────────────────────────────────────────── */
-    {
-      id: 1, nome: 'Administrador', email: 'admin@arrozmarket.com.br',
-      senha: ADMIN_HASH, role: 'admin', avatar: 'AD',
-      criadoEm: '2025-01-01T00:00:00Z', ativo: true
-    },
-    /* ─────────────────────────────────────────────────────────────
-       USUÁRIO DEMO — acesse com:
-         E-mail : fabio@arrozmarket.com.br
-         Senha  : admin123
-    ───────────────────────────────────────────────────────────── */
-    {
-      id: 2, nome: 'Fábio Toledo', email: 'fabio@arrozmarket.com.br',
-      senha: ADMIN_HASH, role: 'admin', avatar: 'FT',
-      criadoEm: '2025-01-01T00:00:00Z', ativo: true
-    },
+    { id:1, nome:'Administrador', email:'admin@arrozmarket.com.br',
+      senha:ADMIN_HASH, role:'admin', avatar:'AD', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
+    { id:2, nome:'Fábio Toledo', email:'fabio@arrozmarket.com.br',
+      senha:ADMIN_HASH, role:'admin', avatar:'FT', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
   ],
   videos: [
     { id:1,  titulo:'Safra 2025 e Impactos nos Preços',                    data:'07/04/2025', dur:'12:48', url:'', cat:'Podcast Diário',      status:'pub', views:3400, likes:1247, desc:'Análise do cenário da safra 2025 e seus reflexos nas cotações do arroz gaúcho.' },
@@ -52,66 +37,56 @@ const DEFAULT = {
     { id:10, titulo:'Entrevista: produtor de Cachoeira do Sul conta tudo', data:'21/03/2025', dur:'22:14', url:'', cat:'Entrevista',          status:'pub', views:3700, likes:187,  desc:'Bate-papo com um produtor orizícola sobre desafios e perspectivas da safra 2025.' },
   ],
   cotacoes: [
-    { id:'cas',   nome:'Em Casca (ESALQ/Senar-RS)',     preco: 65.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Cepea/Esalq'        },
-    { id:'mf_rs', nome:'Mercado Fisico - Media RS',      preco: 62.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Noticias Agricolas'  },
-    { id:'agl',   nome:'Agulhinha Irrigado (RS)',        preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Planeta Arroz'       },
-    { id:'lf',    nome:'Longo Fino (MT)',                preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg', fonte:'Planeta Arroz'       },
-    { id:'ben',   nome:'Beneficiado Tipo 1 (SP)',        preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg', fonte:'Planeta Arroz'       },
-    { id:'parb',  nome:'Parboilizado T1',                preco:155.20, variacao:+2.40, cls:'alta',    unidade:'sc 60kg', fonte:'Estimativa'          },
-    { id:'int',   nome:'Integral T1',                    preco:175.80, variacao:+3.10, cls:'alta',    unidade:'sc 60kg', fonte:'Estimativa'          },
-    { id:'cat',   nome:'Cateto T1',                      preco: 95.00, variacao:-0.50, cls:'baixa',   unidade:'sc 60kg', fonte:'Estimativa'          },
-    { id:'qui',   nome:'Quirera',                        preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg', fonte:'Estimativa'          },
+    { id:'cas',   nome:'Em Casca (ESALQ/Senar-RS)',   preco: 65.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
+    { id:'mf_rs', nome:'Mercado Físico – Média RS',   preco: 62.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
+    { id:'agl',   nome:'Agulhinha Irrigado (RS)',      preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
+    { id:'lf',    nome:'Longo Fino (MT)',              preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
+    { id:'ben',   nome:'Beneficiado Tipo 1 (SP)',      preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
+    { id:'parb',  nome:'Parboilizado T1',              preco:155.20, variacao:+2.40, cls:'alta',    unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
+    { id:'int',   nome:'Integral T1',                  preco:175.80, variacao:+3.10, cls:'alta',    unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
+    { id:'cat',   nome:'Cateto T1',                    preco: 95.00, variacao:-0.50, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
+    { id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
   ],
-  curtidas:  {},   // "userId_videoId": true
-  config:    { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:9 }
+  curtidas: {},
+  config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10 }
 };
 
-function lerDB()   { try { if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8')); } catch {} return JSON.parse(JSON.stringify(DEFAULT)); }
-function salvarDB(d){ try { fs.writeFileSync(DB_PATH, JSON.stringify(d,null,2)); } catch {} }
+function lerDB()    { try { if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8')); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
+function salvarDB(d){ try { fs.writeFileSync(DB_PATH, JSON.stringify(d,null,2)); } catch(e){} }
 
 let _db = lerDB();
 if (!_db.usuarios?.length) { _db = JSON.parse(JSON.stringify(DEFAULT)); salvarDB(_db); }
 
 const db = {
-  /* --- Genérico --- */
   get()  { return _db; },
   save() { salvarDB(_db); },
-
-  /* --- Áudios (Podcasts) --- */
-  getVideos()    { return _db.videos.filter(v=>v.status==='pub'); }, // alias: getAudios
-  getAllVideos()  { return _db.videos; },
-  addVideo(v)    { _db.videos.unshift(v); salvarDB(_db); return v; },
-  updateVideo(id,data){ const i=_db.videos.findIndex(v=>v.id===id); if(i<0)return null; _db.videos[i]={..._db.videos[i],...data}; salvarDB(_db); return _db.videos[i]; },
-  deleteVideo(id){ _db.videos=_db.videos.filter(v=>v.id!==id); salvarDB(_db); },
-  incrementView(id){ const i=_db.videos.findIndex(v=>v.id===id); if(i<0) return 0; _db.videos[i].views=(_db.videos[i].views||0)+1; salvarDB(_db); return _db.videos[i].views; },
-
-  /* --- Cotações --- */
+  getVideos()       { return _db.videos.filter(v=>v.status==='pub'); },
+  getAllVideos()     { return _db.videos; },
+  addVideo(v)       { _db.videos.unshift(v); salvarDB(_db); return v; },
+  updateVideo(id,d) { const i=_db.videos.findIndex(v=>v.id===id); if(i<0)return null; _db.videos[i]={..._db.videos[i],...d}; salvarDB(_db); return _db.videos[i]; },
+  deleteVideo(id)   { _db.videos=_db.videos.filter(v=>v.id!==id); salvarDB(_db); },
+  incrementView(id) { const i=_db.videos.findIndex(v=>v.id===id); if(i<0)return 0; _db.videos[i].views=(_db.videos[i].views||0)+1; salvarDB(_db); return _db.videos[i].views; },
   getCotacoes()     { return _db.cotacoes; },
   updateCotacoes(l) { _db.cotacoes=l; _db.cotacoes.forEach(c=>{c.ts=Date.now();}); salvarDB(_db); },
-
-  /* --- Usuários --- */
-  getUsers()       { return _db.usuarios; },
-  findUser(email)  { return _db.usuarios.find(u=>u.email===email?.toLowerCase().trim()); },
-  findById(id)     { return _db.usuarios.find(u=>u.id===id); },
-  addUser(u)       { _db.usuarios.push(u); salvarDB(_db); return u; },
-  updateUser(id,data){ const i=_db.usuarios.findIndex(u=>u.id===id); if(i<0)return null; _db.usuarios[i]={..._db.usuarios[i],...data}; salvarDB(_db); return _db.usuarios[i]; },
-  setRole(id,role) { return db.updateUser(id,{role}); },
-
-  /* --- Curtidas --- */
-  toggleCurtida(uid,vid){
+  getUsers()        { return _db.usuarios; },
+  findUser(email)   { return _db.usuarios.find(u=>u.email===email?.toLowerCase().trim()); },
+  findById(id)      { return _db.usuarios.find(u=>u.id===id); },
+  addUser(u)        { _db.usuarios.push(u); salvarDB(_db); return u; },
+  updateUser(id,d)  { const i=_db.usuarios.findIndex(u=>u.id===id); if(i<0)return null; _db.usuarios[i]={..._db.usuarios[i],...d}; salvarDB(_db); return _db.usuarios[i]; },
+  setRole(id,role)  { return db.updateUser(id,{role}); },
+  toggleCurtida(uid,vid) {
     const k=`${uid}_${vid}`, curtido=!_db.curtidas[k];
     _db.curtidas[k]=curtido;
     const i=_db.videos.findIndex(v=>v.id===vid);
     if(i>=0) _db.videos[i].likes=Math.max(0,(_db.videos[i].likes||0)+(curtido?1:-1));
     salvarDB(_db);
-    return {curtido, likes: i>=0?_db.videos[i].likes:0};
+    return { curtido, likes: i>=0?_db.videos[i].likes:0 };
   },
-  getCurtida(uid,vid){ return !!_db.curtidas[`${uid}_${vid}`]; },
-
-  /* --- Config --- */
-  getConfig()       { return _db.config; },
-  updateConfig(data){ _db.config={..._db.config,...data}; salvarDB(_db); return _db.config; },
-  nextId()          { return ++_db.config.proximoId; },
+  getCurtida(uid,vid) { return !!_db.curtidas[`${uid}_${vid}`]; },
+  getConfig()         { return _db.config; },
+  updateConfig(d)     { _db.config={..._db.config,...d}; salvarDB(_db); return _db.config; },
+  nextId()            { return ++_db.config.proximoId; },
 };
 
 module.exports = db;
+module.exports.AUDIO_DIR = AUDIO_DIR;

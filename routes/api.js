@@ -171,19 +171,15 @@ router.post('/admin/scrape', autenticar, soAdmin, async (_, res) => {
    POST /api/admin/audios/upload
    Content-Type: application/octet-stream
    Headers: X-Filename: meu-podcast.webm
-   Body: raw binary (webm / ogg / mp3)
+   Body: raw binary (webm / ogg / mp3 / wav)
 
-   Salva o arquivo em /tmp/audios/<id>.<ext> (Railway) ou
-   data/audios/<id>.<ext> (dev local) e retorna a URL pública.
+   Salva o arquivo em data/audios/<id>.<ext> e retorna a URL pública.
 ══════════════════════════════════════════════════════════════ */
 const fs   = require('fs');
 const path = require('path');
 
-const AUDIO_DIR = process.env.NODE_ENV === 'production'
-  ? '/tmp/am_audios'
-  : path.join(__dirname, '../data/audios');
-
-if (!fs.existsSync(AUDIO_DIR)) fs.mkdirSync(AUDIO_DIR, { recursive: true });
+// Reutiliza o mesmo AUDIO_DIR definido no db.js — único ponto de verdade
+const AUDIO_DIR = require('../src/db').AUDIO_DIR;
 
 router.post('/admin/audios/upload', autenticar, soAdmin, (req, res) => {
   const rawName = (req.headers['x-filename'] || 'audio.webm').replace(/[^a-z0-9._-]/gi, '_');

@@ -2,19 +2,68 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="shortcut icon" href="/favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArrozMarket — Análises do Mercado do Arroz</title>
-<meta name="description" content="Podcast diário do mercado orizícola brasileiro com Fábio Toledo.">
+
+<!-- ═══ SEO PRIMÁRIO ═══ -->
+<title>ArrozMarket — Análises Diárias do Mercado Orizícola com Fábio Toledo</title>
+<meta name="description" content="Podcast diário com cotações, tendências e análises do mercado orizícola brasileiro. Fábio Toledo, especialista com 22 anos de experiência em São Gabriel — RS.">
+<meta name="keywords" content="arroz, mercado orizícola, cotações arroz, podcast arroz, análise mercado arroz, Long Grain, parboilizado, Fábio Toledo, São Gabriel RS">
+<meta name="author" content="Fábio Toledo — ArrozMarket">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.arrozmarket.com.br/">
+
+<!-- ═══ OPEN GRAPH (WhatsApp, Facebook, LinkedIn) ═══ -->
+<meta property="og:type"        content="website">
+<meta property="og:site_name"   content="ArrozMarket">
+<meta property="og:url"         content="https://www.arrozmarket.com.br/">
+<meta property="og:title"       content="ArrozMarket — Análises do Mercado do Arroz">
+<meta property="og:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro. Fábio Toledo, São Gabriel — RS.">
+<meta property="og:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale"      content="pt_BR">
+
+<!-- ═══ TWITTER CARD ═══ -->
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="ArrozMarket — Análises do Mercado do Arroz">
+<meta name="twitter:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro.">
+<meta name="twitter:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
+
+<!-- ═══ PWA ═══ -->
 <meta name="theme-color" content="#C8A84B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ArrozMarket">
 <link rel="manifest" href="/manifest.json">
+
+<!-- ═══ FAVICON / ÍCONES ═══ -->
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+
+<!-- ═══ STRUCTURED DATA — Podcast (JSON-LD) ═══ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "PodcastSeries",
+  "name": "ArrozMarket",
+  "description": "Análises diárias do mercado orizícola brasileiro com Fábio Toledo.",
+  "url": "https://www.arrozmarket.com.br/",
+  "author": {
+    "@type": "Person",
+    "name": "Fábio Toledo",
+    "jobTitle": "Especialista em Mercado Orizícola",
+    "address": { "@type": "PostalAddress", "addressLocality": "São Gabriel", "addressRegion": "RS", "addressCountry": "BR" }
+  },
+  "inLanguage": "pt-BR",
+  "image": "https://www.arrozmarket.com.br/og-image.jpg"
+}
+</script>
+
+<!-- ═══ FONTES ═══ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -458,14 +507,15 @@ body {
 }
 .estat:hover { border-color: rgba(200,168,75,.32); }
 .estat-n {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.05rem; color: var(--gold);
-  line-height: 1.1; font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; color: var(--gold);
+  line-height: 1.1; font-weight: 500;
+  letter-spacing: .02em;
 }
 .estat-l {
-  font-size: .6rem; color: var(--muted);
-  letter-spacing: .1em; text-transform: uppercase;
-  margin-top: .25rem;
+  font-size: .58rem; color: var(--muted);
+  letter-spacing: .12em; text-transform: uppercase;
+  margin-top: .25rem; font-weight: 400;
 }
 
 /* ─ BOTÃO LIKE DESTAQUE ─ */
@@ -1396,8 +1446,23 @@ footer strong { color: var(--gold); }
 <section class="pagina" id="especialista"><div id="esp-render"></div></section>
 
 <footer>
-  <strong>ArrozMarket</strong> &nbsp;·&nbsp; Podcast diário do mercado orizícola &nbsp;·&nbsp; © 2025 · Fábio Toledo · São Gabriel — RS
+  <div style="display:flex;flex-direction:column;align-items:center;gap:.6rem">
+    <div>
+      <strong>ArrozMarket</strong> &nbsp;·&nbsp; Podcast diário do mercado orizícola
+    </div>
+    <div style="display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:.72rem">
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('priv')">Política de Privacidade</span>
+      <span style="color:rgba(200,168,75,.2)">|</span>
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('term')">Termos de Uso</span>
+      <span style="color:rgba(200,168,75,.2)">|</span>
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('cook')">Cookies</span>
+    </div>
+    <div style="font-size:.7rem;color:rgba(122,118,112,.6)">
+      © <span id="anoFooter"></span> Fábio Toledo · São Gabriel — RS · CNPJ 00.000.000/0001-00
+    </div>
+  </div>
 </footer>
+<script>document.getElementById('anoFooter').textContent=new Date().getFullYear();</script>
 
 <!-- ════════════════════════════════════
      JAVASCRIPT — único bloco, sem duplicatas
@@ -1420,25 +1485,81 @@ const CORES = [
 const POLS = {
   priv: {
     t: 'Política de Privacidade',
-    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Política de Privacidade</h4>
-        <p><b style="color:var(--cream)">Coleta:</b> Nome, e-mail e preferências de uso. Não compartilhamos com terceiros.</p><br>
-        <p><b style="color:var(--cream)">Uso:</b> Exclusivamente para autenticação e personalização.</p><br>
-        <p><b style="color:var(--cream)">Segurança:</b> Senhas com hash bcrypt. Sessões via JWT com expiração.</p><br>
-        <p><b style="color:var(--cream)">Direitos:</b> Exclua sua conta em Configurações → Excluir conta.</p><br>
-        <p><b style="color:var(--cream)">Contato:</b> contato@arrozmarket.com.br</p>`
+    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
+      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Política de Privacidade</h4>
+      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026 · Em conformidade com a <b style="color:var(--cream)">LGPD (Lei 13.709/2018)</b></p>
+
+      <b style="color:var(--cream)">1. Responsável pelo tratamento</b>
+      <p style="margin:.3rem 0 .8rem">Fábio Toledo — ArrozMarket, São Gabriel — RS. Contato: <span style="color:var(--gold)">contato@arrozmarket.com.br</span></p>
+
+      <b style="color:var(--cream)">2. Dados coletados</b>
+      <p style="margin:.3rem 0 .8rem">Nome, endereço de e-mail e preferências de interface (tema e cor). Não coletamos CPF, telefone, localização ou dados financeiros.</p>
+
+      <b style="color:var(--cream)">3. Finalidade e base legal</b>
+      <p style="margin:.3rem 0 .8rem">Os dados são usados exclusivamente para autenticação, personalização da interface e envio de notificações solicitadas pelo próprio usuário (base legal: legítimo interesse e consentimento — Art. 7º, I e IX da LGPD).</p>
+
+      <b style="color:var(--cream)">4. Compartilhamento</b>
+      <p style="margin:.3rem 0 .8rem">Não vendemos, alugamos nem compartilhamos seus dados com terceiros para fins comerciais.</p>
+
+      <b style="color:var(--cream)">5. Segurança</b>
+      <p style="margin:.3rem 0 .8rem">Senhas armazenadas com hash bcrypt (salt 10). Sessões via JWT com expiração. Tráfego protegido por HTTPS.</p>
+
+      <b style="color:var(--cream)">6. Seus direitos (LGPD Art. 18)</b>
+      <p style="margin:.3rem 0 .8rem">Você pode a qualquer momento: acessar seus dados, corrigi-los, excluir sua conta (Configurações → Excluir conta) ou solicitar portabilidade via <span style="color:var(--gold)">contato@arrozmarket.com.br</span>.</p>
+
+      <b style="color:var(--cream)">7. Retenção</b>
+      <p style="margin:.3rem 0 .8rem">Dados mantidos enquanto a conta estiver ativa. Após exclusão, removidos em até 30 dias.</p>
+    </div>`
   },
   term: {
     t: 'Termos de Uso',
-    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Termos de Uso</h4>
-        <p><b style="color:var(--cream)">Informativo:</b> Cotações são orientativas e não constituem recomendação de investimento.</p><br>
-        <p><b style="color:var(--cream)">Propriedade intelectual:</b> Todo conteúdo pertence a Fábio Toledo / ArrozMarket. Reprodução proibida sem autorização.</p><br>
-        <p><b style="color:var(--cream)">Isenção:</b> ArrozMarket não se responsabiliza por decisões baseadas nas cotações.</p>`
+    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
+      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Termos de Uso</h4>
+      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026</p>
+
+      <b style="color:var(--cream)">1. Aceite</b>
+      <p style="margin:.3rem 0 .8rem">Ao acessar o ArrozMarket você concorda com estes Termos. Se não concordar, não utilize o serviço.</p>
+
+      <b style="color:var(--cream)">2. Natureza informativa</b>
+      <p style="margin:.3rem 0 .8rem">As cotações e análises publicadas têm caráter <b style="color:var(--cream)">exclusivamente informativo</b> e não constituem recomendação de compra, venda ou investimento. Decisões comerciais baseadas neste conteúdo são de inteira responsabilidade do usuário.</p>
+
+      <b style="color:var(--cream)">3. Propriedade intelectual</b>
+      <p style="margin:.3rem 0 .8rem">Todo o conteúdo (áudios, textos, análises, marca ArrozMarket) pertence a Fábio Toledo. É proibida a reprodução, redistribuição ou comercialização sem autorização expressa por escrito.</p>
+
+      <b style="color:var(--cream)">4. Conta de usuário</b>
+      <p style="margin:.3rem 0 .8rem">O usuário é responsável por manter a confidencialidade de sua senha e por todas as atividades realizadas em sua conta.</p>
+
+      <b style="color:var(--cream)">5. Limitação de responsabilidade</b>
+      <p style="margin:.3rem 0 .8rem">O ArrozMarket não se responsabiliza por perdas ou danos decorrentes do uso ou da impossibilidade de uso do serviço, nem pela imprecisão de cotações oriundas de fontes externas.</p>
+
+      <b style="color:var(--cream)">6. Foro</b>
+      <p style="margin:.3rem 0 .8rem">Fica eleito o foro da Comarca de São Gabriel — RS para dirimir quaisquer controvérsias.</p>
+    </div>`
   },
   cook: {
     t: 'Política de Cookies',
-    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Política de Cookies</h4>
-        <p><b style="color:var(--cream)">O que usamos:</b> localStorage para sessão, tema e cor. Sem cookies de rastreamento.</p><br>
-        <p><b style="color:var(--cream)">Como remover:</b> Limpe os dados do site nas configurações do navegador.</p>`
+    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
+      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Política de Cookies e Armazenamento Local</h4>
+      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026</p>
+
+      <b style="color:var(--cream)">O que armazenamos</b>
+      <p style="margin:.3rem 0 .8rem">Este site usa <b style="color:var(--cream)">localStorage</b> (armazenamento local do navegador) — não cookies tradicionais. Os dados ficam apenas no seu dispositivo e não são enviados a servidores de terceiros.</p>
+
+      <p style="margin:.3rem 0 .4rem">Itens armazenados:</p>
+      <ul style="margin:.3rem 0 .8rem;padding-left:1.2rem">
+        <li><span style="color:var(--cream)">am_tok</span> — Token de autenticação JWT</li>
+        <li><span style="color:var(--cream)">am_u</span> — Dados básicos do usuário logado (nome, e-mail)</li>
+        <li><span style="color:var(--cream)">am_tema</span> — Preferência de tema (claro/escuro)</li>
+        <li><span style="color:var(--cream)">am_cor</span> — Cor de destaque escolhida</li>
+        <li><span style="color:var(--cream)">am_cur</span> — Episódios curtidos (IDs locais)</li>
+      </ul>
+
+      <b style="color:var(--cream)">Sem rastreamento</b>
+      <p style="margin:.3rem 0 .8rem">Não utilizamos Google Analytics, Facebook Pixel, cookies de publicidade nem qualquer tecnologia de rastreamento de terceiros.</p>
+
+      <b style="color:var(--cream)">Como remover</b>
+      <p style="margin:.3rem 0 .8rem">Acesse as Configurações do seu navegador → Privacidade → Limpar dados do site → arrozmarket.com.br. Isso encerrará sua sessão.</p>
+    </div>`
   }
 };
 
