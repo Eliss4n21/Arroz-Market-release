@@ -2,68 +2,19 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="shortcut icon" href="/favicon.ico">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- ═══ SEO PRIMÁRIO ═══ -->
-<title>ArrozMarket — Análises Diárias do Mercado Orizícola com Fábio Toledo</title>
-<meta name="description" content="Podcast diário com cotações, tendências e análises do mercado orizícola brasileiro. Fábio Toledo, especialista com 22 anos de experiência em São Gabriel — RS.">
-<meta name="keywords" content="arroz, mercado orizícola, cotações arroz, podcast arroz, análise mercado arroz, Long Grain, parboilizado, Fábio Toledo, São Gabriel RS">
-<meta name="author" content="Fábio Toledo — ArrozMarket">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://www.arrozmarket.com.br/">
-
-<!-- ═══ OPEN GRAPH (WhatsApp, Facebook, LinkedIn) ═══ -->
-<meta property="og:type"        content="website">
-<meta property="og:site_name"   content="ArrozMarket">
-<meta property="og:url"         content="https://www.arrozmarket.com.br/">
-<meta property="og:title"       content="ArrozMarket — Análises do Mercado do Arroz">
-<meta property="og:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro. Fábio Toledo, São Gabriel — RS.">
-<meta property="og:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:locale"      content="pt_BR">
-
-<!-- ═══ TWITTER CARD ═══ -->
-<meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:title"       content="ArrozMarket — Análises do Mercado do Arroz">
-<meta name="twitter:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro.">
-<meta name="twitter:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
-
-<!-- ═══ PWA ═══ -->
+<title>ArrozMarket — Análises do Mercado do Arroz</title>
+<meta name="description" content="Podcast diário do mercado orizícola brasileiro com Fábio Toledo.">
 <meta name="theme-color" content="#C8A84B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ArrozMarket">
 <link rel="manifest" href="/manifest.json">
-
-<!-- ═══ FAVICON / ÍCONES ═══ -->
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="shortcut icon" href="/favicon.ico">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-
-<!-- ═══ STRUCTURED DATA — Podcast (JSON-LD) ═══ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "PodcastSeries",
-  "name": "ArrozMarket",
-  "description": "Análises diárias do mercado orizícola brasileiro com Fábio Toledo.",
-  "url": "https://www.arrozmarket.com.br/",
-  "author": {
-    "@type": "Person",
-    "name": "Fábio Toledo",
-    "jobTitle": "Especialista em Mercado Orizícola",
-    "address": { "@type": "PostalAddress", "addressLocality": "São Gabriel", "addressRegion": "RS", "addressCountry": "BR" }
-  },
-  "inLanguage": "pt-BR",
-  "image": "https://www.arrozmarket.com.br/og-image.jpg"
-}
-</script>
-
-<!-- ═══ FONTES ═══ -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -91,218 +42,51 @@
 }
 
 /* ════════════════════════════════
-   TEMA CLARO — completo e consistente
+   TEMA CLARO (padrão)
 ════════════════════════════════ */
 [data-tema="claro"] {
-  --dark:  #F2F1EC;
+  --dark:  #F5F5F0;
   --dark2: #FFFFFF;
-  --dark3: #EAEAE4;
-  --dark4: #DDDDD6;
-  --cream: #1C1C1A;
-  --muted: #5A5A55;
-  --text:  #222220;
+  --dark3: #EEEEE8;
+  --dark4: #E2E2DC;
+  --cream: #1A1A18;
+  --muted: #6B6B65;
+  --text:  #2A2A26;
   --green: #2D6B3E;
-  --green2:#2E7A4A;
+  --green2:#3A8050;
   --red:   #C0392B;
-  --gold-dim: rgba(160,120,30,.12);
-  --gold-b:   rgba(160,120,30,.35);
+  --gold-dim: rgba(200,168,75,.12);
+  --gold-b:   rgba(200,168,75,.25);
 }
+[data-tema="claro"] body { background: #F5F5F0; }
+[data-tema="claro"] #nav { background: rgba(245,245,240,.96); border-bottom-color: rgba(200,168,75,.2); }
+[data-tema="claro"] #ticker { background: #FFFFFF; border-bottom: 1px solid rgba(200,168,75,.15); }
+[data-tema="claro"] #menuPerfil { background: #FFFFFF; border-color: rgba(0,0,0,.1); box-shadow: 0 8px 32px rgba(0,0,0,.12); }
+[data-tema="claro"] .mp-item:hover { background: #F5F5F0; }
+[data-tema="claro"] .mp-toggle:hover { background: #F5F5F0; }
+[data-tema="claro"] .toggle-pill { background: #E0E0DA; border-color: rgba(0,0,0,.15); }
+[data-tema="claro"] .toggle-pill::before { background: #9A9A94; }
 
-/* Body */
-[data-tema="claro"] body { background: #F2F1EC; color: #222220; }
-
-/* Nav */
-[data-tema="claro"] #nav {
-  background: rgba(255,255,255,.97);
-  border-bottom: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .nav-links a { color: #5A5A55; }
-[data-tema="claro"] .nav-links a:hover,
-[data-tema="claro"] .nav-links a.ativo { color: var(--gold); }
-[data-tema="claro"] .logo { color: var(--gold); }
-[data-tema="claro"] .logo span { color: #1C1C1A; }
-[data-tema="claro"] .nav-data { color: #5A5A55; }
-
-/* Ticker */
-[data-tema="claro"] #ticker {
-  background: #FFFFFF;
-  border-bottom: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .tk-inner { color: #5A5A55; }
-[data-tema="claro"] .tk-item strong { color: #1C1C1A; }
-
-/* Dropdown perfil */
-[data-tema="claro"] #menuPerfil {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.12);
-  box-shadow: 0 8px 32px rgba(0,0,0,.14);
-}
-[data-tema="claro"] .mp-item { color: #5A5A55; }
-[data-tema="claro"] .mp-item:hover { background: #F2F1EC; color: #1C1C1A; }
-[data-tema="claro"] .mp-toggle:hover { background: #F2F1EC; }
-[data-tema="claro"] .mp-sep { background: rgba(0,0,0,.07); }
-[data-tema="claro"] .mp-cab { border-bottom-color: rgba(0,0,0,.07); }
-[data-tema="claro"] .mp-nome { color: #1C1C1A; }
-
-/* Toggle pill */
-[data-tema="claro"] .toggle-pill { background: #DDDDD6; border-color: rgba(0,0,0,.18); }
-[data-tema="claro"] .toggle-pill::before { background: #8A8A84; }
-
-/* Cards de episódios */
-[data-tema="claro"] .card-v {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .card-v:hover { border-color: rgba(160,120,30,.5); }
-[data-tema="claro"] .card-titulo { color: #1C1C1A; }
-[data-tema="claro"] .card-data { color: var(--gold); }
-[data-tema="claro"] .card-views { color: #5A5A55; }
-[data-tema="claro"] .card-corpo { background: #FFFFFF; }
-
-/* Stats (duração/escutas/curtidas) */
-[data-tema="claro"] .estat {
-  background: #EAEAE4;
-  border: 1px solid rgba(0,0,0,.12);
-}
-[data-tema="claro"] .estat:hover { border-color: rgba(160,120,30,.45); }
-[data-tema="claro"] .estat-n { color: var(--gold); }
-[data-tema="claro"] .estat-l { color: #5A5A55; }
-
-/* Destaque */
-[data-tema="claro"] .v-dest { border-color: rgba(0,0,0,.1); }
-[data-tema="claro"] .v-cab { border-bottom-color: rgba(0,0,0,.08); }
-[data-tema="claro"] .v-cab-t { color: #1C1C1A; }
-[data-tema="claro"] .v-rodape { background: #FFFFFF; border-top-color: rgba(0,0,0,.08); }
-[data-tema="claro"] .en { color: #1C1C1A; }
-[data-tema="claro"] .ec { color: #5A5A55; }
-
-/* Blocos gráficos e tabelas */
-[data-tema="claro"] .b-graf {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .b-graf h3 { color: #1C1C1A; }
-[data-tema="claro"] .b-graf p { color: #5A5A55; }
-[data-tema="claro"] .b-tab {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .b-tab-cab { border-bottom-color: rgba(0,0,0,.08); color: #1C1C1A; }
-[data-tema="claro"] table.tab th { color: #5A5A55; border-bottom-color: rgba(0,0,0,.08); }
-[data-tema="claro"] table.tab td { color: #222220; border-bottom-color: rgba(0,0,0,.05); }
-[data-tema="claro"] table.tab tr:hover td { background: rgba(160,120,30,.05); }
-[data-tema="claro"] .p-tag { color: var(--gold); background: rgba(160,120,30,.1); }
-[data-tema="claro"] .t-badge { background: rgba(160,120,30,.1); color: var(--gold); border-color: rgba(160,120,30,.3); }
-
-/* Filtros */
-[data-tema="claro"] .fil-btn { border-color: rgba(0,0,0,.15); color: #5A5A55; background: transparent; }
-[data-tema="claro"] .fil-btn.ativo,
-[data-tema="claro"] .fil-btn:hover { background: var(--gold); color: #0b0b09; border-color: var(--gold); }
-[data-tema="claro"] .fil-ep { border-color: rgba(0,0,0,.15); color: #5A5A55; }
-[data-tema="claro"] .fil-ep.ativo,
-[data-tema="claro"] .fil-ep:hover { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
-
-/* Cards técnicos */
-[data-tema="claro"] .card-tec {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .card-tec:hover { border-color: rgba(160,120,30,.45); }
-[data-tema="claro"] .card-tec h3 { color: #1C1C1A; }
-[data-tema="claro"] .card-tec p { color: #5A5A55; }
-[data-tema="claro"] .lista-sp li { color: #5A5A55; border-bottom-color: rgba(0,0,0,.06); }
-[data-tema="claro"] .lista-sp li span { color: var(--gold); }
-
-/* Bio / Especialista */
-[data-tema="claro"] .bio-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.1);
-}
-[data-tema="claro"] .bio-nome { color: #1C1C1A; }
-[data-tema="claro"] .bio-stat {
-  background: #EAEAE4;
-  border: 1px solid rgba(0,0,0,.08);
-}
-[data-tema="claro"] .bs-n { color: var(--gold); }
-[data-tema="claro"] .bs-l { color: #5A5A55; }
-[data-tema="claro"] .btn-rede {
-  background: #EAEAE4;
-  border: 1px solid rgba(0,0,0,.12);
-  color: #5A5A55;
-}
-[data-tema="claro"] .btn-rede:hover { border-color: var(--gold); color: var(--gold); }
-[data-tema="claro"] .bio-cont h2 { color: #1C1C1A; }
-[data-tema="claro"] .bio-cont p { color: #5A5A55; }
-[data-tema="claro"] .lt-txt h4 { color: #1C1C1A; }
-[data-tema="claro"] .lt-txt p { color: #5A5A55; }
-[data-tema="claro"] .lt-ponto { background: var(--gold); }
-
-/* Modal áudio */
-[data-tema="claro"] .modal-inner {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.12);
-}
-[data-tema="claro"] .modal-cab { border-bottom-color: rgba(0,0,0,.08); }
-[data-tema="claro"] .modal-titulo { color: #1C1C1A; }
-[data-tema="claro"] .modal-rod { color: #5A5A55; }
-[data-tema="claro"] #am-cover-screen { background: linear-gradient(160deg,#EAEAE4,#F2F1EC) !important; }
-[data-tema="claro"] #am-ep-titulo { color: #1C1C1A; }
-[data-tema="claro"] #am-time { color: #5A5A55; }
-[data-tema="claro"] .am-btn { color: #5A5A55; }
-[data-tema="claro"] .am-btn:hover { color: var(--gold); background: rgba(160,120,30,.08); }
-[data-tema="claro"] #am-progress-wrap { background: rgba(0,0,0,.12); }
-[data-tema="claro"] #am-prog { background: var(--gold); }
-
-/* Modal auth */
-[data-tema="claro"] .modal-box {
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,.12);
-}
-[data-tema="claro"] .modal-box-cab { border-bottom-color: rgba(0,0,0,.08); }
-[data-tema="claro"] .modal-box-titulo { color: #1C1C1A; }
-[data-tema="claro"] .form-g label { color: #5A5A55; }
-[data-tema="claro"] .form-g input {
-  background: #F2F1EC;
-  border: 1px solid rgba(0,0,0,.18);
-  color: #1C1C1A;
-}
-[data-tema="claro"] .form-g input:focus { border-color: var(--gold); background: #FFFFFF; }
-[data-tema="claro"] .form-link { color: #5A5A55; }
-[data-tema="claro"] .cfg-sec h4 { color: #5A5A55; border-bottom-color: rgba(0,0,0,.08); }
-[data-tema="claro"] .cfg-row { color: #5A5A55; }
-
-/* Avatar */
-[data-tema="claro"] #avatarBtn {
-  background: #EAEAE4;
-  border-color: rgba(0,0,0,.15);
-}
-[data-tema="claro"] #avatarBtn svg { fill: #5A5A55; }
+[data-tema="claro"] .card-v,
+[data-tema="claro"] .b-tab,
+[data-tema="claro"] .b-graf,
+[data-tema="claro"] .modal-inner,
+[data-tema="claro"] .modal-box { background: #FFFFFF; border-color: rgba(0,0,0,.09); }
+[data-tema="claro"] .v-area { background: #FFFFFF; border-color: rgba(0,0,0,.09); }
+[data-tema="claro"] footer { background: #EBEBE6; border-top-color: rgba(0,0,0,.08); }
+[data-tema="claro"] .form-input { background: #F5F5F0; border-color: rgba(0,0,0,.15); color: var(--cream); }
+[data-tema="claro"] .form-input:focus { border-color: var(--gold); background: #FFFFFF; }
+[data-tema="claro"] .btn-prim { background: var(--gold); color: #0b0b09; }
+[data-tema="claro"] #nav .nav-links a { color: var(--muted); }
+[data-tema="claro"] #nav .nav-links a:hover,
+[data-tema="claro"] #nav .nav-links a.ativo { color: var(--gold); }
+[data-tema="claro"] .fil-btn { border-color: rgba(0,0,0,.12); color: var(--muted); }
+[data-tema="claro"] .fil-btn.ativo { background: var(--gold); color: #0b0b09; border-color: var(--gold); }
+[data-tema="claro"] .t-badge { background: rgba(0,0,0,.06); color: var(--muted); }
+[data-tema="claro"] .p-tag { background: rgba(200,168,75,.12); }
+[data-tema="claro"] #avatarBtn { background: #EEEEE8; border-color: rgba(0,0,0,.12); }
+[data-tema="claro"] #avatarBtn svg { fill: var(--muted); }
 [data-tema="claro"] #avatarBtn:hover { border-color: var(--gold); }
-
-/* Botões like */
-[data-tema="claro"] .btn-like-dest { border-color: rgba(0,0,0,.18); color: #5A5A55; }
-[data-tema="claro"] .btn-like-dest:hover { border-color: var(--green2); color: var(--green2); }
-[data-tema="claro"] .btn-like-card { border-color: rgba(0,0,0,.15); color: #5A5A55; }
-[data-tema="claro"] .btn-like-card:hover { border-color: var(--green2); color: var(--green2); }
-
-/* Footer */
-[data-tema="claro"] footer { background: #E8E8E2; border-top-color: rgba(0,0,0,.1); color: #5A5A55; }
-
-/* Rotulo */
-[data-tema="claro"] .rotulo { color: var(--gold); }
-[data-tema="claro"] .rotulo::after { background: rgba(0,0,0,.1); }
-
-/* Toast */
-[data-tema="claro"] #toast { background: #FFFFFF; border-color: rgba(0,0,0,.15); color: #1C1C1A; }
-
-/* Drawer mobile */
-[data-tema="claro"] #nav-drawer {
-  background: rgba(255,255,255,.98);
-  border-bottom-color: rgba(0,0,0,.08);
-}
-[data-tema="claro"] #nav-drawer a { color: #5A5A55; border-bottom-color: rgba(0,0,0,.06); }
-[data-tema="claro"] #nav-drawer a.ativo,
-[data-tema="claro"] #nav-drawer a:hover { color: var(--gold); }
 /* ════════════════════════════════
    RESET
 ════════════════════════════════ */
@@ -544,157 +328,64 @@ body {
   color: var(--green2); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
   padding: .28rem .75rem; border-radius: 2px;
 }
-/* ════════════════════════════════
-   ÁREA DO DESTAQUE — layout novo
-════════════════════════════════ */
 .v-area {
-  position: relative; background: #000; min-height: 340px;
+  position: relative; background: #000; min-height: 320px;
   display: flex; align-items: stretch; justify-content: center;
   cursor: pointer; overflow: hidden; flex-direction: column;
 }
-
-/* Fundo full-cover, sem posição absoluta problemática */
 .v-fundo {
-  position: relative; flex: 1;
+  position: absolute; inset: 0;
   background: linear-gradient(135deg,#0B1810 0%,#162B14 55%,#0B1810 100%);
   display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: .9rem; padding: 2.2rem 2rem 1.6rem;
+  flex-direction: column; gap: 1.1rem; padding: 2rem;
   background-size: cover; background-position: center;
-  z-index: 1;
 }
-/* Overlay escurecedor quando há thumb */
+/* Ondas de áudio decorativas no destaque */
 .v-fundo::before {
   content: '';
-  position: absolute; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse at 50% 40%, rgba(200,168,75,.06) 0%, transparent 65%);
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,168,75,.07) 0%, transparent 70%);
   pointer-events: none;
 }
-.v-fundo > * { position: relative; z-index: 1; }
-
-/* Botão play — círculo dourado */
 .btn-play {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: rgba(200,168,75,.18);
-  border: 2px solid rgba(200,168,75,.55);
-  display: flex; align-items: center; justify-content: center;
-  transition: all .3s; flex-shrink: 0;
-  box-shadow: 0 0 24px rgba(200,168,75,.18);
-  overflow: hidden; /* impede que ícone pause vaze */
-  position: relative;
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center; transition: all .3s;
 }
-.v-area:hover .btn-play {
-  transform: scale(1.1);
-  background: rgba(200,168,75,.28);
-  box-shadow: 0 0 32px rgba(200,168,75,.35);
-}
-/* Ícone play — triângulo */
+.v-area:hover .btn-play { transform: scale(1.12); }
+/* Ícone triângulo play */
 .tri {
   width: 0; height: 0;
-  border-top: 16px solid transparent;
-  border-bottom: 16px solid transparent;
-  border-left: 28px solid var(--gold);
-  margin-left: 6px; flex-shrink: 0;
-  filter: drop-shadow(0 0 6px rgba(200,168,75,.5));
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 30px solid var(--gold);
+  margin-left: 5px;
+  filter: drop-shadow(0 0 8px rgba(200,168,75,.6));
   transition: filter .3s;
 }
-.v-area:hover .tri { filter: drop-shadow(0 0 12px rgba(200,168,75,.85)); }
-/* Ícone pause — duas barras centralizadas com flexbox */
-#destPlayBtn.pausado .tri { display: none; }
-#destPlayBtn.pausado {
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-}
-#destPlayBtn.pausado::before,
-#destPlayBtn.pausado::after {
-  content: '';
-  display: block; width: 5px; height: 24px;
-  background: var(--gold); border-radius: 2px;
-  position: static; transform: none; top: auto;
-  box-shadow: 0 0 6px rgba(200,168,75,.5);
-  flex-shrink: 0;
-}
-
-/* Pulso de onda — fica ABAIXO do ícone de play */
-.v-fundo-wave {
-  display: flex; align-items: flex-end; gap: 3px;
-  height: 28px; justify-content: center;
-  margin-top: 2px;
-}
-.v-fundo-wave span {
-  display: block; width: 3px; background: var(--gold);
-  border-radius: 2px; opacity: .5;
-  animation: waveBar .9s ease-in-out infinite alternate;
-}
-.v-fundo-wave span:nth-child(1){height:6px;  animation-delay:0s}
-.v-fundo-wave span:nth-child(2){height:16px; animation-delay:.1s}
-.v-fundo-wave span:nth-child(3){height:10px; animation-delay:.2s}
-.v-fundo-wave span:nth-child(4){height:20px; animation-delay:.05s}
-.v-fundo-wave span:nth-child(5){height:12px; animation-delay:.15s}
-.v-fundo-wave span:nth-child(6){height:18px; animation-delay:.25s}
-.v-fundo-wave span:nth-child(7){height:8px;  animation-delay:.08s}
-.v-fundo-wave span:nth-child(8){height:14px; animation-delay:.18s}
-.v-fundo-wave span:nth-child(9){height:6px;  animation-delay:.3s}
-.v-fundo-wave.tocando span { animation-duration: .38s; opacity: .92; }
-@keyframes waveBar { from{transform:scaleY(.2)} to{transform:scaleY(1)} }
-
-.v-titulo-t {
-  font-family: 'Playfair Display', serif; font-size: 1.3rem;
-  color: var(--cream); text-align: center;
-  padding: 0 2rem; line-height: 1.35;
-  text-shadow: 0 2px 12px rgba(0,0,0,.6);
-}
-.v-data-t { font-size: .78rem; color: var(--gold); letter-spacing: .07em; }
-
-/* ─ RODAPÉ DO DESTAQUE ─ */
-.v-rodape {
-  padding: 1.1rem 1.6rem;
-  display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; gap: .8rem;
-  background: var(--dark2);
-  border-top: 1px solid rgba(200,168,75,.1);
-}
-.expert-mini { display: flex; align-items: center; gap: .8rem; }
+.v-area:hover .tri { filter: drop-shadow(0 0 14px rgba(200,168,75,.9)); }
+.v-titulo-t { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--cream); text-align: center; padding: 0 2.5rem; line-height: 1.3; }
+.v-data-t { font-size: .8rem; color: var(--gold); letter-spacing: .06em; }
+.v-rodape { padding: 1.4rem 1.8rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+.expert-mini { display: flex; align-items: center; gap: .85rem; }
 .av-mini {
-  width: 42px; height: 42px; background: var(--dark4); border: 2px solid var(--gold);
+  width: 46px; height: 46px; background: var(--dark4); border: 2px solid var(--gold);
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-family: 'Playfair Display', serif; font-size: .92rem; color: var(--gold); font-weight: 700;
-  flex-shrink: 0;
+  font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); font-weight: 700;
 }
-.en { font-weight: 500; font-size: .88rem; color: var(--cream); }
-.ec { font-size: .72rem; color: var(--muted); }
+.en { font-weight: 500; font-size: .92rem; color: var(--cream); }
+.ec { font-size: .75rem; color: var(--muted); }
 
-/* ─ STATS — nova estilização ─ */
-.estats { display: flex; gap: .6rem; align-items: center; }
-.estat {
-  display: flex; flex-direction: column; align-items: center;
-  background: var(--dark3);
-  border: 1px solid rgba(200,168,75,.12);
-  border-radius: 6px;
-  padding: .5rem .9rem;
-  min-width: 72px;
-  transition: border-color .2s;
-}
-.estat:hover { border-color: rgba(200,168,75,.32); }
-.estat-like:hover { border-color: rgba(74,124,89,.45); }
-.estat-like.curtido { border-color: rgba(74,124,89,.5); background: rgba(74,124,89,.08); }
-.estat-like.curtido .estat-n { color: var(--green2); }
-[data-tema="claro"] .estat-like.curtido { background: rgba(46,122,74,.08); }
-.estat-n {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 1rem; color: var(--gold);
-  line-height: 1.1; font-weight: 500;
-  letter-spacing: .02em;
-}
-.estat-l {
-  font-size: .58rem; color: var(--muted);
-  letter-spacing: .12em; text-transform: uppercase;
-  margin-top: .25rem; font-weight: 400;
-}
+/* Estatísticas do vídeo destaque */
+.estats { display: flex; gap: 2rem; align-items: flex-end; }
+.estat { text-align: center; }
+.estat-n { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--gold); line-height: 1.2; }
+.estat-l { font-size: .68rem; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: .3rem; }
 
 /* ─ BOTÃO LIKE DESTAQUE ─ */
 .btn-like-dest {
   display: inline-flex; align-items: center; gap: 6px;
   background: transparent; border: 1px solid rgba(200,168,75,.25);
-  color: var(--muted); padding: .38rem .75rem; border-radius: 20px;
+  color: var(--muted); padding: .38rem .85rem; border-radius: 20px;
   cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: .78rem;
   transition: all .22s; line-height: 1; white-space: nowrap;
 }
@@ -850,88 +541,39 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 /* ════════════════════════════════
    MODAL
 ════════════════════════════════ */
-/* ════ PLAYER EMBUTIDO NO DESTAQUE ════
-   Aparece como overlay na base da imagem, não empurra o conteúdo
-════════════════════════════════════ */
+/* ════ PLAYER EMBUTIDO NO DESTAQUE ════ */
 #dest-player {
-  display: none;
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
-  flex-direction: column;
-  background: linear-gradient(transparent, rgba(0,0,0,.82) 30%, rgba(0,0,0,.92));
-  backdrop-filter: blur(2px);
+  display: none; flex-direction: column;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(200,168,75,.15);
 }
 #dest-player.vis { display: flex; }
-
-/* Barra de progresso — estreita, clicável */
 #dest-waveform-wrap {
-  position: relative; height: 18px;
-  cursor: pointer; overflow: visible;
-  display: flex; align-items: center;
-  /* Área de hit generosa para facilitar o clique */
-  padding: 7px 0;
-  box-sizing: content-box;
+  position: relative; height: 52px; background: rgba(0,0,0,.3);
+  cursor: pointer; overflow: hidden;
 }
-/* A trilha visual fica no centro via pseudo-elemento */
-#dest-waveform-wrap::before {
-  content: ''; position: absolute;
-  left: 0; right: 0; top: 50%; transform: translateY(-50%);
-  height: 3px;
-  background: rgba(255,255,255,.22);
-  border-radius: 2px;
-  transition: height .15s;
-  pointer-events: none;
-}
-#dest-waveform-wrap:hover::before { height: 5px; }
-#dest-waveform-canvas { width:100%; height:3px; display:block; position:relative; z-index:1; }
+#dest-waveform-canvas { width:100%; height:100%; display:block; }
 #dest-prog-line {
-  position:absolute; top:50%; transform:translateY(-50%);
-  width:2px; height:12px;
-  background: var(--gold); pointer-events:none; left:0%;
-  box-shadow: 0 0 4px rgba(200,168,75,.8);
-  border-radius: 1px; z-index:2;
+  position:absolute; top:0; width:2px; height:100%;
+  background: rgba(200,168,75,.8); pointer-events:none; left:0%;
 }
-/* Thumb dourado visível ao hover */
-#dest-waveform-wrap::after {
-  content:''; position:absolute; top:50%; transform:translate(-50%,-50%);
-  left: var(--prog, 0%);
-  width:13px; height:13px; border-radius:50%;
-  background: var(--gold); opacity:0;
-  transition: opacity .15s; pointer-events:none;
-  box-shadow: 0 0 8px rgba(200,168,75,.7);
-  z-index:3;
-}
-#dest-waveform-wrap:hover::after,
-#dest-waveform-wrap.dragging::after { opacity:1; }
-
-/* Barra de progresso preenchida via JS */
-#dest-prog-fill {
-  position:absolute; top:50%; transform:translateY(-50%);
-  left:0; height:3px;
-  background: var(--gold); border-radius:2px; width:0%;
-  pointer-events:none; z-index:1;
-  transition: height .15s;
-}
-#dest-waveform-wrap:hover #dest-prog-fill { height: 5px; }
-
 #dest-controls {
-  display:flex; align-items:center; gap:.5rem;
-  padding:.45rem 1rem .55rem; flex-wrap:nowrap;
-  min-height: 44px;
+  display:flex; align-items:center; gap:.7rem;
+  padding:.5rem 1.2rem; flex-wrap:wrap;
 }
 .dest-btn {
   background:none; border:none; cursor:pointer;
-  color:rgba(255,255,255,.85); width:32px; height:32px;
+  color:rgba(255,255,255,.85); width:30px; height:30px;
   display:flex; align-items:center; justify-content:center;
   border-radius:4px; transition:color .15s; padding:0; flex-shrink:0;
 }
 .dest-btn:hover { color:var(--gold); }
 .dest-btn svg { width:18px; height:18px; fill:currentColor; }
-#dest-time { font-size:.7rem; color:rgba(255,255,255,.65); white-space:nowrap; letter-spacing:.02em; }
+#dest-time { font-size:.72rem; color:rgba(255,255,255,.7); white-space:nowrap; }
 #dest-spacer { flex:1; }
 #dest-vol-slider {
-  -webkit-appearance:none; width:72px; height:3px;
-  border-radius:3px; background:rgba(255,255,255,.22); outline:none; cursor:pointer;
-  accent-color: var(--gold);
+  -webkit-appearance:none; width:70px; height:3px;
+  border-radius:3px; background:rgba(255,255,255,.25); outline:none; cursor:pointer;
 }
 #dest-vol-slider::-webkit-slider-thumb {
   -webkit-appearance:none; width:11px; height:11px;
@@ -1132,15 +774,11 @@ footer strong { color: var(--gold); }
   .estats { flex-wrap: wrap; gap: .8rem; }
   .estat-n { font-size: 1rem; }
 
-  /* Player embutido destaque — overlay, sem alterar altura */
-  #dest-controls { padding: .4rem .8rem; gap: .35rem; min-height: 40px; }
-  #dest-waveform-wrap { height: 3px; }
-  #dest-vol-slider { width: 55px; }
+  /* Player embutido */
+  #dest-controls { padding: .4rem .8rem; gap: .5rem; flex-wrap: wrap; }
+  #dest-waveform-wrap { height: 40px; }
   #dest-vol-pct { display: none; }
   #dest-spacer { display: none; }
-  /* Stats compactos */
-  .estats { gap: .4rem; }
-  .estat { padding: .4rem .65rem; min-width: 60px; }
 
   /* Grade episódios */
   .grade-v { grid-template-columns: 1fr 1fr; gap: .8rem; }
@@ -1164,20 +802,11 @@ footer strong { color: var(--gold); }
   .bio-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .bio-card { position: static; }
 
-  /* Modal áudio */
+  /* Modal */
   .modal-inner { width: 96vw; }
   .modal-cab { padding: .8rem 1rem; }
-  #am-bottom { gap: .4rem; flex-wrap: wrap; }
-  #am-vol-slider { width: 55px; }
-  #am-cover-screen { padding: 1.4rem 1rem .8rem; gap: .7rem; }
-  #am-cover-art { width: 72px; height: 72px; }
-  #am-cover-art svg { width: 72px; height: 72px; }
-  #am-ep-titulo { font-size: .82rem; }
-  #am-progress-wrap { height: 5px; }
-  .am-btn { width: 30px; height: 30px; }
-  .am-btn svg { width: 17px; height: 17px; }
-  #am-time { font-size: .68rem; }
-  #am-speed { font-size: .65rem; }
+  #am-bottom { gap: .4rem; }
+  #am-vol-slider { width: 50px; }
 
   /* Menu perfil */
   #menuPerfil { right: 1rem; min-width: 200px; }
@@ -1201,8 +830,6 @@ footer strong { color: var(--gold); }
   .btn-play { width: 44px; height: 44px; }
   .tri { border-top-width: 13px; border-bottom-width: 13px; border-left-width: 22px; }
   .v-titulo-t { font-size: 1rem; padding: 0 1rem; }
-  #destPlayBtn.pausado::before,
-  #destPlayBtn.pausado::after { width: 4px; height: 18px; }
 
   /* Grade — coluna única */
   .grade-v { grid-template-columns: 1fr; }
@@ -1224,23 +851,6 @@ footer strong { color: var(--gold); }
 
   /* Paginação */
   #ep-paginacao button { font-size: .68rem; padding: .3rem .65rem; }
-
-  /* Modal — ocupa tela toda no celular pequeno */
-  .modal-inner { width: 100vw; border-radius: 0; }
-  #modal { align-items: flex-end; }
-  #modal.aberto .modal-inner { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-top-left-radius: 12px; border-top-right-radius: 12px; max-height: 92vh; overflow-y: auto; }
-  #am-cover-screen { padding: 1rem .8rem .6rem; }
-  #am-cover-art { width: 60px; height: 60px; }
-  #am-cover-art svg { width: 60px; height: 60px; }
-
-  /* Player destaque — waveform overlay */
-  #dest-controls { padding: .35rem .6rem; gap: .3rem; }
-  .dest-btn { width: 30px; height: 30px; }
-  /* Stats em linha única */
-  .estats { gap: .3rem; }
-  .estat { padding: .35rem .55rem; min-width: 52px; }
-  .estat-n { font-size: .9rem; }
-  .estat-l { font-size: .55rem; }
 }
 </style>
 </head>
@@ -1321,7 +931,7 @@ footer strong { color: var(--gold); }
         <audio id="am-audio-el" preload="none" style="display:none"></audio>
         <!-- Controles -->
         <div id="am-controls">
-          <div id="am-progress-wrap" onmousedown="amSeek(event)" ontouchstart="amSeekTouch(event)">
+          <div id="am-progress-wrap" onmousedown="amSeek(event)">
             <div id="am-buf"></div>
             <div id="am-prog"></div>
           </div>
@@ -1460,29 +1070,23 @@ footer strong { color: var(--gold); }
     </div>
     <div class="v-area" id="vAreaDest">
       <div class="v-fundo" id="vFundoDest">
-        <!-- Play centralizado -->
         <div class="btn-play" id="destPlayBtn" onclick="destToggle()" style="cursor:pointer">
-          <div class="tri"></div>
+          <div class="tri" id="destTriIcon"></div>
         </div>
-        <!-- Pulso sonoro — direto abaixo do botão play -->
+        <div class="v-titulo-t" id="tituloDest">Carregando...</div>
+        <div class="v-data-t" id="dataVid"></div>
         <div class="v-fundo-wave" id="destWave">
           <span></span><span></span><span></span><span></span><span></span>
           <span></span><span></span><span></span><span></span>
         </div>
-        <!-- Título e data -->
-        <div class="v-titulo-t" id="tituloDest">Carregando...</div>
-        <div class="v-data-t" id="dataVid"></div>
       </div>
-      <!-- Player overlay — aparece na base da imagem ao clicar play -->
+      <!-- Player embutido — aparece ao clicar play -->
       <div id="dest-player">
         <audio id="dest-audio-el" preload="none" style="display:none"></audio>
-        <!-- Barra de progresso fina e clicável -->
-        <div id="dest-waveform-wrap" onmousedown="destSeek(event)" ontouchstart="destSeek(event)">
+        <div id="dest-waveform-wrap" onmousedown="destSeek(event)">
           <canvas id="dest-waveform-canvas"></canvas>
-          <div id="dest-prog-fill"></div>
           <div id="dest-prog-line"></div>
         </div>
-        <!-- Controles compactos -->
         <div id="dest-controls">
           <button class="dest-btn" onclick="destSkip(-15)" title="Voltar 15s">
             <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="15.5" text-anchor="middle" font-size="5.5" fill="currentColor" font-family="sans-serif">15</text></svg>
@@ -1496,12 +1100,12 @@ footer strong { color: var(--gold); }
           </button>
           <span id="dest-time">0:00 / 0:00</span>
           <div id="dest-spacer"></div>
-          <div style="display:flex;align-items:center;gap:.35rem;flex-shrink:0">
-            <svg id="dest-vol-icon" onclick="destMuteToggle()" style="width:13px;height:13px;fill:rgba(255,255,255,.55);cursor:pointer;flex-shrink:0" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.97z"/></svg>
+          <div style="display:flex;align-items:center;gap:.4rem">
+            <svg id="dest-vol-icon" onclick="destMuteToggle()" style="width:14px;height:14px;fill:rgba(255,255,255,.6);cursor:pointer;flex-shrink:0" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.97z"/></svg>
             <input type="range" id="dest-vol-slider" min="0" max="100" value="100" oninput="destVol(this.value)" style="accent-color:var(--gold)">
-            <span id="dest-vol-pct" style="font-size:.62rem;color:rgba(255,255,255,.45);min-width:28px">100%</span>
+            <span id="dest-vol-pct" style="font-size:.65rem;color:rgba(255,255,255,.5);min-width:30px">100%</span>
           </div>
-          <select onchange="destSpeed(this.value)" style="background:transparent;border:none;color:rgba(255,255,255,.45);font-size:.65rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;flex-shrink:0">
+          <select onchange="destSpeed(this.value)" style="background:transparent;border:none;color:rgba(255,255,255,.5);font-size:.68rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif">
             <option value="0.75">0.75×</option>
             <option value="1" selected>1×</option>
             <option value="1.25">1.25×</option>
@@ -1511,13 +1115,12 @@ footer strong { color: var(--gold); }
         </div>
       </div>
     </div>
-    <!-- Rodapé: autor + stats -->
     <div class="v-rodape">
       <div class="expert-mini">
-        <div class="av-mini" id="avMiniDest">FT</div>
+        <div class="av-mini">FT</div>
         <div>
-          <div class="en" id="enNomeDest">Fábio Toledo</div>
-          <div class="ec" id="ecCargoDest">Especialista em Mercado Orizícola · São Gabriel — RS</div>
+          <div class="en">Fábio Toledo</div>
+          <div class="ec">Especialista em Mercado Orizícola · São Gabriel — RS</div>
         </div>
       </div>
       <div class="estats">
@@ -1529,12 +1132,13 @@ footer strong { color: var(--gold); }
           <div class="estat-n" id="viewsDest">--</div>
           <div class="estat-l">Escutas</div>
         </div>
-        <div class="estat estat-like" id="estatLikeDest" onclick="curtirDestaque(event)" style="cursor:pointer">
-          <div class="estat-n" style="display:flex;align-items:center;gap:4px">
-            <svg viewBox="0 0 24 24" id="likeDestIco" style="width:13px;height:13px;fill:currentColor;flex-shrink:0;opacity:.8"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-            <span id="likesDestNum">0</span>
-          </div>
-          <div class="estat-l">Curtidas</div>
+        <div class="estat">
+          <!-- LIKE DESTAQUE: fora de estat-n para não herdar font-size grande -->
+          <button class="btn-like-dest" id="btnLikeDest" onclick="curtirDestaque(event)">
+            <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+            <span id="likesDest">1.247</span>
+          </button>
+          <div class="estat-l" style="margin-top:.4rem">Curtidas</div>
         </div>
       </div>
     </div>
@@ -1636,23 +1240,8 @@ footer strong { color: var(--gold); }
 <section class="pagina" id="especialista"><div id="esp-render"></div></section>
 
 <footer>
-  <div style="display:flex;flex-direction:column;align-items:center;gap:.6rem">
-    <div>
-      <strong>ArrozMarket</strong> &nbsp;·&nbsp; Podcast diário do mercado orizícola
-    </div>
-    <div style="display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:.72rem">
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('priv')">Política de Privacidade</span>
-      <span style="color:rgba(200,168,75,.2)">|</span>
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('term')">Termos de Uso</span>
-      <span style="color:rgba(200,168,75,.2)">|</span>
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('cook')">Cookies</span>
-    </div>
-    <div style="font-size:.7rem;color:rgba(122,118,112,.6)">
-      © <span id="anoFooter"></span> Fábio Toledo · São Gabriel — RS · CNPJ 00.000.000/0001-00
-    </div>
-  </div>
+  <strong>ArrozMarket</strong> &nbsp;·&nbsp; Podcast diário do mercado orizícola &nbsp;·&nbsp; © 2025 · Fábio Toledo · São Gabriel — RS
 </footer>
-<script>document.getElementById('anoFooter').textContent=new Date().getFullYear();</script>
 
 <!-- ════════════════════════════════════
      JAVASCRIPT — único bloco, sem duplicatas
@@ -1675,81 +1264,25 @@ const CORES = [
 const POLS = {
   priv: {
     t: 'Política de Privacidade',
-    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
-      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Política de Privacidade</h4>
-      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026 · Em conformidade com a <b style="color:var(--cream)">LGPD (Lei 13.709/2018)</b></p>
-
-      <b style="color:var(--cream)">1. Responsável pelo tratamento</b>
-      <p style="margin:.3rem 0 .8rem">Fábio Toledo — ArrozMarket, São Gabriel — RS. Contato: <span style="color:var(--gold)">contato@arrozmarket.com.br</span></p>
-
-      <b style="color:var(--cream)">2. Dados coletados</b>
-      <p style="margin:.3rem 0 .8rem">Nome, endereço de e-mail e preferências de interface (tema e cor). Não coletamos CPF, telefone, localização ou dados financeiros.</p>
-
-      <b style="color:var(--cream)">3. Finalidade e base legal</b>
-      <p style="margin:.3rem 0 .8rem">Os dados são usados exclusivamente para autenticação, personalização da interface e envio de notificações solicitadas pelo próprio usuário (base legal: legítimo interesse e consentimento — Art. 7º, I e IX da LGPD).</p>
-
-      <b style="color:var(--cream)">4. Compartilhamento</b>
-      <p style="margin:.3rem 0 .8rem">Não vendemos, alugamos nem compartilhamos seus dados com terceiros para fins comerciais.</p>
-
-      <b style="color:var(--cream)">5. Segurança</b>
-      <p style="margin:.3rem 0 .8rem">Senhas armazenadas com hash bcrypt (salt 10). Sessões via JWT com expiração. Tráfego protegido por HTTPS.</p>
-
-      <b style="color:var(--cream)">6. Seus direitos (LGPD Art. 18)</b>
-      <p style="margin:.3rem 0 .8rem">Você pode a qualquer momento: acessar seus dados, corrigi-los, excluir sua conta (Configurações → Excluir conta) ou solicitar portabilidade via <span style="color:var(--gold)">contato@arrozmarket.com.br</span>.</p>
-
-      <b style="color:var(--cream)">7. Retenção</b>
-      <p style="margin:.3rem 0 .8rem">Dados mantidos enquanto a conta estiver ativa. Após exclusão, removidos em até 30 dias.</p>
-    </div>`
+    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Política de Privacidade</h4>
+        <p><b style="color:var(--cream)">Coleta:</b> Nome, e-mail e preferências de uso. Não compartilhamos com terceiros.</p><br>
+        <p><b style="color:var(--cream)">Uso:</b> Exclusivamente para autenticação e personalização.</p><br>
+        <p><b style="color:var(--cream)">Segurança:</b> Senhas com hash bcrypt. Sessões via JWT com expiração.</p><br>
+        <p><b style="color:var(--cream)">Direitos:</b> Exclua sua conta em Configurações → Excluir conta.</p><br>
+        <p><b style="color:var(--cream)">Contato:</b> contato@arrozmarket.com.br</p>`
   },
   term: {
     t: 'Termos de Uso',
-    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
-      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Termos de Uso</h4>
-      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026</p>
-
-      <b style="color:var(--cream)">1. Aceite</b>
-      <p style="margin:.3rem 0 .8rem">Ao acessar o ArrozMarket você concorda com estes Termos. Se não concordar, não utilize o serviço.</p>
-
-      <b style="color:var(--cream)">2. Natureza informativa</b>
-      <p style="margin:.3rem 0 .8rem">As cotações e análises publicadas têm caráter <b style="color:var(--cream)">exclusivamente informativo</b> e não constituem recomendação de compra, venda ou investimento. Decisões comerciais baseadas neste conteúdo são de inteira responsabilidade do usuário.</p>
-
-      <b style="color:var(--cream)">3. Propriedade intelectual</b>
-      <p style="margin:.3rem 0 .8rem">Todo o conteúdo (áudios, textos, análises, marca ArrozMarket) pertence a Fábio Toledo. É proibida a reprodução, redistribuição ou comercialização sem autorização expressa por escrito.</p>
-
-      <b style="color:var(--cream)">4. Conta de usuário</b>
-      <p style="margin:.3rem 0 .8rem">O usuário é responsável por manter a confidencialidade de sua senha e por todas as atividades realizadas em sua conta.</p>
-
-      <b style="color:var(--cream)">5. Limitação de responsabilidade</b>
-      <p style="margin:.3rem 0 .8rem">O ArrozMarket não se responsabiliza por perdas ou danos decorrentes do uso ou da impossibilidade de uso do serviço, nem pela imprecisão de cotações oriundas de fontes externas.</p>
-
-      <b style="color:var(--cream)">6. Foro</b>
-      <p style="margin:.3rem 0 .8rem">Fica eleito o foro da Comarca de São Gabriel — RS para dirimir quaisquer controvérsias.</p>
-    </div>`
+    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Termos de Uso</h4>
+        <p><b style="color:var(--cream)">Informativo:</b> Cotações são orientativas e não constituem recomendação de investimento.</p><br>
+        <p><b style="color:var(--cream)">Propriedade intelectual:</b> Todo conteúdo pertence a Fábio Toledo / ArrozMarket. Reprodução proibida sem autorização.</p><br>
+        <p><b style="color:var(--cream)">Isenção:</b> ArrozMarket não se responsabiliza por decisões baseadas nas cotações.</p>`
   },
   cook: {
     t: 'Política de Cookies',
-    c: `<div style="line-height:1.8;font-size:.84rem;color:var(--muted)">
-      <h4 style="color:var(--cream);margin-bottom:.5rem;font-family:'Playfair Display',serif">Política de Cookies e Armazenamento Local</h4>
-      <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026</p>
-
-      <b style="color:var(--cream)">O que armazenamos</b>
-      <p style="margin:.3rem 0 .8rem">Este site usa <b style="color:var(--cream)">localStorage</b> (armazenamento local do navegador) — não cookies tradicionais. Os dados ficam apenas no seu dispositivo e não são enviados a servidores de terceiros.</p>
-
-      <p style="margin:.3rem 0 .4rem">Itens armazenados:</p>
-      <ul style="margin:.3rem 0 .8rem;padding-left:1.2rem">
-        <li><span style="color:var(--cream)">am_tok</span> — Token de autenticação JWT</li>
-        <li><span style="color:var(--cream)">am_u</span> — Dados básicos do usuário logado (nome, e-mail)</li>
-        <li><span style="color:var(--cream)">am_tema</span> — Preferência de tema (claro/escuro)</li>
-        <li><span style="color:var(--cream)">am_cor</span> — Cor de destaque escolhida</li>
-        <li><span style="color:var(--cream)">am_cur</span> — Episódios curtidos (IDs locais)</li>
-      </ul>
-
-      <b style="color:var(--cream)">Sem rastreamento</b>
-      <p style="margin:.3rem 0 .8rem">Não utilizamos Google Analytics, Facebook Pixel, cookies de publicidade nem qualquer tecnologia de rastreamento de terceiros.</p>
-
-      <b style="color:var(--cream)">Como remover</b>
-      <p style="margin:.3rem 0 .8rem">Acesse as Configurações do seu navegador → Privacidade → Limpar dados do site → arrozmarket.com.br. Isso encerrará sua sessão.</p>
-    </div>`
+    c: `<h4 style="color:var(--cream);margin-bottom:.8rem">Política de Cookies</h4>
+        <p><b style="color:var(--cream)">O que usamos:</b> localStorage para sessão, tema e cor. Sem cookies de rastreamento.</p><br>
+        <p><b style="color:var(--cream)">Como remover:</b> Limpe os dados do site nas configurações do navegador.</p>`
   }
 };
 
@@ -2091,9 +1624,7 @@ function aplicarTema(t) {
   document.documentElement.setAttribute('data-tema', t);
   S.tema = t;
   localStorage.setItem('am_tema', t);
-  // Garante que o atributo é removido quando escuro (estado padrão)
-  if (t === 'escuro') document.documentElement.removeAttribute('data-tema');
-  else document.documentElement.setAttribute('data-tema', 'claro');
+  localStorage.setItem('am_tema', t);
 }
 function alternarTema() {
   aplicarTema(S.tema === 'escuro' ? 'claro' : 'escuro');
@@ -2229,11 +1760,11 @@ function getThumbPadraoPublico(cat) {
 }
 
 async function carregarAudios() {
-  // 1. Busca da API (fonte de verdade — contém urls /audios/... do servidor)
+  // 1. Busca da API
   let apiVids = [];
   try { apiVids = await apiFetch('GET', '/audios'); } catch(e) {}
 
-  // 2. Lê do localStorage (salvo pelo admin) — pode conter url real do servidor
+  // 2. Lê do localStorage (salvo pelo admin) — contém url blob e thumb
   let localVids = [];
   try { localVids = JSON.parse(localStorage.getItem('am_v') || '[]'); } catch(e) {}
 
@@ -2242,42 +1773,30 @@ async function carregarAudios() {
   // Helper: aplica thumb padrão por categoria
   function comThumb(v) {
     const catKey = (v.cat || 'Podcast Diário').replace(/\s+/g,'_');
-    // Prioridade: thumb individual > thumb de categoria do admin > vazio (usa gradiente CSS)
-    const thumb = v.thumb || thumbsMap[catKey] || '';
-    return { ...v, thumb };
-  }
-
-  // Helper: verifica se URL é válida para o site público (não blob:)
-  function urlValida(url) {
-    if (!url || typeof url !== 'string') return false;
-    if (url.startsWith('blob:')) return false; // blob URLs do admin não funcionam no site
-    return url.length > 4;
+    return { ...v, thumb: v.thumb || thumbsMap[catKey] || '' };
   }
 
   if (apiVids.length > 0) {
-    // Mapa de ids locais para enriquecimento (thumb, url blob como fallback)
+    // Mapa de ids locais para enriquecimento (url blob, thumb)
     const localMap = {};
     for (const lv of localVids) localMap[lv.id] = lv;
     const apiIdSet = new Set(apiVids.map(v => v.id));
 
     S.vids = apiVids.map(v => {
       const lv = localMap[v.id] || {};
-      // Prioridade: url do servidor (API) > url local válida
-      const url = urlValida(v.url) ? v.url : (urlValida(lv.url) ? lv.url : '');
-      return comThumb({ ...v, url, thumb: lv.thumb || v.thumb || '' });
+      return comThumb({ ...v, url: v.url || lv.url || '', thumb: lv.thumb || v.thumb || '' });
     });
 
     // Episódios apenas no local (ainda não na API)
     for (const lv of localVids) {
       if (!apiIdSet.has(lv.id) && (lv.status === 'pub' || !lv.status)) {
-        const url = urlValida(lv.url) ? lv.url : '';
-        S.vids.unshift(comThumb({ ...lv, url }));
+        S.vids.unshift(comThumb(lv));
       }
     }
   } else if (localVids.length > 0) {
     S.vids = localVids
       .filter(v => v.status === 'pub' || !v.status)
-      .map(v => comThumb({ ...v, url: urlValida(v.url) ? v.url : '' }));
+      .map(comThumb);
   } else {
     S.vids = VIDS_LOCAL;
   }
@@ -2404,38 +1923,33 @@ async function destLoadWaveform(url) {
 }
 
 function destDrawStaticWave() {
-  const pFill = document.getElementById('dest-prog-fill');
-  const pLine = document.getElementById('dest-prog-line');
-  const wrap  = document.getElementById('dest-waveform-wrap');
-  const audio = document.getElementById('dest-audio-el');
-  const pct   = (audio && audio.duration) ? audio.currentTime / audio.duration : 0;
-  const pctStr = (pct * 100).toFixed(2) + '%';
-  if (pFill) pFill.style.width = pctStr;
-  if (pLine) pLine.style.left  = pctStr;
-  if (wrap)  wrap.style.setProperty('--prog', pctStr);
-  // Canvas waveform (se disponível)
   const canvas = document.getElementById('dest-waveform-canvas');
-  if (!canvas || !DEST.waveData || canvas.offsetWidth === 0) return;
+  if (!canvas || !DEST.waveData) return;
   const dpr = window.devicePixelRatio || 1;
-  if (canvas.width !== canvas.offsetWidth * dpr) {
-    canvas.width  = canvas.offsetWidth  * dpr;
-    canvas.height = canvas.offsetHeight * dpr;
-  }
+  canvas.width  = canvas.offsetWidth  * dpr;
+  canvas.height = canvas.offsetHeight * dpr;
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
-  if (!W || !H) return;
-  ctx.clearRect(0,0,W,H);
   const { mins, maxs, W: wW } = DEST.waveData;
+  ctx.clearRect(0,0,W,H);
+  // Fundo leve
+  ctx.fillStyle = 'rgba(0,0,0,.25)';
+  ctx.fillRect(0,0,W,H);
+  // Parte já tocada (dourado)
+  const audio = document.getElementById('dest-audio-el');
+  const pct = (audio && audio.duration) ? audio.currentTime / audio.duration : 0;
   const splitX = Math.floor(pct * W);
   for (let x = 0; x < W; x++) {
     const xi = Math.floor(x * wW / W);
     const y1 = ((1 - maxs[xi]) / 2) * H;
     const y2 = ((1 - mins[xi]) / 2) * H;
-    ctx.strokeStyle = x < splitX ? 'rgba(200,168,75,.9)' : 'rgba(200,168,75,.3)';
+    ctx.strokeStyle = x < splitX ? 'rgba(200,168,75,.9)' : 'rgba(200,168,75,.35)';
     ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
   }
+  // Linha de progresso
+  document.getElementById('dest-prog-line').style.left = (pct * 100) + '%';
 }
 
 function destRaf() {
@@ -2447,15 +1961,17 @@ function destRaf() {
     const pct = cur / dur;
     // Atualiza tempo
     document.getElementById('dest-time').textContent = amFmt(cur) + ' / ' + amFmt(dur);
-    // Atualiza barra de progresso e waveform
-    destDrawStaticWave();
-    // Anima barras de pulso sonoro no fundo conforme áudio
+    // Redesenha waveform com progresso real
+    if (DEST.waveData) destDrawStaticWave();
+    else document.getElementById('dest-prog-line').style.left = (pct*100)+'%';
+    // Anima barras de onda no destaque conforme áudio
     if (DEST.analyser) {
       const data = new Uint8Array(DEST.analyser.frequencyBinCount);
       DEST.analyser.getByteFrequencyData(data);
+      // Usa Float32Array vetorial — médias por banda
       const spans = document.querySelectorAll('#destWave span');
       const n = spans.length;
-      const bSize = Math.floor(data.length / n) || 1;
+      const bSize = Math.floor(data.length / n);
       const vec = new Float32Array(n);
       for (let i = 0; i < n; i++) {
         let sum = 0;
@@ -2463,9 +1979,9 @@ function destRaf() {
         vec[i] = sum / bSize;
       }
       for (let i = 0; i < n; i++) {
-        const h = Math.max(4, (vec[i] / 255) * 28);
+        const h = Math.max(4, (vec[i] / 255) * 32);
         spans[i].style.height = h + 'px';
-        spans[i].style.animationDuration = '0s';
+        spans[i].style.animationDuration = '0s'; // para quando tocando usa altura real
       }
     }
     destRaf();
@@ -2536,67 +2052,24 @@ function destSpeed(v) {
   const a = document.getElementById('dest-audio-el');
   if (a) a.playbackRate = parseFloat(v);
 }
-/* ── Seek na barra do player destaque (clique + arrasto) ── */
-const DEST_SEEK = { dragging: false };
-
-function destSeekRatio(e) {
-  const wrap = document.getElementById('dest-waveform-wrap');
-  const rect  = wrap.getBoundingClientRect();
-  const cx    = e.touches ? e.touches[0].clientX : e.clientX;
-  return Math.max(0, Math.min(1, (cx - rect.left) / rect.width));
-}
-
-function destSeekApply(ratio) {
+function destSeek(e) {
   const a = document.getElementById('dest-audio-el');
   if (!a || !a.duration) return;
-  a.currentTime = ratio * a.duration;
-  // Atualiza thumb via CSS custom property
-  const pctStr = (ratio * 100).toFixed(2) + '%';
-  document.getElementById('dest-waveform-wrap').style.setProperty('--prog', pctStr);
-  document.getElementById('dest-prog-fill').style.width = pctStr;
-  document.getElementById('dest-prog-line').style.left  = pctStr;
+  const rect = document.getElementById('dest-waveform-wrap').getBoundingClientRect();
+  a.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * a.duration;
 }
-
-function destSeek(e) {
-  e.preventDefault();
-  DEST_SEEK.dragging = true;
-  document.getElementById('dest-waveform-wrap').classList.add('dragging');
-  destSeekApply(destSeekRatio(e));
-}
-
-// Arrasto contínuo fora da barra
-document.addEventListener('mousemove', e => {
-  if (!DEST_SEEK.dragging) return;
-  destSeekApply(destSeekRatio(e));
-});
-document.addEventListener('touchmove', e => {
-  if (!DEST_SEEK.dragging) return;
-  e.preventDefault();
-  destSeekApply(destSeekRatio(e));
-}, { passive: false });
-document.addEventListener('mouseup',  () => {
-  if (!DEST_SEEK.dragging) return;
-  DEST_SEEK.dragging = false;
-  document.getElementById('dest-waveform-wrap').classList.remove('dragging');
-});
-document.addEventListener('touchend', () => {
-  if (!DEST_SEEK.dragging) return;
-  DEST_SEEK.dragging = false;
-  document.getElementById('dest-waveform-wrap').classList.remove('dragging');
-});
 
 /* Inicializa eventos do player embutido */
 function destInitEvents() {
   const audio = document.getElementById('dest-audio-el');
-  const playBtn = document.getElementById('destPlayBtn');
-
   audio.onplay = () => {
     DEST.playing = true;
     document.getElementById('dest-ico-play').style.display  = 'none';
     document.getElementById('dest-ico-pause').style.display = '';
     document.getElementById('dest-player').classList.add('vis');
     document.getElementById('destWave').classList.add('tocando');
-    if (playBtn) playBtn.classList.add('pausado');
+    // Troca ícone no botão grande para pause
+    document.getElementById('destTriIcon').style.cssText = 'width:4px;height:36px;background:var(--gold);border-radius:2px;box-shadow:10px 0 0 var(--gold);margin-left:4px';
     cancelAnimationFrame(DEST.rafId); destRaf();
   };
   audio.onpause = () => {
@@ -2604,16 +2077,17 @@ function destInitEvents() {
     document.getElementById('dest-ico-play').style.display  = '';
     document.getElementById('dest-ico-pause').style.display = 'none';
     document.getElementById('destWave').classList.remove('tocando');
-    if (playBtn) playBtn.classList.remove('pausado');
+    // Restaura triângulo
+    document.getElementById('destTriIcon').style.cssText = '';
     cancelAnimationFrame(DEST.rafId);
-    destDrawStaticWave();
+    if (DEST.waveData) destDrawStaticWave();
   };
   audio.onended = () => {
     DEST.playing = false;
     document.getElementById('dest-ico-play').style.display  = '';
     document.getElementById('dest-ico-pause').style.display = 'none';
     document.getElementById('destWave').classList.remove('tocando');
-    if (playBtn) playBtn.classList.remove('pausado');
+    document.getElementById('destTriIcon').style.cssText = '';
     cancelAnimationFrame(DEST.rafId);
   };
   audio.onloadedmetadata = () => {
@@ -2724,9 +2198,6 @@ function renderAudios() {
   const empty = document.getElementById('ep-empty');
   if (empty) empty.style.display = lista.length === 0 ? 'block' : 'none';
 
-  // Relê mapa de thumbs de categoria em tempo de renderização
-  const thumbsMap = getThumbsPadraoPublico();
-
   // ── Paginação ──
   const totalPags = Math.ceil(lista.length / EP_POR_PAG) || 1;
   EP_PAG = Math.max(1, Math.min(EP_PAG, totalPags));
@@ -2737,22 +2208,21 @@ function renderAudios() {
   const infoEl = document.getElementById('ep-pag-info');
   const prevEl = document.getElementById('ep-prev');
   const nextEl = document.getElementById('ep-next');
-  if (pagEl) pagEl.style.display = lista.length > EP_POR_PAG ? 'flex' : 'none';
+  if (pagEl) {
+    pagEl.style.display = lista.length > EP_POR_PAG ? 'flex' : 'none';
+  }
   if (infoEl) infoEl.textContent = `Pág. ${EP_PAG} / ${totalPags}`;
   if (prevEl) prevEl.disabled = EP_PAG <= 1;
   if (nextEl) nextEl.disabled = EP_PAG >= totalPags;
-
   g.innerHTML = pagLista.map(v => {
     const curtido = S.curtidos[v.id] || false;
     const cat = v.cat || 'Podcast Diário';
     const cfg = CAT_CFG[cat] || { cls:'cat-podcast', emoji:'🎙️' };
-    // Thumb: individual > categoria > gradiente CSS
-    const catKey = cat.replace(/\s+/g,'_');
-    const thumb = v.thumb || thumbsMap[catKey] || '';
-    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
+    /* escape seguro para uso no atributo onclick */
+    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
-        <div class="card-thumb-bg" style="${thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
+        <div class="card-thumb-bg" style="${v.thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(v.thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
         <span class="card-dur">${v.dur}</span>
       </div>
       <div class="card-corpo">
@@ -2770,24 +2240,22 @@ function renderAudios() {
   }).join('');
 }
 
-/* ═══ LIKE DESTAQUE ═══ */
+/* ═══ LIKE DESTAQUE (vídeo do dia) ═══ */
 function renderLikeDest() {
-  const numEl   = document.getElementById('likesDestNum');
-  const estatEl = document.getElementById('estatLikeDest');
-  if (numEl)   numEl.textContent = fmtN(S.likesDest);
-  if (estatEl) {
-    estatEl.classList.toggle('curtido', S.curtidoDest);
-  }
+  document.getElementById('likesDest').textContent = fmtN(S.likesDest);
+  if (S.curtidoDest) document.getElementById('btnLikeDest').classList.add('curtido');
 }
 
 function curtirDestaque(e) {
   e.stopPropagation();
   if (!S.usuario) { toast('Faça login para curtir.', 'err'); abrirAuth('login'); return; }
   S.curtidoDest = !S.curtidoDest;
-  S.likesDest   = Math.max(0, S.likesDest + (S.curtidoDest ? 1 : -1));
+  S.likesDest = Math.max(0, S.curtidoDest ? S.likesDest + 1 : S.likesDest - 1);
   localStorage.setItem('am_ld', S.likesDest);
   localStorage.setItem('am_cd', S.curtidoDest ? '1' : '0');
-  renderLikeDest();
+  const btn = document.getElementById('btnLikeDest');
+  btn.className = 'btn-like-dest' + (S.curtidoDest ? ' curtido' : '');
+  document.getElementById('likesDest').textContent = fmtN(S.likesDest);
   toast(S.curtidoDest ? 'Curtida registrada!' : 'Curtida removida.', S.curtidoDest ? 'ok' : '');
 }
 
@@ -2879,12 +2347,6 @@ function amSeek(e) {
   const rect = document.getElementById('am-progress-wrap').getBoundingClientRect();
   const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
   a.currentTime = ratio * a.duration;
-}
-
-/* Seek via touch no mobile */
-function amSeekTouch(e) {
-  e.preventDefault();
-  if (e.touches && e.touches[0]) amSeek(e.touches[0]);
 }
 
 /* Skip ±segundos */

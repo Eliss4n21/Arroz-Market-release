@@ -1,0 +1,22 @@
+# Ambiente
+.env
+.env.local
+
+# Dependências
+node_modules/
+
+# Dados persistentes (banco + áudios)
+data/
+*.json.bak
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
