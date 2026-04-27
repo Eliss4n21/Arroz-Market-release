@@ -1309,10 +1309,10 @@ footer strong { color: var(--gold); }
 <nav id="nav">
   <span class="logo" onclick="ir('inicio')">Arroz<span>Market</span></span>
   <ul class="nav-links">
-    <li><a class="ativo" onclick="ir('inicio',this)">Início</a></li>
-    <li><a onclick="ir('tecnico',this)">Técnico</a></li>
-    <li><a onclick="ir('precos',this)">Preços</a></li>
-    <li><a onclick="ir('especialista',this)">Especialista</a></li>
+    <li><a class="ativo" onclick="ir('inicio',this)" data-i18n="nav_inicio">Início</a></li>
+    <li><a onclick="ir('tecnico',this)" data-i18n="nav_tecnico">Técnico</a></li>
+    <li><a onclick="ir('precos',this)" data-i18n="nav_precos">Preços</a></li>
+    <li><a onclick="ir('especialista',this)" data-i18n="nav_especialista">Especialista</a></li>
   </ul>
   <div class="nav-dir">
     <div class="nav-data" id="navData"></div>
@@ -1326,8 +1326,8 @@ footer strong { color: var(--gold); }
       <div style="padding:.5rem 1.1rem .3rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(200,168,75,.08);margin-bottom:.2rem">Idioma / Language</div>
       <div class="idioma-item ativo"  onclick="setIdioma('pt')">🇧🇷 Português</div>
       <div class="idioma-item"        onclick="setIdioma('en')">🇺🇸 English</div>
+      <div class="idioma-item"        onclick="setIdioma('fr')">🇫🇷 Français</div>
       <div class="idioma-item idioma-soon" onclick="setIdioma('es')">🇪🇸 Español <span class="idioma-badge">em breve</span></div>
-      <div class="idioma-item idioma-soon" onclick="setIdioma('fr')">🇫🇷 Français <span class="idioma-badge">em breve</span></div>
       <div class="idioma-item idioma-soon" onclick="setIdioma('ru')">🇷🇺 Русский <span class="idioma-badge">em breve</span></div>
       <div class="idioma-item idioma-soon" onclick="setIdioma('zh')">🇨🇳 中文 <span class="idioma-badge">em breve</span></div>
     </div>
@@ -1343,16 +1343,16 @@ footer strong { color: var(--gold); }
 
 <!-- Drawer mobile -->
 <div id="nav-drawer">
-  <a class="ativo" onclick="ir('inicio',this);fecharDrawer()">Início</a>
-  <a onclick="ir('tecnico',this);fecharDrawer()">Técnico</a>
-  <a onclick="ir('precos',this);fecharDrawer()">Preços</a>
-  <a onclick="ir('especialista',this);fecharDrawer()">Especialista</a>
+  <a class="ativo" onclick="ir('inicio',this);fecharDrawer()" data-i18n="nav_inicio">Início</a>
+  <a onclick="ir('tecnico',this);fecharDrawer()" data-i18n="nav_tecnico">Técnico</a>
+  <a onclick="ir('precos',this);fecharDrawer()" data-i18n="nav_precos">Preços</a>
+  <a onclick="ir('especialista',this);fecharDrawer()" data-i18n="nav_especialista">Especialista</a>
   <div style="margin-top:.4rem;padding:.5rem 0 .2rem;border-top:1px solid rgba(200,168,75,.08);display:flex;gap:.4rem;flex-wrap:wrap">
     <span style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:.2rem">Idioma:</span>
     <button onclick="setIdioma('pt');fecharDrawer()" class="drawer-lang-btn" id="dlang-pt">🇧🇷 PT</button>
     <button onclick="setIdioma('en');fecharDrawer()" class="drawer-lang-btn" id="dlang-en">🇺🇸 EN</button>
+    <button onclick="setIdioma('fr');fecharDrawer()" class="drawer-lang-btn" id="dlang-fr">🇫🇷 FR</button>
     <button onclick="setIdioma('es');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇪🇸 ES</button>
-    <button onclick="setIdioma('fr');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇫🇷 FR</button>
     <button onclick="setIdioma('ru');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇷🇺 RU</button>
     <button onclick="setIdioma('zh');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇨🇳 ZH</button>
   </div>
@@ -1428,6 +1428,16 @@ footer strong { color: var(--gold); }
             </div>
             <span id="am-time">0:00 / 0:00</span>
             <div id="am-spacer"></div>
+            <!-- Seletor de idioma do áudio -->
+            <div id="am-lang-wrap" style="display:none;align-items:center;gap:.3rem;border:1px solid rgba(200,168,75,.2);border-radius:4px;padding:.2rem .45rem;cursor:pointer;position:relative" onclick="toggleAmLangMenu(event)" title="Idioma do Áudio">
+              <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:rgba(255,255,255,.55);flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+              <span id="am-lang-label" style="font-size:.65rem;color:rgba(255,255,255,.55);letter-spacing:.04em">PT</span>
+              <div id="am-lang-menu" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:var(--dark2);border:1px solid var(--gold-b);border-radius:6px;min-width:150px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.5);overflow:hidden">
+                <div style="padding:.3rem .8rem .2rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(200,168,75,.08)" data-i18n="player_audio_idioma">Idioma do Áudio</div>
+                <div id="am-lang-pt" onclick="amSetLang('pt',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''">🇧🇷 <span data-i18n="player_dub_pt">Português</span></div>
+                <div id="am-lang-en" onclick="amSetLang('en',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''">🇺🇸 <span data-i18n="player_dub_en">English</span></div>
+              </div>
+            </div>
             <select id="am-speed" onchange="amSpeed(this.value)" title="Velocidade" style="background:transparent;border:none;color:rgba(255,255,255,.55);font-size:.68rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;">
               <option value="0.75">0.75×</option>
               <option value="1" selected>1×</option>
@@ -1435,10 +1445,6 @@ footer strong { color: var(--gold); }
               <option value="1.5">1.5×</option>
               <option value="2">2×</option>
             </select>
-            <a id="am-audio-link" href="#" target="_blank" title="Abrir link do áudio">
-              <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-              Áudio
-            </a>
           </div>
         </div>
       </div>
@@ -1639,17 +1645,17 @@ footer strong { color: var(--gold); }
   <div class="grade-v" id="gradeV"></div>
   <!-- Paginação -->
   <div id="ep-paginacao" style="display:none;justify-content:center;align-items:center;gap:.5rem;margin-top:1.5rem;flex-wrap:wrap">
-    <button id="ep-prev" onclick="epPagina(EP_PAG-1)" style="background:transparent;border:1px solid rgba(200,168,75,.22);color:var(--muted);padding:.38rem .9rem;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.74rem;transition:all .22s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.22)';this.style.color='var(--muted)'">← Anterior</button>
+    <button id="ep-prev" onclick="epPagina(EP_PAG-1)" style="background:transparent;border:1px solid rgba(200,168,75,.22);color:var(--muted);padding:.38rem .9rem;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.74rem;transition:all .22s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.22)';this.style.color='var(--muted)'" data-i18n="pag_anterior">← Anterior</button>
     <span id="ep-pag-info" style="font-size:.75rem;color:var(--muted);padding:0 .4rem"></span>
-    <button id="ep-next" onclick="epPagina(EP_PAG+1)" style="background:transparent;border:1px solid rgba(200,168,75,.22);color:var(--muted);padding:.38rem .9rem;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.74rem;transition:all .22s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.22)';this.style.color='var(--muted)'">Próximo →</button>
+    <button id="ep-next" onclick="epPagina(EP_PAG+1)" style="background:transparent;border:1px solid rgba(200,168,75,.22);color:var(--muted);padding:.38rem .9rem;border-radius:2px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.74rem;transition:all .22s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.22)';this.style.color='var(--muted)'" data-i18n="pag_proximo">Próximo →</button>
   </div>
 </section>
 
 <!-- TÉCNICO -->
 <section class="pagina" id="tecnico">
   <div class="hero">
-    <div class="tag">Base de Conhecimento</div>
-    <h1>Informações <em>Técnicas</em></h1>
+    <div class="tag" data-i18n="tec_tag">Base de Conhecimento</div>
+    <h1><span data-i18n="tec_h1a">Informações</span> <em data-i18n="tec_h1b">Técnicas</em></h1>
     <p>Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.</p>
   </div>
   <div class="grade-tec">
@@ -1676,8 +1682,8 @@ footer strong { color: var(--gold); }
 <!-- PREÇOS -->
 <section class="pagina" id="precos">
   <div class="hero">
-    <div class="tag">Cotações &amp; Tendências</div>
-    <h1>Tabela de <em>Preços</em></h1>
+    <div class="tag" data-i18n="pre_tag">Cotações &amp; Tendências</div>
+    <h1><span data-i18n="pre_h1a">Tabela de</span> <em data-i18n="pre_h1b">Preços</em></h1>
     <p>Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.</p>
   </div>
   <div class="b-graf">
@@ -1709,7 +1715,7 @@ footer strong { color: var(--gold); }
       <span style="font-size:.75rem;color:var(--muted)" id="tsAtt">—</span>
     </div>
     <table class="tab">
-      <thead><tr><th>Classificação</th><th>Unidade</th><th>Preço</th><th>Variação Dia</th><th>Tendência</th><th>Fonte</th></tr></thead>
+      <thead id="tbCotHead"><tr><th data-i18n="cot_produto">Classificação</th><th data-i18n="cot_unidade">Unidade</th><th data-i18n="cot_preco">Preço</th><th data-i18n="cot_variacao">Variação Dia</th><th data-i18n="cot_tendencia">Tendência</th><th data-i18n="cot_fonte">Fonte</th></tr></thead>
       <tbody id="tbCot"></tbody>
     </table>
   </div>
@@ -2098,52 +2104,50 @@ function renderMenu() {
   const pill = `<div class="toggle-pill ${claro ? 'on' : ''}"></div>`;
   const togItem = `
     <div class="mp-toggle" onclick="alternarTema()">
-      <span class="mp-toggle-label">${SVG.sol} Modo ${claro ? 'escuro' : 'claro'}</span>
+      <span class="mp-toggle-label">${SVG.sol} ${claro ? t('menu_tema_escuro') : t('menu_tema_claro')}</span>
       ${pill}
     </div>`;
 
   if (!u) {
     m.innerHTML = `
       <div class="mp-cab" style="padding:.9rem 1.2rem .8rem;border-bottom:1px solid rgba(0,0,0,.07)">
-        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.7rem">Faça login para acessar sua conta</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:.7rem">${t('menu_login_msg')}</div>
         <button class="mp-btn-entrar" onclick="fecharMenu();abrirAuth('login')">
-          ${SVG.entr} Entrar na conta
+          ${SVG.entr} ${t('menu_entrar')}
         </button>
         <button class="mp-btn-cadastro" onclick="fecharMenu();abrirAuth('registro')">
-          ${SVG.user} Criar conta grátis
+          ${SVG.user} ${t('menu_criar')}
         </button>
       </div>
-      <div class="mp-grupo">
-        ${togItem}
-      </div>`;
+      <div class="mp-grupo">${togItem}</div>`;
   } else if (u.role === 'admin') {
     m.innerHTML = `
       <div class="mp-cab">
         <div class="mp-nome">${u.nome}</div>
-        <div class="mp-role admin">Administrador</div>
+        <div class="mp-role admin">${t('menu_admin_role')}</div>
       </div>
-      <div class="mp-item ouro" onclick="window.open('admin.html','_blank');fecharMenu()">${SVG.dash} Painel Administrativo</div>
+      <div class="mp-item ouro" onclick="window.open('admin.html','_blank');fecharMenu()">${SVG.dash} ${t('menu_admin')}</div>
       <div class="mp-sep"></div>
-      <div class="mp-item" onclick="abrirConfig()">${SVG.cfg} Configurações</div>
+      <div class="mp-item" onclick="abrirConfig()">${SVG.cfg} ${t('menu_config')}</div>
       <div class="mp-sep"></div>
-      <div class="mp-item" onclick="solicitarPush();fecharMenu()">🔔 ${localStorage.getItem('am_push')==='1'?'Notificações ativas':'Ativar notificações'}</div>
+      <div class="mp-item" onclick="solicitarPush();fecharMenu()">🔔 ${localStorage.getItem('am_push')==='1' ? t('menu_notif_on') : t('menu_notif_off')}</div>
       <div class="mp-sep"></div>
       ${togItem}
       <div class="mp-sep"></div>
-      <div class="mp-item perigo" onclick="sair()">${SVG.sair} Sair</div>`;
+      <div class="mp-item perigo" onclick="sair()">${SVG.sair} ${t('menu_sair')}</div>`;
   } else {
     m.innerHTML = `
       <div class="mp-cab">
         <div class="mp-nome">${u.nome}</div>
-        <div class="mp-role user">Membro</div>
+        <div class="mp-role user">${t('menu_user_role')}</div>
       </div>
-      <div class="mp-item" onclick="abrirConfig()">${SVG.cfg} Configurações</div>
+      <div class="mp-item" onclick="abrirConfig()">${SVG.cfg} ${t('menu_config')}</div>
       <div class="mp-sep"></div>
-      <div class="mp-item" onclick="solicitarPush();fecharMenu()">🔔 ${localStorage.getItem('am_push')==='1'?'Notificações ativas':'Ativar notificações'}</div>
+      <div class="mp-item" onclick="solicitarPush();fecharMenu()">🔔 ${localStorage.getItem('am_push')==='1' ? t('menu_notif_on') : t('menu_notif_off')}</div>
       <div class="mp-sep"></div>
       ${togItem}
       <div class="mp-sep"></div>
-      <div class="mp-item perigo" onclick="sair()">${SVG.sair} Sair</div>`;
+      <div class="mp-item perigo" onclick="sair()">${SVG.sair} ${t('menu_sair')}</div>`;
   }
 }
 
@@ -2180,121 +2184,185 @@ function fecharMenu() {
 const I18N = {
   pt: {
     /* Nav */
-    nav_inicio:       'Início',
-    nav_tecnico:      'Técnico',
-    nav_precos:       'Preços',
-    nav_especialista: 'Especialista',
+    nav_inicio:'Início', nav_tecnico:'Técnico', nav_precos:'Preços', nav_especialista:'Especialista',
     /* Hero */
-    hero_tag:    'Análises Diárias do Mercado Orizícola',
-    hero_h1a:    'O mercado do',
-    hero_h1b:    'arroz',
-    hero_h1c:    'em análise profissional',
-    hero_p:      'Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.',
+    hero_tag:'Análises Diárias do Mercado Orizícola',
+    hero_h1b:'arroz', hero_h1c:'em análise profissional',
+    hero_p:'Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.',
     /* Destaque */
-    badge_novo:  'Novo episódio disponível',
-    stat_dur:    'Duração',
-    stat_esc:    'Escutas',
-    stat_cur:    'Curtidas',
+    badge_novo:'Novo episódio disponível',
+    stat_dur:'Duração', stat_esc:'Escutas', stat_cur:'Curtidas',
     /* Episódios */
-    sec_episodios: 'Episódios',
-    fil_todos:     'Todos',
-    fil_podcast:   '🎙️ Podcast Diário',
-    fil_curiosi:   '💡 Curiosidades',
-    fil_cotacoes:  '📈 Cotações',
-    fil_tecnico:   '🔬 Técnico',
-    fil_entrevista:'🎤 Entrevista',
-    fil_especial:  '⭐ Especial',
-    /* Player */
-    player_play:    'Reproduzir',
-    player_pause:   'Pausar',
-    player_sem_audio: 'Este episódio não possui áudio gravado.',
-    /* Auth */
-    auth_entrar:    'Entrar na sua conta',
-    auth_registrar: 'Criar conta grátis',
-    auth_email:     'E-mail',
-    auth_senha:     'Senha',
-    auth_nome:      'Nome completo',
-    auth_btn_entrar:'Entrar',
-    auth_btn_criar: 'Criar conta',
-    auth_sem_conta: 'Não tem conta?',
-    auth_criar_now: 'Criar agora',
-    auth_ja_tem:    'Já tem conta?',
-    /* Toasts */
-    toast_curtiu:   'Curtida registrada!',
-    toast_descurtiu:'Curtida removida.',
-    toast_login_cur:'Faça login para curtir.',
-    toast_link_copi:'Link copiado!',
-    /* Seção técnica */
-    tec_tag:  'Base de Conhecimento',
-    tec_h1a:  'Informações',
-    tec_h1b:  'Técnicas',
-    tec_p:    'Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.',
-    /* Seção preços */
-    pre_tag:  'Cotações & Tendências',
-    pre_h1a:  'Tabela de',
-    pre_h1b:  'Preços',
-    pre_p:    'Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.',
+    sec_episodios:'Episódios',
+    fil_todos:'Todos', fil_podcast:'🎙️ Podcast Diário', fil_curiosi:'💡 Curiosidades',
+    fil_cotacoes:'📈 Cotações', fil_tecnico:'🔬 Técnico', fil_entrevista:'🎤 Entrevista', fil_especial:'⭐ Especial',
+    ep_escutas:'escutas',
+    /* Player destaque */
+    player_sem_audio:'Este episódio não possui áudio gravado.',
+    player_audio_idioma:'Idioma do Áudio',
+    player_dub_pt:'🇧🇷 Português',
+    player_dub_en:'🇺🇸 English',
+    player_dub_indisponivel:'Versão em inglês não disponível para este episódio.',
+    player_voltar:'Voltar 15s', player_avancar:'Avançar 30s',
+    /* Modal player */
+    modal_compartilhar:'Compartilhar', modal_fechar:'Fechar',
+    modal_escutas:'escutas',
+    /* Cotações */
+    cot_titulo:'Cotações de Hoje',
+    cot_produto:'Produto', cot_unidade:'Unidade', cot_preco:'Preço', cot_variacao:'Variação', cot_tendencia:'Tendência', cot_fonte:'Fonte',
+    cot_alta:'↑ Alta', cot_baixa:'↓ Baixa', cot_estavel:'→ Estável',
+    pre_tag:'Cotações & Tendências', pre_h1a:'Tabela de', pre_h1b:'Preços',
+    pre_p:'Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.',
+    fil_sem:'Sem filtro', fil_7d:'7 dias', fil_30d:'30 dias', fil_90d:'90 dias',
+    /* Técnico */
+    tec_tag:'Base de Conhecimento', tec_h1a:'Informações', tec_h1b:'Técnicas',
+    tec_p:'Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.',
     /* Especialista */
-    esp_tag:  'Quem é o especialista',
+    esp_tag:'Quem é o especialista',
+    esp_traj:'Trajetória Profissional',
+    /* Auth */
+    auth_entrar:'Entrar na sua conta', auth_registrar:'Criar conta grátis',
+    auth_email:'E-mail', auth_senha:'Senha', auth_nome:'Nome completo',
+    auth_senha_min:'Senha (mín. 6 caracteres)',
+    auth_placeholder_nome:'Seu nome', auth_placeholder_email:'seu@email.com',
+    auth_btn_entrar:'Entrar', auth_btn_criar:'Criar conta',
+    auth_sem_conta:'Não tem conta?', auth_criar_now:'Criar agora',
+    auth_ja_tem:'Já tem conta?', auth_entrar_now:'Entrar',
+    /* Menu perfil */
+    menu_login_msg:'Faça login para acessar sua conta',
+    menu_entrar:'Entrar na conta', menu_criar:'Criar conta grátis',
+    menu_admin:'Painel Administrativo', menu_config:'Configurações',
+    menu_notif_on:'Notificações ativas', menu_notif_off:'Ativar notificações',
+    menu_tema_claro:'Modo claro', menu_tema_escuro:'Modo escuro',
+    menu_sair:'Sair', menu_admin_role:'Administrador', menu_user_role:'Membro',
+    /* Config modal */
+    cfg_titulo:'Configurações', cfg_conta:'Conta', cfg_nome:'Nome', cfg_email:'E-mail',
+    cfg_tema:'Aparência', cfg_cor:'Cor de destaque',
+    cfg_notif:'Notificações push', cfg_notif_btn:'Ativar',
+    cfg_senha_atual:'Senha atual', cfg_senha_nova:'Nova senha', cfg_senha_conf:'Confirmar senha',
+    cfg_btn_senha:'Atualizar senha', cfg_excluir:'Excluir conta',
+    cfg_excluir_conf:'Confirmar exclusão',
+    /* Toasts */
+    toast_curtiu:'Curtida registrada!', toast_descurtiu:'Curtida removida.',
+    toast_login_cur:'Faça login para curtir.', toast_link_copi:'Link copiado!',
+    toast_sessao_enc:'Sessão encerrada.', toast_compartilhar_nao:'Compartilhamento não suportado neste navegador.',
+    toast_bem_vindo:'Bem-vindo,', toast_conta_criada:'Conta criada! Bem-vindo,',
+    /* Paginação */
+    pag_anterior:'← Anterior', pag_proximo:'Próximo →',
+    /* Footer */
+    footer_priv:'Política de Privacidade', footer_termos:'Termos de Uso', footer_cookies:'Cookies',
   },
+
   en: {
-    /* Nav */
-    nav_inicio:       'Home',
-    nav_tecnico:      'Technical',
-    nav_precos:       'Prices',
-    nav_especialista: 'Specialist',
-    /* Hero */
-    hero_tag:    'Daily Rice Market Analysis',
-    hero_h1a:    'The',
-    hero_h1b:    'rice',
-    hero_h1c:    'market in professional analysis',
-    hero_p:      'Daily podcast with Fábio Toledo on rice market prices, trends and classifications.',
-    /* Destaque */
-    badge_novo:  'New episode available',
-    stat_dur:    'Duration',
-    stat_esc:    'Plays',
-    stat_cur:    'Likes',
-    /* Episódios */
-    sec_episodios: 'Episodes',
-    fil_todos:     'All',
-    fil_podcast:   '🎙️ Daily Podcast',
-    fil_curiosi:   '💡 Did You Know',
-    fil_cotacoes:  '📈 Prices',
-    fil_tecnico:   '🔬 Technical',
-    fil_entrevista:'🎤 Interview',
-    fil_especial:  '⭐ Special',
-    /* Player */
-    player_play:    'Play',
-    player_pause:   'Pause',
-    player_sem_audio: 'This episode has no recorded audio.',
-    /* Auth */
-    auth_entrar:    'Sign in to your account',
-    auth_registrar: 'Create free account',
-    auth_email:     'E-mail',
-    auth_senha:     'Password',
-    auth_nome:      'Full name',
-    auth_btn_entrar:'Sign in',
-    auth_btn_criar: 'Create account',
-    auth_sem_conta: 'No account?',
-    auth_criar_now: 'Create now',
-    auth_ja_tem:    'Already have an account?',
-    /* Toasts */
-    toast_curtiu:   'Like added!',
-    toast_descurtiu:'Like removed.',
-    toast_login_cur:'Log in to like episodes.',
-    toast_link_copi:'Link copied!',
-    /* Seção técnica */
-    tec_tag:  'Knowledge Base',
-    tec_h1a:  'Technical',
-    tec_h1b:  'Information',
-    tec_p:    'Classifications, standards, processing and quality parameters of Brazilian rice.',
-    /* Seção preços */
-    pre_tag:  'Prices & Trends',
-    pre_h1a:  'Price',
-    pre_h1b:  'Table',
-    pre_p:    'Updated prices by classification — reference: 60 kg bag, ex-factory, RS.',
-    /* Especialista */
-    esp_tag:  'About the specialist',
+    nav_inicio:'Home', nav_tecnico:'Technical', nav_precos:'Prices', nav_especialista:'Specialist',
+    hero_tag:'Daily Rice Market Analysis',
+    hero_h1b:'rice', hero_h1c:'in professional analysis',
+    hero_p:'Daily podcast with Fábio Toledo on rice market prices, trends and classifications.',
+    badge_novo:'New episode available',
+    stat_dur:'Duration', stat_esc:'Plays', stat_cur:'Likes',
+    sec_episodios:'Episodes',
+    fil_todos:'All', fil_podcast:'🎙️ Daily Podcast', fil_curiosi:'💡 Did You Know',
+    fil_cotacoes:'📈 Prices', fil_tecnico:'🔬 Technical', fil_entrevista:'🎤 Interview', fil_especial:'⭐ Special',
+    ep_escutas:'plays',
+    player_sem_audio:'This episode has no recorded audio.',
+    player_audio_idioma:'Audio Language',
+    player_dub_pt:'🇧🇷 Portuguese',
+    player_dub_en:'🇺🇸 English',
+    player_dub_indisponivel:'English version not available for this episode.',
+    player_voltar:'Back 15s', player_avancar:'Forward 30s',
+    modal_compartilhar:'Share', modal_fechar:'Close',
+    modal_escutas:'plays',
+    cot_titulo:'Today\'s Prices',
+    cot_produto:'Product', cot_unidade:'Unit', cot_preco:'Price', cot_variacao:'Change', cot_tendencia:'Trend', cot_fonte:'Source',
+    cot_alta:'↑ Rising', cot_baixa:'↓ Falling', cot_estavel:'→ Stable',
+    pre_tag:'Prices & Trends', pre_h1a:'Price', pre_h1b:'Table',
+    pre_p:'Updated prices by classification — reference: 60 kg bag, ex-factory, RS.',
+    fil_sem:'No filter', fil_7d:'7 days', fil_30d:'30 days', fil_90d:'90 days',
+    tec_tag:'Knowledge Base', tec_h1a:'Technical', tec_h1b:'Information',
+    tec_p:'Classifications, standards, processing and quality parameters of Brazilian rice.',
+    esp_tag:'About the specialist',
+    esp_traj:'Professional Background',
+    auth_entrar:'Sign in to your account', auth_registrar:'Create free account',
+    auth_email:'E-mail', auth_senha:'Password', auth_nome:'Full name',
+    auth_senha_min:'Password (min. 6 characters)',
+    auth_placeholder_nome:'Your name', auth_placeholder_email:'your@email.com',
+    auth_btn_entrar:'Sign in', auth_btn_criar:'Create account',
+    auth_sem_conta:'No account?', auth_criar_now:'Create now',
+    auth_ja_tem:'Already have an account?', auth_entrar_now:'Sign in',
+    menu_login_msg:'Log in to access your account',
+    menu_entrar:'Sign in', menu_criar:'Create free account',
+    menu_admin:'Admin Panel', menu_config:'Settings',
+    menu_notif_on:'Notifications active', menu_notif_off:'Enable notifications',
+    menu_tema_claro:'Light mode', menu_tema_escuro:'Dark mode',
+    menu_sair:'Log out', menu_admin_role:'Administrator', menu_user_role:'Member',
+    cfg_titulo:'Settings', cfg_conta:'Account', cfg_nome:'Name', cfg_email:'E-mail',
+    cfg_tema:'Appearance', cfg_cor:'Accent color',
+    cfg_notif:'Push notifications', cfg_notif_btn:'Enable',
+    cfg_senha_atual:'Current password', cfg_senha_nova:'New password', cfg_senha_conf:'Confirm password',
+    cfg_btn_senha:'Update password', cfg_excluir:'Delete account',
+    cfg_excluir_conf:'Confirm deletion',
+    toast_curtiu:'Like added!', toast_descurtiu:'Like removed.',
+    toast_login_cur:'Log in to like episodes.', toast_link_copi:'Link copied!',
+    toast_sessao_enc:'Signed out.', toast_compartilhar_nao:'Sharing not supported in this browser.',
+    toast_bem_vindo:'Welcome,', toast_conta_criada:'Account created! Welcome,',
+    pag_anterior:'← Previous', pag_proximo:'Next →',
+    footer_priv:'Privacy Policy', footer_termos:'Terms of Use', footer_cookies:'Cookies',
+  },
+
+  fr: {
+    nav_inicio:'Accueil', nav_tecnico:'Technique', nav_precos:'Prix', nav_especialista:'Spécialiste',
+    hero_tag:'Analyses Quotidiennes du Marché Orizicole',
+    hero_h1b:'riz', hero_h1c:'en analyse professionnelle',
+    hero_p:'Podcast quotidien avec Fábio Toledo sur les prix, tendances et classifications du riz.',
+    badge_novo:'Nouvel épisode disponible',
+    stat_dur:'Durée', stat_esc:'Écoutes', stat_cur:'Mentions',
+    sec_episodios:'Épisodes',
+    fil_todos:'Tous', fil_podcast:'🎙️ Podcast Quotidien', fil_curiosi:'💡 Le Saviez-Vous',
+    fil_cotacoes:'📈 Prix', fil_tecnico:'🔬 Technique', fil_entrevista:'🎤 Entretien', fil_especial:'⭐ Spécial',
+    ep_escutas:'écoutes',
+    player_sem_audio:'Cet épisode n\'a pas d\'audio enregistré.',
+    player_audio_idioma:'Langue Audio',
+    player_dub_pt:'🇧🇷 Portugais',
+    player_dub_en:'🇺🇸 Anglais',
+    player_dub_indisponivel:'Version anglaise non disponible pour cet épisode.',
+    player_voltar:'Reculer 15s', player_avancar:'Avancer 30s',
+    modal_compartilhar:'Partager', modal_fechar:'Fermer',
+    modal_escutas:'écoutes',
+    cot_titulo:'Prix du Jour',
+    cot_produto:'Produit', cot_unidade:'Unité', cot_preco:'Prix', cot_variacao:'Variation', cot_tendencia:'Tendance', cot_fonte:'Source',
+    cot_alta:'↑ Hausse', cot_baixa:'↓ Baisse', cot_estavel:'→ Stable',
+    pre_tag:'Prix & Tendances', pre_h1a:'Tableau des', pre_h1b:'Prix',
+    pre_p:'Prix actualisés par classification — référence : sac 60 kg, départ usine, RS.',
+    fil_sem:'Sans filtre', fil_7d:'7 jours', fil_30d:'30 jours', fil_90d:'90 jours',
+    tec_tag:'Base de Connaissances', tec_h1a:'Informations', tec_h1b:'Techniques',
+    tec_p:'Classifications, normes, transformation et paramètres de qualité du riz brésilien.',
+    esp_tag:'À propos du spécialiste',
+    esp_traj:'Parcours Professionnel',
+    auth_entrar:'Connexion à votre compte', auth_registrar:'Créer un compte gratuit',
+    auth_email:'E-mail', auth_senha:'Mot de passe', auth_nome:'Nom complet',
+    auth_senha_min:'Mot de passe (min. 6 caractères)',
+    auth_placeholder_nome:'Votre nom', auth_placeholder_email:'votre@email.com',
+    auth_btn_entrar:'Se connecter', auth_btn_criar:'Créer un compte',
+    auth_sem_conta:'Pas de compte ?', auth_criar_now:'Créer maintenant',
+    auth_ja_tem:'Déjà un compte ?', auth_entrar_now:'Se connecter',
+    menu_login_msg:'Connectez-vous pour accéder à votre compte',
+    menu_entrar:'Se connecter', menu_criar:'Créer un compte gratuit',
+    menu_admin:'Panneau Admin', menu_config:'Paramètres',
+    menu_notif_on:'Notifications actives', menu_notif_off:'Activer les notifications',
+    menu_tema_claro:'Mode clair', menu_tema_escuro:'Mode sombre',
+    menu_sair:'Déconnexion', menu_admin_role:'Administrateur', menu_user_role:'Membre',
+    cfg_titulo:'Paramètres', cfg_conta:'Compte', cfg_nome:'Nom', cfg_email:'E-mail',
+    cfg_tema:'Apparence', cfg_cor:'Couleur d\'accentuation',
+    cfg_notif:'Notifications push', cfg_notif_btn:'Activer',
+    cfg_senha_atual:'Mot de passe actuel', cfg_senha_nova:'Nouveau mot de passe', cfg_senha_conf:'Confirmer',
+    cfg_btn_senha:'Mettre à jour', cfg_excluir:'Supprimer le compte',
+    cfg_excluir_conf:'Confirmer la suppression',
+    toast_curtiu:'J\'aime ajouté !', toast_descurtiu:'J\'aime retiré.',
+    toast_login_cur:'Connectez-vous pour aimer.', toast_link_copi:'Lien copié !',
+    toast_sessao_enc:'Déconnecté.', toast_compartilhar_nao:'Partage non pris en charge.',
+    toast_bem_vindo:'Bienvenue,', toast_conta_criada:'Compte créé ! Bienvenue,',
+    pag_anterior:'← Précédent', pag_proximo:'Suivant →',
+    footer_priv:'Politique de Confidentialité', footer_termos:'Conditions d\'Utilisation', footer_cookies:'Cookies',
   }
 };
 
@@ -2352,13 +2420,10 @@ document.addEventListener('click', e => {
 });
 
 function setIdioma(lang) {
-  const disponiveis = ['pt', 'en'];
+  const disponiveis = ['pt', 'en', 'fr'];
   if (!disponiveis.includes(lang)) {
-    toast(lang === 'es' ? '🇪🇸 Español — em breve!'
-        : lang === 'fr' ? '🇫🇷 Français — em breve!'
-        : lang === 'ru' ? '🇷🇺 Русский — em breve!'
-        : lang === 'zh' ? '🇨🇳 中文 — em breve!'
-        : 'Em desenvolvimento!', '');
+    const msgs = { es:'🇪🇸 Español', ru:'🇷🇺 Русский', zh:'🇨🇳 中文' };
+    toast((msgs[lang] || lang) + ' — em breve!', '');
     fecharIdiomaMenu();
     return;
   }
@@ -2369,6 +2434,13 @@ function setIdioma(lang) {
   // Re-renderiza componentes dinâmicos com novo idioma
   try { renderMenu(); } catch(e) {}
   try { atualizarContadoresFiltro(); } catch(e) {}
+  try { renderTabCot(); } catch(e) {}
+  // Re-renderiza modal de auth se estiver aberto
+  const mAuth = document.getElementById('mAuth');
+  if (mAuth && mAuth.classList.contains('aberto')) {
+    const isTitulo = document.getElementById('authTitulo')?.textContent;
+    if (isTitulo) abrirAuth(isTitulo.includes('grátis') || isTitulo.includes('free') || isTitulo.includes('compte') ? 'registro' : 'login');
+  }
 }
 
 /* Init — aplica idioma salvo ao carregar */
@@ -2480,18 +2552,15 @@ function renderTicker() {
 }
 
 function renderTabCot() {
-  const tend = { alta:'↑ Alta', baixa:'↓ Baixa', estavel:'→ Estável' };
+  const tend = { alta: t('cot_alta'), baixa: t('cot_baixa'), estavel: t('cot_estavel') };
   const cor  = { alta:'var(--green2)', baixa:'var(--red)', estavel:'var(--gold)' };
   const tb = document.getElementById('tbCot');
   if (!tb) return;
-
-  // vecLoadCots já foi chamado pelo renderTicker; reutiliza _vecPrecos e _vecVars
   vecLoadCots(S.cots);
-
   const rows = new Array(S.cots.length);
   for (let i = 0; i < S.cots.length; i++) {
     const c   = S.cots[i];
-    const p   = _vecPrecos[i];           // leitura O(1) do buffer
+    const p   = _vecPrecos[i];
     const v   = _vecVars[i];
     const dPct= vecDeltaPctBase(i).toFixed(1);
     const sgn = v >= 0 ? '+' : '';
@@ -2506,6 +2575,16 @@ function renderTabCot() {
     </tr>`;
   }
   tb.innerHTML = rows.join('');
+  // Atualiza cabeçalhos da tabela
+  const ths = document.querySelectorAll('#tbCotHead th');
+  if (ths.length >= 6) {
+    ths[0].textContent = t('cot_produto');
+    ths[1].textContent = t('cot_unidade');
+    ths[2].textContent = t('cot_preco');
+    ths[3].textContent = t('cot_variacao');
+    ths[4].textContent = t('cot_tendencia');
+    ths[5].textContent = t('cot_fonte');
+  }
 }
 
 /* ═══ VÍDEOS ═══ */
@@ -3113,7 +3192,7 @@ function renderAudios() {
         <div class="card-data">${v.data}</div>
         <div class="card-titulo">${v.titulo}</div>
         <div class="card-meta">
-          <span class="card-views">${fmtN(v.views || 0)} escutas</span>
+          <span class="card-views">${fmtN(v.views || 0)} ${t('ep_escutas')}</span>
           <button class="btn-like-card ${curtido ? 'curtido' : ''}" id="lk-${v.id}" onclick="curtirCard(event,${v.id})">
             ${LSVG}<span id="lc-${v.id}">${fmtN(v.likes || 0)}</span>
           </button>
@@ -3135,13 +3214,13 @@ function renderLikeDest() {
 
 function curtirDestaque(e) {
   e.stopPropagation();
-  if (!S.usuario) { toast('Faça login para curtir.', 'err'); abrirAuth('login'); return; }
+  if (!S.usuario) { toast(t('toast_login_cur'), 'err'); abrirAuth('login'); return; }
   S.curtidoDest = !S.curtidoDest;
   S.likesDest   = Math.max(0, S.likesDest + (S.curtidoDest ? 1 : -1));
   localStorage.setItem('am_ld', S.likesDest);
   localStorage.setItem('am_cd', S.curtidoDest ? '1' : '0');
   renderLikeDest();
-  toast(S.curtidoDest ? 'Curtida registrada!' : 'Curtida removida.', S.curtidoDest ? 'ok' : '');
+  toast(S.curtidoDest ? t('toast_curtiu') : t('toast_descurtiu'), S.curtidoDest ? 'ok' : '');
 }
 
 /* ═══ LIKE CARDS DE VÍDEO ═══ */
@@ -3365,7 +3444,7 @@ function abrirAudio(v) {
       const cardViewEl = document.querySelector(`[id="lk-${v.id}"]`);
       if (cardViewEl) {
         const viewSpan = cardViewEl.closest('.card-corpo')?.querySelector('.card-views');
-        if (viewSpan) viewSpan.textContent = fmtN(r.views) + ' escutas';
+        if (viewSpan) viewSpan.textContent = fmtN(r.views) + ' ' + t('ep_escutas');
       }
     }
   }).catch(()=>{});
@@ -3406,14 +3485,13 @@ function abrirAudio(v) {
   document.getElementById('am-eq-bars').classList.remove('ativo');
 
   if (v.url && v.url.length > 4) {
-    AM.audioUrl = v.url;
+    AM.audioUrl  = v.url;
+    AM.vidAtual  = v;           // ← armazena episódio atual para o seletor de idioma
     a.src = v.url;
     if (epTit) epTit.textContent = v.titulo;
     cover.style.display  = '';
     noUrl.style.display  = 'none';
-    // Link externo
-    const lnk = document.getElementById('am-audio-link');
-    if (lnk) lnk.href = v.url;
+    amUpdateLangBtn(v);         // ← exibe/oculta botão de idioma conforme url_en
 
     // Eventos do audio element
     a.onloadedmetadata = () => {
@@ -3503,31 +3581,31 @@ function abrirAuth(modo) {
 }
 
 function htmlLogin() {
-  return `<div class="form-g"><label>E-mail</label><input type="email" id="fE" placeholder="seu@email.com"></div>
-          <div class="form-g"><label>Senha</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+  return `<div class="form-g"><label>${t('auth_email')}</label><input type="email" id="fE" placeholder="${t('auth_placeholder_email')}"></div>
+          <div class="form-g"><label>${t('auth_senha')}</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
           <div class="form-erro" id="authErr"></div>
-          <button class="btn-prim" onclick="doLogin()">Entrar</button>
-          <div class="form-link">Não tem conta? <span onclick="abrirAuth('registro')">Criar agora</span></div>`;
+          <button class="btn-prim" onclick="doLogin()">${t('auth_btn_entrar')}</button>
+          <div class="form-link">${t('auth_sem_conta')} <span onclick="abrirAuth('registro')">${t('auth_criar_now')}</span></div>`;
 }
 function htmlReg() {
-  return `<div class="form-g"><label>Nome completo</label><input type="text" id="fN" placeholder="Seu nome"></div>
-          <div class="form-g"><label>E-mail</label><input type="email" id="fE" placeholder="seu@email.com"></div>
-          <div class="form-g"><label>Senha (mín. 6 caracteres)</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doReg()"></div>
+  return `<div class="form-g"><label>${t('auth_nome')}</label><input type="text" id="fN" placeholder="${t('auth_placeholder_nome')}"></div>
+          <div class="form-g"><label>${t('auth_email')}</label><input type="email" id="fE" placeholder="${t('auth_placeholder_email')}"></div>
+          <div class="form-g"><label>${t('auth_senha_min')}</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doReg()"></div>
           <div class="form-erro" id="authErr"></div>
-          <button class="btn-prim" onclick="doReg()">Criar conta</button>
-          <div class="form-link">Já tem conta? <span onclick="abrirAuth('login')">Entrar</span></div>`;
+          <button class="btn-prim" onclick="doReg()">${t('auth_btn_criar')}</button>
+          <div class="form-link">${t('auth_ja_tem')} <span onclick="abrirAuth('login')">${t('auth_entrar_now')}</span></div>`;
 }
 
 async function doLogin() {
   try {
     const r = await apiFetch('POST', '/auth/login', { email: el('fE')?.value, senha: el('fS')?.value });
-    salvarSessao(r); fModal('mAuth'); toast('Bem-vindo, ' + r.usuario.nome + '!', 'ok');
+    salvarSessao(r); fModal('mAuth'); toast(t('toast_bem_vindo') + ' ' + r.usuario.nome + '!', 'ok');
   } catch (err) { mostrarErro(err.message); }
 }
 async function doReg() {
   try {
     const r = await apiFetch('POST', '/auth/registro', { nome: el('fN')?.value, email: el('fE')?.value, senha: el('fS')?.value });
-    salvarSessao(r); fModal('mAuth'); toast('Conta criada! Bem-vindo, ' + r.usuario.nome + '!', 'ok');
+    salvarSessao(r); fModal('mAuth'); toast(t('toast_conta_criada') + ' ' + r.usuario.nome + '!', 'ok');
   } catch (err) { mostrarErro(err.message); }
 }
 function mostrarErro(msg) { const e = el('authErr'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
@@ -3541,7 +3619,7 @@ function sair() {
   S.usuario = null; S.token = null;
   localStorage.removeItem('am_u'); localStorage.removeItem('am_tok');
   renderAvatar(); renderMenu(); renderAudios(); fecharMenu();
-  toast('Sessão encerrada.', '');
+  toast(t('toast_sessao_enc'), '');
 }
 
 /* ═══ CONFIG ═══ */
@@ -3796,17 +3874,69 @@ function renderEspecialista() {
       </div>
     </div>
     <div class="bio-cont">
-      <div class="tag" style="margin-bottom:1rem">Quem é o especialista</div>
+      <div class="tag" style="margin-bottom:1rem">${t('esp_tag')}</div>
       <h2>${e.nome}</h2>
       <p class="dest">${e.frase}</p>
       <p>${e.p1}</p>
       <p>${e.p2}</p>
-      <div class="rotulo" style="margin-top:2rem;margin-bottom:1.4rem">Trajetória Profissional</div>
+      <div class="rotulo" style="margin-top:2rem;margin-bottom:1.4rem">${t('esp_traj')}</div>
       ${tl}
     </div>
   </div>`;
 }
-/* ═══ TOAST ═══ */
+/* ─ Seletor de idioma do áudio no player modal ─ */
+let _amLangOpen = false;
+function toggleAmLangMenu(e) {
+  e.stopPropagation();
+  _amLangOpen = !_amLangOpen;
+  const m = document.getElementById('am-lang-menu');
+  if (m) m.style.display = _amLangOpen ? 'block' : 'none';
+}
+document.addEventListener('click', () => {
+  if (!_amLangOpen) return;
+  _amLangOpen = false;
+  const m = document.getElementById('am-lang-menu');
+  if (m) m.style.display = 'none';
+});
+function amSetLang(lang, e) {
+  if (e) e.stopPropagation();
+  _amLangOpen = false;
+  const m = document.getElementById('am-lang-menu');
+  if (m) m.style.display = 'none';
+  const v = AM.vidAtual;
+  if (!v) return;
+  const url = lang === 'en' ? (v.url_en || '') : (v.url || '');
+  if (!url) { toast(t('player_dub_indisponivel'), ''); return; }
+  const label = document.getElementById('am-lang-label');
+  if (label) label.textContent = lang.toUpperCase();
+  // Atualiza estilo dos itens
+  ['pt','en'].forEach(l => {
+    const el = document.getElementById('am-lang-' + l);
+    if (el) el.style.color = l === lang ? 'var(--gold)' : 'var(--muted)';
+  });
+  // Salva posição e troca src
+  const a = amGetAudio();
+  const pos = (a && a.duration) ? a.currentTime : 0;
+  const wasPlaying = AM.playing;
+  if (a) { a.pause(); a.src = url; }
+  if (wasPlaying && a) {
+    a.oncanplay = () => { a.currentTime = pos; a.play().catch(() => {}); a.oncanplay = null; };
+  }
+}
+function amUpdateLangBtn(v) {
+  const wrap = document.getElementById('am-lang-wrap');
+  if (!wrap) return;
+  // Exibe botão só se o episódio tiver URL em inglês
+  const temEn = !!(v && v.url_en);
+  wrap.style.display = temEn ? 'flex' : 'none';
+  // Reset para PT
+  const label = document.getElementById('am-lang-label');
+  if (label) label.textContent = 'PT';
+  ['pt','en'].forEach(l => {
+    const el = document.getElementById('am-lang-' + l);
+    if (el) el.style.color = l === 'pt' ? 'var(--gold)' : 'var(--muted)';
+  });
+}
 let _tt;
 function toast(msg, tipo = '') {
   const el2 = document.getElementById('toast');

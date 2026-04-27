@@ -542,9 +542,42 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
               </div>
               <div id="thumb-prev" style="margin-top:.6rem;display:none"><img id="thumb-img" style="height:80px;border-radius:var(--r);border:1px solid var(--gold-b)"></div>
             </div>
-            <!-- campo oculto para duração calculada -->
+
+            <!-- Áudio em Inglês -->
+            <div class="card" style="margin-top:.8rem;border:1px solid rgba(74,124,89,.25)">
+              <div class="card-cab" style="background:rgba(74,124,89,.06)">
+                <div class="card-titulo">🇺🇸 Áudio em Inglês <span style="font-size:.7rem;color:var(--muted);font-weight:400">(opcional — ativa seletor de idioma no player)</span></div>
+                <button class="btn btn-sec btn-sm" onclick="toggleSecaoEN()" id="btn-toggle-en">+ Adicionar</button>
+              </div>
+              <div id="secao-audio-en" style="display:none">
+                <div class="card-corpo" style="padding-bottom:.5rem">
+                  <p style="font-size:.76rem;color:var(--muted);margin-bottom:.8rem">Faça upload ou cole a URL do áudio em inglês. Quando presente, o player exibe o seletor de idioma (🇧🇷 PT / 🇺🇸 EN).</p>
+
+                  <!-- Upload de arquivo EN -->
+                  <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-bottom:.7rem">
+                    <button class="btn btn-sec btn-sm" onclick="document.getElementById('v-audio-en-file').click()">📁 Upload áudio EN</button>
+                    <input type="file" id="v-audio-en-file" accept="audio/*" style="display:none" onchange="uploadAudioEN(this)">
+                    <span id="v-audio-en-status" style="font-size:.74rem;color:var(--muted)">Nenhum arquivo selecionado</span>
+                  </div>
+
+                  <!-- Ou cole URL manual -->
+                  <div class="form-grupo" style="margin-bottom:0">
+                    <label>Ou cole URL do áudio em inglês</label>
+                    <input type="url" id="v-url-en" placeholder="https://... ou /api/audios/arquivo_en.wav" oninput="previewAudioEN(this.value)" style="font-size:.8rem">
+                  </div>
+
+                  <!-- Preview player EN -->
+                  <div id="en-preview-wrap" style="display:none;margin-top:.6rem">
+                    <audio id="en-preview-audio" controls style="width:100%;height:34px;accent-color:var(--gold)"></audio>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- campos ocultos -->
             <input type="hidden" id="v-dur" value="">
             <input type="hidden" id="v-url" value="">
+            <input type="hidden" id="v-url-en-hidden" value="">
             <div id="rec-aviso-sem-audio" style="display:none;padding:.6rem 1rem;background:var(--amber-dim);border:1px solid rgba(200,150,72,.3);border-radius:var(--r);font-size:.78rem;color:var(--amber);margin-bottom:.8rem">⚠️ Grave um áudio antes de publicar.</div>
             <div style="display:flex;gap:.8rem;justify-content:flex-end">
               <button class="btn btn-sec" onclick="limparForm()">Limpar</button>
@@ -2091,12 +2124,15 @@ async function publicarVideo(){
   // likes: 120 + fração do seed nos primeiros 480 (usando bits diferentes)
   _baseVec[1] = Math.round(120  + (((_seed >>> 12) & 0x1FF) / 0x1FF) * 480);
 
+  const urlEn = document.getElementById('v-url-en-hidden')?.value.trim() || '';
+
   const novo = {
     id:     S.nextId++,
     titulo,
     data:   new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'),
     dur:    document.getElementById('v-dur').value || '00:00',
     url:    audioUrl,
+    url_en: urlEn,
     cat:    document.getElementById('v-cat').value,
     status,
     horaAgendada: hora,
@@ -2109,7 +2145,8 @@ async function publicarVideo(){
   try {
     const apiNovo = await apiAdm('POST', '/admin/audios', {
       titulo: novo.titulo, data: novo.data, dur: novo.dur,
-      url: novo.url, cat: novo.cat, status: novo.status, desc: novo.desc,
+      url: novo.url, url_en: novo.url_en,
+      cat: novo.cat, status: novo.status, desc: novo.desc,
       views: novo.views, likes: novo.likes,
     });
     if (apiNovo) novo.id = apiNovo.id;
@@ -2147,8 +2184,75 @@ function limparForm(){
   ['v-titulo','v-desc'].forEach(id=>{document.getElementById(id).value='';});
   document.getElementById('v-url').value='';
   document.getElementById('v-dur').value='';
+  document.getElementById('v-url-en-hidden').value='';
+  document.getElementById('v-url-en').value='';
   document.getElementById('thumb-prev').style.display='none';
+  document.getElementById('v-audio-en-status').textContent='Nenhum arquivo selecionado';
+  document.getElementById('en-preview-wrap').style.display='none';
+  document.getElementById('secao-audio-en').style.display='none';
+  document.getElementById('btn-toggle-en').textContent='+ Adicionar';
   recDescartarGravacao();
+}
+
+/* Toggle seção áudio EN */
+function toggleSecaoEN() {
+  const sec = document.getElementById('secao-audio-en');
+  const btn = document.getElementById('btn-toggle-en');
+  const open = sec.style.display === 'none' || sec.style.display === '';
+  sec.style.display = open ? 'block' : 'none';
+  btn.textContent   = open ? '− Fechar' : '+ Adicionar';
+}
+
+/* Preview quando usuário cola URL manual */
+function previewAudioEN(url) {
+  const hidden = document.getElementById('v-url-en-hidden');
+  hidden.value = url;
+  const wrap = document.getElementById('en-preview-wrap');
+  const aud  = document.getElementById('en-preview-audio');
+  if (url && url.length > 4) {
+    aud.src = url;
+    wrap.style.display = 'block';
+  } else {
+    aud.src = '';
+    wrap.style.display = 'none';
+  }
+}
+
+/* Upload do arquivo EN para o servidor */
+async function uploadAudioEN(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('v-audio-en-status');
+  statusEl.textContent = '⏳ Enviando...';
+  statusEl.style.color = 'var(--muted)';
+  try {
+    const safeTitle = (document.getElementById('v-titulo').value || 'podcast').replace(/[^a-z0-9]/gi, '_').slice(0,40);
+    const ext       = file.name.split('.').pop() || 'wav';
+    const fname     = `${safeTitle}_en_${Date.now()}.${ext}`;
+    const res = await fetch('/api/admin/audios/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + adminToken,
+        'Content-Type': file.type || 'audio/wav',
+        'X-Filename': fname,
+      },
+      body: file,
+    });
+    const json = await res.json();
+    if (res.ok && json.url) {
+      document.getElementById('v-url-en-hidden').value = json.url;
+      document.getElementById('v-url-en').value = json.url;
+      statusEl.textContent = '✓ ' + fname + ' (' + (json.size/1024).toFixed(1) + ' KB)';
+      statusEl.style.color = 'var(--green2)';
+      previewAudioEN(json.url);
+    } else {
+      throw new Error(json.erro || 'Erro no upload');
+    }
+  } catch(e) {
+    statusEl.textContent = '✗ Falha: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+  input.value = '';
 }
 
 /* ═══ PREÇOS ═══ */
