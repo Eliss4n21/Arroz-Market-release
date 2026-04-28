@@ -467,7 +467,11 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
           <div class="card-cab"><div class="card-titulo">📋 Informações do Episódio</div></div>
           <div class="card-corpo">
             <div class="form-row">
-              <div class="form-grupo"><label>Título *</label><input type="text" id="v-titulo" placeholder="Análise semanal — Long Grain em alta"></div>
+              <div class="form-grupo"><label>Título * (PT)</label><input type="text" id="v-titulo" placeholder="Análise semanal — Long Grain em alta"></div>
+              <div class="grid2" style="gap:.6rem">
+                <div class="form-grupo"><label>🇺🇸 Título em inglês <span style="color:var(--muted);font-weight:400">(opcional)</span></label><input type="text" id="v-titulo-en" placeholder="Weekly analysis — Long Grain rising"></div>
+                <div class="form-grupo"><label>🇫🇷 Titre en français <span style="color:var(--muted);font-weight:400">(optionnel)</span></label><input type="text" id="v-titulo-fr" placeholder="Analyse hebdomadaire — Long Grain en hausse"></div>
+              </div>
               <div class="form-grupo"><label>Data *</label><input type="date" id="v-data"></div>
             </div>
             <div class="form-row">
@@ -2125,26 +2129,31 @@ async function publicarVideo(){
   _baseVec[1] = Math.round(120  + (((_seed >>> 12) & 0x1FF) / 0x1FF) * 480);
 
   const urlEn = document.getElementById('v-url-en-hidden')?.value.trim() || '';
+  const tituloEn = document.getElementById('v-titulo-en')?.value.trim() || '';
+  const tituloFr = document.getElementById('v-titulo-fr')?.value.trim() || '';
 
   const novo = {
-    id:     S.nextId++,
+    id:        S.nextId++,
     titulo,
-    data:   new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'),
-    dur:    document.getElementById('v-dur').value || '00:00',
-    url:    audioUrl,
-    url_en: urlEn,
-    cat:    document.getElementById('v-cat').value,
+    titulo_en: tituloEn,
+    titulo_fr: tituloFr,
+    data:      new Date(data + 'T12:00:00').toLocaleDateString('pt-BR'),
+    dur:       document.getElementById('v-dur').value || '00:00',
+    url:       audioUrl,
+    url_en:    urlEn,
+    cat:       document.getElementById('v-cat').value,
     status,
     horaAgendada: hora,
-    thumb:  thumbData,
-    desc:   document.getElementById('v-desc').value,
-    views:  _baseVec[0],
-    likes:  _baseVec[1],
+    thumb:     thumbData,
+    desc:      document.getElementById('v-desc').value,
+    views:     _baseVec[0],
+    likes:     _baseVec[1],
   };
 
   try {
     const apiNovo = await apiAdm('POST', '/admin/audios', {
-      titulo: novo.titulo, data: novo.data, dur: novo.dur,
+      titulo: novo.titulo, titulo_en: novo.titulo_en, titulo_fr: novo.titulo_fr,
+      data: novo.data, dur: novo.dur,
       url: novo.url, url_en: novo.url_en,
       cat: novo.cat, status: novo.status, desc: novo.desc,
       views: novo.views, likes: novo.likes,
@@ -2181,7 +2190,9 @@ async function publicarVideo(){
 }
 
 function limparForm(){
-  ['v-titulo','v-desc'].forEach(id=>{document.getElementById(id).value='';});
+  ['v-titulo','v-titulo-en','v-titulo-fr','v-desc'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('v-url').value='';
   document.getElementById('v-dur').value='';
   document.getElementById('v-url-en-hidden').value='';

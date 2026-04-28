@@ -109,13 +109,12 @@ router.get('/audios/:id/curtida', autenticar, (req, res) => {
 router.get('/admin/audios',    autenticar, soAdmin, (_, res) => res.json(db.getAllVideos()));
 
 router.post('/admin/audios',   autenticar, soAdmin, (req, res) => {
-  const { titulo, data, dur, url, url_en, cat, status, desc, views, likes } = req.body;
+  const { titulo, titulo_en, titulo_fr, data, dur, url, url_en, cat, status, desc, views, likes } = req.body;
   if (!titulo || !data) return res.status(400).json({ erro:'Título e data obrigatórios.' });
-  // views e likes base vêm do admin (já calculados vetorialmente); fallback 0 se ausentes
   const baseViews = Number.isFinite(+views) && +views >= 0 ? Math.round(+views) : 0;
   const baseLikes = Number.isFinite(+likes) && +likes >= 0 ? Math.round(+likes) : 0;
   res.status(201).json(db.addVideo({
-    id: db.nextId(), titulo, data,
+    id: db.nextId(), titulo, titulo_en: titulo_en||'', titulo_fr: titulo_fr||'', data,
     dur: dur||'00:00', url: url||'', url_en: url_en||'', cat: cat||'Podcast Diário',
     status: status||'pub', desc: desc||'',
     views: baseViews, likes: baseLikes,

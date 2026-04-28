@@ -1872,17 +1872,55 @@ const COTS_LOCAL = [
   {id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg'},
 ];
 const VIDS_LOCAL = [
-  {id:1,titulo:'Impacto do clima na safra do RS',       data:'03/04/2025',dur:'09:32',views:2100,likes:87,  cat:'Podcast Diário',status:'pub'},
-  {id:2,titulo:'Parboilizado em alta: por que sobe?',   data:'02/04/2025',dur:'14:05',views:3800,likes:214, cat:'Cotações',      status:'pub'},
-  {id:3,titulo:'Abertura de abril: o que esperar',       data:'01/04/2025',dur:'11:18',views:4200,likes:198, cat:'Podcast Diário',status:'pub'},
-  {id:4,titulo:'Você sabia? O arroz é o 2° cereal mais consumido',data:'31/03/2025',dur:'04:15',views:5600,likes:312,cat:'Curiosidades do Dia',status:'pub'},
-  {id:5,titulo:'Arroz integral: demanda aquecida',       data:'28/03/2025',dur:'08:55',views:2900,likes:105, cat:'Podcast Diário',status:'pub'},
-  {id:6,titulo:'Dólar e exportações — reflexo no preço',data:'27/03/2025',dur:'13:22',views:3300,likes:143, cat:'Podcast Diário',status:'pub'},
-  {id:7,titulo:'Classificação Tipo 1 vs Tipo 2',        data:'26/03/2025',dur:'15:10',views:4700,likes:267, cat:'Técnico',       status:'pub'},
-  {id:8,titulo:'Colheita RS 2025: ritmo e projeções',   data:'25/03/2025',dur:'12:38',views:6100,likes:389, cat:'Podcast Diário',status:'pub'},
-  {id:9,titulo:'A jornada do arroz do campo ao prato',  data:'24/03/2025',dur:'03:48',views:4100,likes:221, cat:'Curiosidades do Dia',status:'pub'},
-  {id:10,titulo:'Entrevista: produtor de Cachoeira do Sul fala da safra',data:'21/03/2025',dur:'22:14',views:3700,likes:187,cat:'Entrevista',status:'pub'},
+  {id:1, titulo:'Impacto do clima na safra do RS',
+   titulo_en:'Climate impact on the RS harvest',
+   titulo_fr:'Impact du climat sur la récolte du RS',
+   data:'03/04/2025',dur:'09:32',views:2100,likes:87,  cat:'Podcast Diário',status:'pub'},
+  {id:2, titulo:'Parboilizado em alta: por que sobe?',
+   titulo_en:'Parboiled rice rising: why?',
+   titulo_fr:'Riz étuvé en hausse : pourquoi ?',
+   data:'02/04/2025',dur:'14:05',views:3800,likes:214, cat:'Cotações',status:'pub'},
+  {id:3, titulo:'Abertura de abril: o que esperar',
+   titulo_en:'April opening: what to expect',
+   titulo_fr:'Ouverture d\'avril : à quoi s\'attendre',
+   data:'01/04/2025',dur:'11:18',views:4200,likes:198, cat:'Podcast Diário',status:'pub'},
+  {id:4, titulo:'Você sabia? O arroz é o 2° cereal mais consumido',
+   titulo_en:'Did you know? Rice is the 2nd most consumed grain',
+   titulo_fr:'Le saviez-vous ? Le riz est la 2e céréale la plus consommée',
+   data:'31/03/2025',dur:'04:15',views:5600,likes:312, cat:'Curiosidades do Dia',status:'pub'},
+  {id:5, titulo:'Arroz integral: demanda aquecida',
+   titulo_en:'Whole grain rice: heated demand',
+   titulo_fr:'Riz complet : demande en hausse',
+   data:'28/03/2025',dur:'08:55',views:2900,likes:105, cat:'Podcast Diário',status:'pub'},
+  {id:6, titulo:'Dólar e exportações — reflexo no preço',
+   titulo_en:'Dollar and exports — impact on prices',
+   titulo_fr:'Dollar et exportations — impact sur les prix',
+   data:'27/03/2025',dur:'13:22',views:3300,likes:143, cat:'Podcast Diário',status:'pub'},
+  {id:7, titulo:'Classificação Tipo 1 vs Tipo 2',
+   titulo_en:'Type 1 vs Type 2 classification',
+   titulo_fr:'Classification Type 1 vs Type 2',
+   data:'26/03/2025',dur:'15:10',views:4700,likes:267, cat:'Técnico',status:'pub'},
+  {id:8, titulo:'Colheita RS 2025: ritmo e projeções',
+   titulo_en:'RS 2025 harvest: pace and projections',
+   titulo_fr:'Récolte RS 2025 : rythme et projections',
+   data:'25/03/2025',dur:'12:38',views:6100,likes:389, cat:'Podcast Diário',status:'pub'},
+  {id:9, titulo:'A jornada do arroz do campo ao prato',
+   titulo_en:'The rice journey from field to table',
+   titulo_fr:'Le voyage du riz du champ à l\'assiette',
+   data:'24/03/2025',dur:'03:48',views:4100,likes:221, cat:'Curiosidades do Dia',status:'pub'},
+  {id:10, titulo:'Entrevista: produtor de Cachoeira do Sul fala da safra',
+   titulo_en:'Interview: Cachoeira do Sul farmer talks about harvest',
+   titulo_fr:'Entretien : un producteur de Cachoeira do Sul parle de la récolte',
+   data:'21/03/2025',dur:'22:14',views:3700,likes:187, cat:'Entrevista',status:'pub'},
 ];
+
+/* Retorna o título do vídeo no idioma ativo (vetorial: O(1) via propriedade) */
+function vidTitulo(v) {
+  if (!v) return '';
+  if (LANG === 'en' && v.titulo_en) return v.titulo_en;
+  if (LANG === 'fr' && v.titulo_fr) return v.titulo_fr;
+  return v.titulo || '';
+}
 
 /* ═══════════════════════════════════════════════════════════════
    MOTOR VETORIAL DE COTAÇÕES — Float32Array (site público)
@@ -2031,6 +2069,8 @@ function notifLocal(titulo, corpo) {
     try { carregarAudios(); }   catch(e) {}
     try { renderEspecialista(); } catch(e) {}
     try { renderLikeDest(); }   catch(e) {}
+    // Aplica idioma DEPOIS de tudo renderizado para traduzir o DOM completo
+    try { aplicarIdioma(); }    catch(e) {}
   }, 150);
   setInterval(function() {
     try { carregarCotacoes(); } catch(e) {}
@@ -2039,7 +2079,9 @@ function notifLocal(titulo, corpo) {
 
 /* ═══ DATA ═══ */
 function renderData() {
-  const s = new Date().toLocaleDateString('pt-BR', {day:'2-digit',month:'long',year:'numeric'});
+  const locales = { pt:'pt-BR', en:'en-US', fr:'fr-FR' };
+  const locale  = locales[LANG] || 'pt-BR';
+  const s = new Date().toLocaleDateString(locale, {day:'2-digit', month:'long', year:'numeric'});
   const navEl = document.getElementById('navData');
   const hojEl = document.getElementById('dataHoje');
   if (navEl) navEl.textContent = s;
@@ -2579,6 +2621,9 @@ function aplicarIdioma() {
 
   // 10. Atributo lang do html
   document.documentElement.lang = LANG === 'fr' ? 'fr' : LANG === 'en' ? 'en' : 'pt-BR';
+
+  // 11. Formata data no locale do idioma
+  try { renderData(); } catch(e) {}
 }
 
 /* Menu toggle */
@@ -2836,6 +2881,8 @@ async function carregarAudios() {
   renderAudios();
   renderDestaque();
   atualizarContadoresFiltro();
+  // Re-aplica idioma para traduzir elementos gerados dinamicamente
+  try { if (LANG !== 'pt') aplicarIdioma(); } catch(e) {}
 }
 
 function atualizarContadoresFiltro() {
@@ -2862,7 +2909,7 @@ function renderDestaque() {
   const tEl = document.getElementById('tituloDest');
   const dEl = document.getElementById('durDest');
   const vEl = document.getElementById('viewsDest');
-  if (tEl) tEl.textContent = dest.titulo;
+  if (tEl) tEl.textContent = vidTitulo(dest);
   if (vEl) vEl.textContent = fmtN(dest.views || 0);
 
   // Mostra duração do banco imediatamente se válida
@@ -3288,13 +3335,20 @@ function catThumbBg(cat) {
 
 /* ─── Mapa de estilos por categoria ─── */
 const CAT_CFG = {
-  'Podcast Diário':     { cls:'cat-podcast',   emoji:'🎙️' },
-  'Curiosidades do Dia':{ cls:'cat-curiosi',   emoji:'💡' },
-  'Cotações':           { cls:'cat-cotacoes',  emoji:'📈' },
-  'Técnico':            { cls:'cat-tecnico',   emoji:'🔬' },
-  'Entrevista':         { cls:'cat-entrevista',emoji:'🎤' },
-  'Especial':           { cls:'cat-especial',  emoji:'⭐' },
+  'Podcast Diário':     { cls:'cat-podcast',   emoji:'🎙️', i18n:'fil_podcast'  },
+  'Curiosidades do Dia':{ cls:'cat-curiosi',   emoji:'💡', i18n:'fil_curiosi'  },
+  'Cotações':           { cls:'cat-cotacoes',  emoji:'📈', i18n:'fil_cotacoes' },
+  'Técnico':            { cls:'cat-tecnico',   emoji:'🔬', i18n:'fil_tecnico'  },
+  'Entrevista':         { cls:'cat-entrevista',emoji:'🎤', i18n:'fil_entrevista'},
+  'Especial':           { cls:'cat-especial',  emoji:'⭐', i18n:'fil_especial' },
 };
+
+/* Retorna o label traduzido da categoria (emoji + nome no idioma ativo) */
+function catLabel(cat) {
+  const cfg = CAT_CFG[cat];
+  if (!cfg) return cat;
+  return t(cfg.i18n) || cat;
+}
 
 let EP_FILTRO = 'todos'; // filtro activo
 let EP_PAG    = 1;       // página actual (1-based)
@@ -3362,16 +3416,16 @@ function renderAudios() {
     // Thumb: individual > categoria > gradiente CSS
     const catKey = cat.replace(/\s+/g,'_');
     const thumb = v.thumb || thumbsMap[catKey] || '';
-    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
+    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,titulo_en:v.titulo_en||'',titulo_fr:v.titulo_fr||'',data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
         <div class="card-thumb-bg" style="${thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
         <span class="card-dur">${v.dur}</span>
       </div>
       <div class="card-corpo">
-        <div class="card-cat-badge ${cfg.cls}">${cfg.emoji} ${cat}</div>
+        <div class="card-cat-badge ${cfg.cls}">${catLabel(cat)}</div>
         <div class="card-data">${v.data}</div>
-        <div class="card-titulo">${v.titulo}</div>
+        <div class="card-titulo">${vidTitulo(v)}</div>
         <div class="card-meta">
           <span class="card-views">${fmtN(v.views || 0)} ${t('ep_escutas')}</span>
           <button class="btn-like-card ${curtido ? 'curtido' : ''}" id="lk-${v.id}" onclick="curtirCard(event,${v.id})">
@@ -3541,7 +3595,7 @@ function amSpeed(v) {
 
 function abrirAudio(v) {
   S.mAudAtual = v;
-  document.getElementById('modalTitulo').textContent = v.titulo;
+  document.getElementById('modalTitulo').textContent = vidTitulo(v);
   // Badge de categoria no modal
   const cat = v.cat || 'Podcast Diário';
   const catCfg = (typeof CAT_CFG !== 'undefined' && CAT_CFG[cat]) || { cls:'cat-podcast', emoji:'🎙️' };
@@ -3669,7 +3723,7 @@ function abrirAudio(v) {
     AM.audioUrl  = v.url;
     AM.vidAtual  = v;           // ← armazena episódio atual para o seletor de idioma
     a.src = v.url;
-    if (epTit) epTit.textContent = v.titulo;
+    if (epTit) epTit.textContent = vidTitulo(v);
     cover.style.display  = '';
     noUrl.style.display  = 'none';
     amUpdateLangBtn(v);         // ← exibe/oculta botão de idioma conforme url_en
