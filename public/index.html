@@ -1363,7 +1363,7 @@ footer strong { color: var(--gold); }
 <!-- ════ TICKER ════ -->
 <div id="ticker">
   <div class="tk-label"><div class="tk-dot"></div>Cotações</div>
-  <div class="tk-faixa"><div class="tk-inner" id="tkInner">Carregando cotações...</div></div>
+  <div class="tk-faixa"><div class="tk-inner" id="tkInner" data-i18n="tk_loading">Carregando cotações...</div></div>
 </div>
 
 <!-- ════ MODAL ÁUDIO ════ -->
@@ -1397,8 +1397,8 @@ footer strong { color: var(--gold); }
         </div>
         <!-- Sem URL -->
         <div id="am-no-url" style="display:none">
-          <strong>🎧 Episódio sem áudio</strong>
-          <span>Grave o áudio no painel admin e publique para ativar o player.</span>
+          <strong data-i18n="modal_sem_audio_h">🎧 Episódio sem áudio</strong>
+          <span data-i18n="modal_sem_audio_p">Grave o áudio no painel admin e publique para ativar o player.</span>
         </div>
         <!-- Player HTML5 nativo (oculto, apenas processa) -->
         <audio id="am-audio-el" preload="none" style="display:none"></audio>
@@ -1453,13 +1453,13 @@ footer strong { color: var(--gold); }
     <div id="modalDesc" style="padding:.55rem 1.5rem 0;font-size:.8rem;color:var(--muted);line-height:1.6;display:none"></div>
     <!-- Mini-gráfico de escutas -->
     <div id="modalViewsChart" style="padding:.6rem 1.5rem 0;display:none">
-      <div style="font-size:.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem">Escutas — últimos 7 dias</div>
+      <div data-i18n="modal_esc_7d" style="font-size:.68rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.3rem">Escutas — últimos 7 dias</div>
       <canvas id="canvasViewsModal" height="42" style="width:100%;display:block"></canvas>
     </div>
     <div class="modal-rod">
       <span id="modalInfo"></span>
       <div style="display:flex;align-items:center;gap:.6rem">
-        <button onclick="compartilharEpisodio()" title="Compartilhar" style="background:transparent;border:1px solid rgba(200,168,75,.2);color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.2)';this.style.color='var(--muted)'">
+        <button onclick="compartilharEpisodio()" data-i18n-title="modal_compartilhar" title="Compartilhar" style="background:transparent;border:1px solid rgba(200,168,75,.2);color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='rgba(200,168,75,.2)';this.style.color='var(--muted)'">
           <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
         </button>
         <button class="btn-like-dest" id="btnLikeModal" onclick="curtirModal()">
@@ -1475,7 +1475,7 @@ footer strong { color: var(--gold); }
 <div class="modal-overlay" id="mAuth">
   <div class="modal-box">
     <div class="modal-box-cab">
-      <div class="modal-box-titulo" id="mAuthTitulo">Entrar</div>
+      <div class="modal-box-titulo" id="mAuthTitulo" data-i18n="auth_btn_entrar">Entrar</div>
       <button class="btn-fechar" onclick="fModal('mAuth')">✕</button>
     </div>
     <div class="modal-corpo" id="mAuthCorpo"></div>
@@ -1486,31 +1486,31 @@ footer strong { color: var(--gold); }
 <div class="modal-overlay" id="mCfg">
   <div class="modal-box">
     <div class="modal-box-cab">
-      <div class="modal-box-titulo">Configurações</div>
+      <div class="modal-box-titulo" data-i18n="cfg_titulo">Configurações</div>
       <button class="btn-fechar" onclick="fModal('mCfg')">✕</button>
     </div>
     <div class="modal-corpo">
       <div class="cfg-sec">
-        <h4>Conta</h4>
-        <div class="cfg-row"><span>Nome</span><span id="cfgNome" style="color:var(--cream)">—</span></div>
-        <div class="cfg-row"><span>E-mail</span><span id="cfgEmail" style="color:var(--cream)">—</span></div>
-        <div class="cfg-row"><span>Senha</span><span class="act" onclick="abrirAlterarSenha()">→ Alterar</span></div>
+        <h4 data-i18n="cfg_conta">Conta</h4>
+        <div class="cfg-row"><span data-i18n="cfg_nome">Nome</span><span id="cfgNome" style="color:var(--cream)">—</span></div>
+        <div class="cfg-row"><span data-i18n="cfg_email">E-mail</span><span id="cfgEmail" style="color:var(--cream)">—</span></div>
+        <div class="cfg-row"><span data-i18n="cfg_senha_label">Senha</span><span class="act" onclick="abrirAlterarSenha()" data-i18n="cfg_senha_alt">→ Alterar</span></div>
       </div>
       <div class="cfg-sec">
-        <h4>Cor de destaque — 12 opções</h4>
+        <h4 data-i18n="cfg_cor">Cor de destaque — 12 opções</h4>
         <div class="paleta" id="paleta"></div>
       </div>
       <div class="cfg-sec">
-        <h4>Privacidade &amp; Termos</h4>
-        <div class="cfg-row"><span>Política de Privacidade</span><a href="#" onclick="abrirPolitica('priv');return false">Ver →</a></div>
-        <div class="cfg-row"><span>Termos de Uso</span><a href="#" onclick="abrirPolitica('term');return false">Ver →</a></div>
-        <div class="cfg-row"><span>Política de Cookies</span><a href="#" onclick="abrirPolitica('cook');return false">Ver →</a></div>
-        <div class="cfg-row"><span>Excluir conta</span><span class="perigo" onclick="excluirConta()">Excluir</span></div>
+        <h4 data-i18n="cfg_priv_termos">Privacidade &amp; Termos</h4>
+        <div class="cfg-row"><span data-i18n="footer_priv">Política de Privacidade</span><a href="#" onclick="abrirPolitica('priv');return false" data-i18n="cfg_ver">Ver →</a></div>
+        <div class="cfg-row"><span data-i18n="footer_termos">Termos de Uso</span><a href="#" onclick="abrirPolitica('term');return false" data-i18n="cfg_ver">Ver →</a></div>
+        <div class="cfg-row"><span data-i18n="footer_cookies">Política de Cookies</span><a href="#" onclick="abrirPolitica('cook');return false" data-i18n="cfg_ver">Ver →</a></div>
+        <div class="cfg-row"><span data-i18n="cfg_excluir">Excluir conta</span><span class="perigo" onclick="excluirConta()" data-i18n="cfg_excluir_btn">Excluir</span></div>
       </div>
       <div class="cfg-sec">
-        <h4>Sobre</h4>
-        <div class="cfg-row"><span>Versão</span><span style="color:var(--cream)">ArrozMarket v1.0</span></div>
-        <div class="cfg-row"><span>Proprietário</span><span style="color:var(--gold)">Fábio Toledo — São Gabriel RS</span></div>
+        <h4 data-i18n="cfg_sobre">Sobre</h4>
+        <div class="cfg-row"><span data-i18n="cfg_versao">Versão</span><span style="color:var(--cream)">ArrozMarket v1.0</span></div>
+        <div class="cfg-row"><span data-i18n="cfg_prop">Proprietário</span><span style="color:var(--gold)">Fábio Toledo — São Gabriel RS</span></div>
       </div>
     </div>
   </div>
@@ -1538,7 +1538,7 @@ footer strong { color: var(--gold); }
 <section class="pagina ativa" id="inicio">
   <div class="hero">
     <div class="tag" data-i18n="hero_tag">Análises Diárias do Mercado Orizícola</div>
-    <h1>O mercado do <em data-i18n="hero_h1b">arroz</em><br><span data-i18n="hero_h1c">em análise profissional</span></h1>
+    <h1><span data-i18n="hero_h1a">O mercado do</span> <em data-i18n="hero_h1b">arroz</em><br><span data-i18n="hero_h1c">em análise profissional</span></h1>
     <p data-i18n="hero_p">Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.</p>
   </div>
 
@@ -1641,7 +1641,7 @@ footer strong { color: var(--gold); }
       <button class="fil-ep" onclick="filtrarEp('Especial',this)" data-i18n="fil_especial">⭐ Especial</button>
     </div>
   </div>
-  <div id="ep-empty" style="display:none;text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.86rem">Nenhum episódio nesta categoria ainda.</div>
+  <div id="ep-empty" data-i18n="ep_vazio" style="display:none;text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.86rem">Nenhum episódio nesta categoria ainda.</div>
   <div class="grade-v" id="gradeV"></div>
   <!-- Paginação -->
   <div id="ep-paginacao" style="display:none;justify-content:center;align-items:center;gap:.5rem;margin-top:1.5rem;flex-wrap:wrap">
@@ -1656,25 +1656,25 @@ footer strong { color: var(--gold); }
   <div class="hero">
     <div class="tag" data-i18n="tec_tag">Base de Conhecimento</div>
     <h1><span data-i18n="tec_h1a">Informações</span> <em data-i18n="tec_h1b">Técnicas</em></h1>
-    <p>Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.</p>
+    <p data-i18n="tec_p">Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.</p>
   </div>
   <div class="grade-tec">
-    <div class="card-tec"><span class="tec-icone">🌾</span><h3>Classificação Oficial (MAPA)</h3><p>IN nº 6/2009 — arroz classificado em grupos, classes e tipos com base em características físicas e sensoriais.</p><ul class="lista-sp"><li>Grupo Beneficiado<span>Polido / Parboilizado</span></li><li>Grupo Natural<span>Em casca</span></li><li>Grupo Integral<span>Sem polimento</span></li><li>Tipos<span>1, 2, 3, 4 e 5</span></li></ul></div>
-    <div class="card-tec"><span class="tec-icone">📊</span><h3>Parâmetros de Qualidade</h3><p>Tipagem determinada pela % de grãos defeituosos e impurezas em amostras laboratoriais padronizadas.</p><ul class="lista-sp"><li>Umidade máx.<span>14 %</span></li><li>Impurezas T1<span>≤ 0,5 %</span></li><li>Grãos quebrados T1<span>≤ 7,5 %</span></li><li>Manchados/Picados<span>≤ 1,5 %</span></li><li>Gessados T1<span>≤ 2,0 %</span></li></ul></div>
-    <div class="card-tec"><span class="tec-icone">🔬</span><h3>Beneficiamento</h3><p>Processo industrial que transforma arroz em casca em produto para consumo via limpeza, descascamento e polimento.</p><ul class="lista-sp"><li>Pré-limpeza<span>Separação de palha</span></li><li>Descascamento<span>Rolos de borracha</span></li><li>Separação casca<span>Mesa densimétrica</span></li><li>Brunimento<span>Politriz abrasiva</span></li><li>Classificação<span>Peneiras + catador</span></li></ul></div>
-    <div class="card-tec"><span class="tec-icone">🗺️</span><h3>Regiões Produtoras</h3><p>Maior produtor fora da Ásia, Brasil concentra produção no Sul e Centro-Oeste.</p><ul class="lista-sp"><li>Rio Grande do Sul<span>~70 %</span></li><li>Santa Catarina<span>~8 %</span></li><li>Mato Grosso<span>~6 %</span></li><li>Tocantins<span>~4 %</span></li><li>Outros<span>~12 %</span></li></ul></div>
-    <div class="card-tec"><span class="tec-icone">📦</span><h3>Unidades de Medida</h3><p>Diferentes unidades dependendo da fase da cadeia produtiva.</p><ul class="lista-sp"><li>Saca (sc)<span>60 kg</span></li><li>Tonelada (t)<span>1.000 kg</span></li><li>Arroba (@)<span>15 kg</span></li><li>Lote padrão<span>27 t (450 sc)</span></li></ul></div>
-    <div class="card-tec"><span class="tec-icone">📅</span><h3>Calendário Orizícola</h3><p>Safra sul-brasileira segue calendário que impacta preços e estratégias de comercialização.</p><ul class="lista-sp"><li>Semeadura<span>Out – Dez</span></li><li>Irrigação plena<span>Nov – Jan</span></li><li>Floração<span>Jan – Fev</span></li><li>Colheita<span>Fev – Abr</span></li><li>Pico comercial<span>Abr – Jun</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">🌾</span><h3 data-i18n="tec_mapa_h">Classificação Oficial (MAPA)</h3><p data-i18n="tec_mapa_p">IN nº 6/2009 — arroz classificado em grupos, classes e tipos com base em características físicas e sensoriais.</p><ul class="lista-sp"><li><span data-i18n="tec_grupo_ben">Grupo Beneficiado</span><span data-i18n="tec_grupo_ben_v">Polido / Parboilizado</span></li><li><span data-i18n="tec_grupo_nat">Grupo Natural</span><span data-i18n="tec_grupo_nat_v">Em casca</span></li><li><span data-i18n="tec_grupo_int">Grupo Integral</span><span data-i18n="tec_grupo_int_v">Sem polimento</span></li><li><span data-i18n="tec_tipos">Tipos</span><span>1, 2, 3, 4 e 5</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">📊</span><h3 data-i18n="tec_qual_h">Parâmetros de Qualidade</h3><p data-i18n="tec_qual_p">Tipagem determinada pela % de grãos defeituosos e impurezas em amostras laboratoriais padronizadas.</p><ul class="lista-sp"><li><span data-i18n="tec_umid">Umidade máx.</span><span>14 %</span></li><li><span data-i18n="tec_imp">Impurezas T1</span><span>≤ 0,5 %</span></li><li><span data-i18n="tec_qbr">Grãos quebrados T1</span><span>≤ 7,5 %</span></li><li><span data-i18n="tec_man">Manchados/Picados</span><span>≤ 1,5 %</span></li><li><span data-i18n="tec_ges">Gessados T1</span><span>≤ 2,0 %</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">🔬</span><h3 data-i18n="tec_ben_h">Beneficiamento</h3><p data-i18n="tec_ben_p">Processo industrial que transforma arroz em casca em produto para consumo via limpeza, descascamento e polimento.</p><ul class="lista-sp"><li><span data-i18n="tec_pre_limp">Pré-limpeza</span><span data-i18n="tec_pre_limp_v">Separação de palha</span></li><li><span data-i18n="tec_desc">Descascamento</span><span data-i18n="tec_desc_v">Rolos de borracha</span></li><li><span data-i18n="tec_sep_c">Separação casca</span><span data-i18n="tec_sep_c_v">Mesa densimétrica</span></li><li><span data-i18n="tec_brun">Brunimento</span><span data-i18n="tec_brun_v">Politriz abrasiva</span></li><li><span data-i18n="tec_class">Classificação</span><span data-i18n="tec_class_v">Peneiras + catador</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">🗺️</span><h3 data-i18n="tec_reg_h">Regiões Produtoras</h3><p data-i18n="tec_reg_p">Maior produtor fora da Ásia, Brasil concentra produção no Sul e Centro-Oeste.</p><ul class="lista-sp"><li><span>Rio Grande do Sul</span><span>~70 %</span></li><li><span>Santa Catarina</span><span>~8 %</span></li><li><span>Mato Grosso</span><span>~6 %</span></li><li><span>Tocantins</span><span>~4 %</span></li><li><span data-i18n="tec_outros">Outros</span><span>~12 %</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">📦</span><h3 data-i18n="tec_uni_h">Unidades de Medida</h3><p data-i18n="tec_uni_p">Diferentes unidades dependendo da fase da cadeia produtiva.</p><ul class="lista-sp"><li><span data-i18n="tec_saca">Saca (sc)</span><span>60 kg</span></li><li><span data-i18n="tec_ton">Tonelada (t)</span><span>1.000 kg</span></li><li><span data-i18n="tec_arroba">Arroba (@)</span><span>15 kg</span></li><li><span data-i18n="tec_lote">Lote padrão</span><span>27 t (450 sc)</span></li></ul></div>
+    <div class="card-tec"><span class="tec-icone">📅</span><h3 data-i18n="tec_cal_h">Calendário Orizícola</h3><p data-i18n="tec_cal_p">Safra sul-brasileira segue calendário que impacta preços e estratégias de comercialização.</p><ul class="lista-sp"><li><span data-i18n="tec_seme">Semeadura</span><span>Out – Dez</span></li><li><span data-i18n="tec_irrig">Irrigação plena</span><span>Nov – Jan</span></li><li><span data-i18n="tec_flora">Floração</span><span>Jan – Fev</span></li><li><span data-i18n="tec_colh">Colheita</span><span>Fev – Abr</span></li><li><span data-i18n="tec_pico">Pico comercial</span><span>Abr – Jun</span></li></ul></div>
   </div>
-  <div class="rotulo">Tabela de Classificação por Tipo</div>
+  <div class="rotulo" data-i18n="tec_tab_titulo">Tabela de Classificação por Tipo</div>
   <div class="b-tab">
-    <table class="tab"><thead><tr><th>Tipo</th><th>Grãos Quebrados</th><th>Gessados</th><th>Manchados/Picados</th><th>Impurezas</th><th>Uso Principal</th></tr></thead>
+    <table class="tab"><thead><tr><th data-i18n="tec_tab_tipo">Tipo</th><th data-i18n="tec_tab_qbr">Grãos Quebrados</th><th data-i18n="tec_tab_ges">Gessados</th><th data-i18n="tec_tab_man">Manchados/Picados</th><th data-i18n="tec_tab_imp">Impurezas</th><th data-i18n="tec_tab_uso">Uso Principal</th></tr></thead>
     <tbody>
-      <tr><td><span class="t-badge">Tipo 1</span></td><td>≤ 7,5 %</td><td>≤ 2,0 %</td><td>≤ 1,5 %</td><td>≤ 0,5 %</td><td>Mesa (premium)</td></tr>
-      <tr><td><span class="t-badge">Tipo 2</span></td><td>≤ 14,5 %</td><td>≤ 7,0 %</td><td>≤ 3,0 %</td><td>≤ 1,0 %</td><td>Mesa (padrão)</td></tr>
-      <tr><td><span class="t-badge">Tipo 3</span></td><td>≤ 20,5 %</td><td>≤ 15,0 %</td><td>≤ 5,0 %</td><td>≤ 1,5 %</td><td>Indústria alimentícia</td></tr>
-      <tr><td><span class="t-badge">Tipo 4</span></td><td>≤ 30,0 %</td><td>≤ 25,0 %</td><td>≤ 8,0 %</td><td>≤ 2,0 %</td><td>Cervejarias / rações</td></tr>
-      <tr><td><span class="t-badge">Tipo 5</span></td><td>> 30,0 %</td><td>> 25,0 %</td><td>> 8,0 %</td><td>≤ 3,0 %</td><td>Subprodutos / ração</td></tr>
+      <tr><td><span class="t-badge">Tipo 1</span></td><td>≤ 7,5 %</td><td>≤ 2,0 %</td><td>≤ 1,5 %</td><td>≤ 0,5 %</td><td data-i18n="tec_uso_t1">Mesa (premium)</td></tr>
+      <tr><td><span class="t-badge">Tipo 2</span></td><td>≤ 14,5 %</td><td>≤ 7,0 %</td><td>≤ 3,0 %</td><td>≤ 1,0 %</td><td data-i18n="tec_uso_t2">Mesa (padrão)</td></tr>
+      <tr><td><span class="t-badge">Tipo 3</span></td><td>≤ 20,5 %</td><td>≤ 15,0 %</td><td>≤ 5,0 %</td><td>≤ 1,5 %</td><td data-i18n="tec_uso_t3">Indústria alimentícia</td></tr>
+      <tr><td><span class="t-badge">Tipo 4</span></td><td>≤ 30,0 %</td><td>≤ 25,0 %</td><td>≤ 8,0 %</td><td>≤ 2,0 %</td><td data-i18n="tec_uso_t4">Cervejarias / rações</td></tr>
+      <tr><td><span class="t-badge">Tipo 5</span></td><td>> 30,0 %</td><td>> 25,0 %</td><td>> 8,0 %</td><td>≤ 3,0 %</td><td data-i18n="tec_uso_t5">Subprodutos / ração</td></tr>
     </tbody></table>
   </div>
 </section>
@@ -1684,34 +1684,34 @@ footer strong { color: var(--gold); }
   <div class="hero">
     <div class="tag" data-i18n="pre_tag">Cotações &amp; Tendências</div>
     <h1><span data-i18n="pre_h1a">Tabela de</span> <em data-i18n="pre_h1b">Preços</em></h1>
-    <p>Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.</p>
+    <p data-i18n="pre_p">Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.</p>
   </div>
   <div class="b-graf">
-    <h3>Evolução de Preços por Classificação</h3>
-    <p>Últimos 12 meses — R$ por saca de 60 kg</p>
+    <h3 data-i18n="pre_graf_h">Evolução de Preços por Classificação</h3>
+    <p data-i18n="pre_graf_p">Últimos 12 meses — R$ por saca de 60 kg</p>
     <div class="filtros">
-      <button class="fil-btn ativo" onclick="apFiltro('todos',this)">Todos</button>
-      <button class="fil-btn" onclick="apFiltro('cas',this)">Em Casca</button>
-      <button class="fil-btn" onclick="apFiltro('mf_rs',this)">Merc. Físico</button>
-      <button class="fil-btn" onclick="apFiltro('agl',this)">Agulhinha</button>
-      <button class="fil-btn" onclick="apFiltro('lf',this)">Longo Fino</button>
-      <button class="fil-btn" onclick="apFiltro('ben',this)">Beneficiado</button>
-      <button class="fil-btn" onclick="apFiltro('parb',this)">Parboilizado</button>
-      <button class="fil-btn" onclick="apFiltro('int',this)">Integral</button>
-      <button class="fil-btn" onclick="apFiltro('cat',this)">Cateto</button>
-      <button class="fil-btn" onclick="apFiltro('qui',this)">Quirera</button>
+      <button class="fil-btn ativo" onclick="apFiltro('todos',this)" data-i18n="fil_todos">Todos</button>
+      <button class="fil-btn" onclick="apFiltro('cas',this)" data-i18n="pre_fil_cas">Em Casca</button>
+      <button class="fil-btn" onclick="apFiltro('mf_rs',this)" data-i18n="pre_fil_mf">Merc. Físico</button>
+      <button class="fil-btn" onclick="apFiltro('agl',this)" data-i18n="pre_fil_agl">Agulhinha</button>
+      <button class="fil-btn" onclick="apFiltro('lf',this)" data-i18n="pre_fil_lf">Longo Fino</button>
+      <button class="fil-btn" onclick="apFiltro('ben',this)" data-i18n="pre_fil_ben">Beneficiado</button>
+      <button class="fil-btn" onclick="apFiltro('parb',this)" data-i18n="pre_fil_parb">Parboilizado</button>
+      <button class="fil-btn" onclick="apFiltro('int',this)" data-i18n="pre_fil_int">Integral</button>
+      <button class="fil-btn" onclick="apFiltro('cat',this)" data-i18n="pre_fil_cat">Cateto</button>
+      <button class="fil-btn" onclick="apFiltro('qui',this)" data-i18n="pre_fil_qui">Quirera</button>
     </div>
     <canvas id="grafLinha" height="100"></canvas>
   </div>
   <div class="b-graf">
-    <h3>Comparativo Atual por Tipo</h3>
-    <p>Cotação de hoje — R$ por saca 60 kg</p>
+    <h3 data-i18n="pre_comp_h">Comparativo Atual por Tipo</h3>
+    <p data-i18n="pre_comp_p">Cotação de hoje — R$ por saca 60 kg</p>
     <canvas id="grafBarra" height="80"></canvas>
   </div>
-  <div class="rotulo">Cotações Detalhadas</div>
+  <div class="rotulo" data-i18n="pre_det_titulo">Cotações Detalhadas</div>
   <div class="b-tab">
     <div class="b-tab-cab">
-      <span style="font-family:'Playfair Display',serif;color:var(--cream)">Cotações de Hoje</span>
+      <span data-i18n="cot_titulo" style="font-family:'Playfair Display',serif;color:var(--cream)">Cotações de Hoje</span>
       <span style="font-size:.75rem;color:var(--muted)" id="tsAtt">—</span>
     </div>
     <table class="tab">
@@ -1727,14 +1727,14 @@ footer strong { color: var(--gold); }
 <footer>
   <div style="display:flex;flex-direction:column;align-items:center;gap:.6rem">
     <div>
-      <strong>ArrozMarket</strong> &nbsp;·&nbsp; Podcast diário do mercado orizícola
+      <strong>ArrozMarket</strong> &nbsp;·&nbsp; <span data-i18n="footer_slogan">Podcast diário do mercado orizícola</span>
     </div>
     <div style="display:flex;gap:1.4rem;flex-wrap:wrap;justify-content:center;font-size:.72rem">
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('priv')">Política de Privacidade</span>
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('priv')" data-i18n="footer_priv">Política de Privacidade</span>
       <span style="color:rgba(200,168,75,.2)">|</span>
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('term')">Termos de Uso</span>
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('term')" data-i18n="footer_termos">Termos de Uso</span>
       <span style="color:rgba(200,168,75,.2)">|</span>
-      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('cook')">Cookies</span>
+      <span style="cursor:pointer;color:var(--muted);transition:color .2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" onclick="abrirPolitica('cook')" data-i18n="footer_cookies">Cookies</span>
     </div>
     <div style="font-size:.7rem;color:rgba(122,118,112,.6)">
       © <span id="anoFooter"></span> Fábio Toledo · São Gabriel — RS · CNPJ 00.000.000/0001-00
@@ -2183,44 +2183,74 @@ function fecharMenu() {
 ══════════════════════════════════════════════════════ */
 const I18N = {
   pt: {
-    /* Nav */
     nav_inicio:'Início', nav_tecnico:'Técnico', nav_precos:'Preços', nav_especialista:'Especialista',
-    /* Hero */
     hero_tag:'Análises Diárias do Mercado Orizícola',
-    hero_h1b:'arroz', hero_h1c:'em análise profissional',
+    hero_h1a:'O mercado do', hero_h1b:'arroz', hero_h1c:'em análise profissional',
     hero_p:'Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.',
-    /* Destaque */
     badge_novo:'Novo episódio disponível',
     stat_dur:'Duração', stat_esc:'Escutas', stat_cur:'Curtidas',
-    /* Episódios */
     sec_episodios:'Episódios',
     fil_todos:'Todos', fil_podcast:'🎙️ Podcast Diário', fil_curiosi:'💡 Curiosidades',
     fil_cotacoes:'📈 Cotações', fil_tecnico:'🔬 Técnico', fil_entrevista:'🎤 Entrevista', fil_especial:'⭐ Especial',
-    ep_escutas:'escutas',
-    /* Player destaque */
+    ep_escutas:'escutas', ep_vazio:'Nenhum episódio nesta categoria ainda.',
+    tk_loading:'Carregando cotações...',
     player_sem_audio:'Este episódio não possui áudio gravado.',
-    player_audio_idioma:'Idioma do Áudio',
-    player_dub_pt:'🇧🇷 Português',
-    player_dub_en:'🇺🇸 English',
+    player_audio_idioma:'Idioma do Áudio', player_dub_pt:'🇧🇷 Português', player_dub_en:'🇺🇸 English',
     player_dub_indisponivel:'Versão em inglês não disponível para este episódio.',
     player_voltar:'Voltar 15s', player_avancar:'Avançar 30s',
-    /* Modal player */
     modal_compartilhar:'Compartilhar', modal_fechar:'Fechar',
-    modal_escutas:'escutas',
-    /* Cotações */
+    modal_escutas:'escutas', modal_esc_7d:'Escutas — últimos 7 dias',
+    modal_sem_audio_h:'🎧 Episódio sem áudio',
+    modal_sem_audio_p:'Grave o áudio no painel admin e publique para ativar o player.',
     cot_titulo:'Cotações de Hoje',
-    cot_produto:'Produto', cot_unidade:'Unidade', cot_preco:'Preço', cot_variacao:'Variação', cot_tendencia:'Tendência', cot_fonte:'Fonte',
+    cot_produto:'Produto', cot_unidade:'Unidade', cot_preco:'Preço',
+    cot_variacao:'Variação', cot_tendencia:'Tendência', cot_fonte:'Fonte',
     cot_alta:'↑ Alta', cot_baixa:'↓ Baixa', cot_estavel:'→ Estável',
     pre_tag:'Cotações & Tendências', pre_h1a:'Tabela de', pre_h1b:'Preços',
     pre_p:'Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.',
-    fil_sem:'Sem filtro', fil_7d:'7 dias', fil_30d:'30 dias', fil_90d:'90 dias',
-    /* Técnico */
+    pre_graf_h:'Evolução de Preços por Classificação',
+    pre_graf_p:'Últimos 12 meses — R$ por saca de 60 kg',
+    pre_comp_h:'Comparativo Atual por Tipo',
+    pre_comp_p:'Cotação de hoje — R$ por saca 60 kg',
+    pre_det_titulo:'Cotações Detalhadas',
+    pre_fil_cas:'Em Casca', pre_fil_mf:'Merc. Físico', pre_fil_agl:'Agulhinha',
+    pre_fil_lf:'Longo Fino', pre_fil_ben:'Beneficiado', pre_fil_parb:'Parboilizado',
+    pre_fil_int:'Integral', pre_fil_cat:'Cateto', pre_fil_qui:'Quirera',
     tec_tag:'Base de Conhecimento', tec_h1a:'Informações', tec_h1b:'Técnicas',
     tec_p:'Classificações, normas, beneficiamento e parâmetros de qualidade do arroz brasileiro.',
-    /* Especialista */
-    esp_tag:'Quem é o especialista',
-    esp_traj:'Trajetória Profissional',
-    /* Auth */
+    tec_mapa_h:'Classificação Oficial (MAPA)',
+    tec_mapa_p:'IN nº 6/2009 — arroz classificado em grupos, classes e tipos com base em características físicas e sensoriais.',
+    tec_grupo_ben:'Grupo Beneficiado', tec_grupo_ben_v:'Polido / Parboilizado',
+    tec_grupo_nat:'Grupo Natural', tec_grupo_nat_v:'Em casca',
+    tec_grupo_int:'Grupo Integral', tec_grupo_int_v:'Sem polimento',
+    tec_tipos:'Tipos',
+    tec_qual_h:'Parâmetros de Qualidade',
+    tec_qual_p:'Tipagem determinada pela % de grãos defeituosos e impurezas em amostras laboratoriais padronizadas.',
+    tec_umid:'Umidade máx.', tec_imp:'Impurezas T1', tec_qbr:'Grãos quebrados T1',
+    tec_man:'Manchados/Picados', tec_ges:'Gessados T1',
+    tec_ben_h:'Beneficiamento',
+    tec_ben_p:'Processo industrial que transforma arroz em casca em produto para consumo via limpeza, descascamento e polimento.',
+    tec_pre_limp:'Pré-limpeza', tec_pre_limp_v:'Separação de palha',
+    tec_desc:'Descascamento', tec_desc_v:'Rolos de borracha',
+    tec_sep_c:'Separação casca', tec_sep_c_v:'Mesa densimétrica',
+    tec_brun:'Brunimento', tec_brun_v:'Politriz abrasiva',
+    tec_class:'Classificação', tec_class_v:'Peneiras + catador',
+    tec_reg_h:'Regiões Produtoras',
+    tec_reg_p:'Maior produtor fora da Ásia, Brasil concentra produção no Sul e Centro-Oeste.',
+    tec_outros:'Outros',
+    tec_uni_h:'Unidades de Medida',
+    tec_uni_p:'Diferentes unidades dependendo da fase da cadeia produtiva.',
+    tec_saca:'Saca (sc)', tec_ton:'Tonelada (t)', tec_arroba:'Arroba (@)', tec_lote:'Lote padrão',
+    tec_cal_h:'Calendário Orizícola',
+    tec_cal_p:'Safra sul-brasileira segue calendário que impacta preços e estratégias de comercialização.',
+    tec_seme:'Semeadura', tec_irrig:'Irrigação plena', tec_flora:'Floração',
+    tec_colh:'Colheita', tec_pico:'Pico comercial',
+    tec_tab_titulo:'Tabela de Classificação por Tipo',
+    tec_tab_tipo:'Tipo', tec_tab_qbr:'Grãos Quebrados', tec_tab_ges:'Gessados',
+    tec_tab_man:'Manchados/Picados', tec_tab_imp:'Impurezas', tec_tab_uso:'Uso Principal',
+    tec_uso_t1:'Mesa (premium)', tec_uso_t2:'Mesa (padrão)',
+    tec_uso_t3:'Indústria alimentícia', tec_uso_t4:'Cervejarias / rações', tec_uso_t5:'Subprodutos / ração',
+    esp_tag:'Quem é o especialista', esp_traj:'Trajetória Profissional',
     auth_entrar:'Entrar na sua conta', auth_registrar:'Criar conta grátis',
     auth_email:'E-mail', auth_senha:'Senha', auth_nome:'Nome completo',
     auth_senha_min:'Senha (mín. 6 caracteres)',
@@ -2228,60 +2258,100 @@ const I18N = {
     auth_btn_entrar:'Entrar', auth_btn_criar:'Criar conta',
     auth_sem_conta:'Não tem conta?', auth_criar_now:'Criar agora',
     auth_ja_tem:'Já tem conta?', auth_entrar_now:'Entrar',
-    /* Menu perfil */
     menu_login_msg:'Faça login para acessar sua conta',
     menu_entrar:'Entrar na conta', menu_criar:'Criar conta grátis',
     menu_admin:'Painel Administrativo', menu_config:'Configurações',
     menu_notif_on:'Notificações ativas', menu_notif_off:'Ativar notificações',
     menu_tema_claro:'Modo claro', menu_tema_escuro:'Modo escuro',
     menu_sair:'Sair', menu_admin_role:'Administrador', menu_user_role:'Membro',
-    /* Config modal */
     cfg_titulo:'Configurações', cfg_conta:'Conta', cfg_nome:'Nome', cfg_email:'E-mail',
-    cfg_tema:'Aparência', cfg_cor:'Cor de destaque',
+    cfg_senha_label:'Senha', cfg_senha_alt:'→ Alterar',
+    cfg_cor:'Cor de destaque — 12 opções',
+    cfg_priv_termos:'Privacidade & Termos',
+    cfg_ver:'Ver →', cfg_excluir:'Excluir conta', cfg_excluir_btn:'Excluir',
+    cfg_sobre:'Sobre', cfg_versao:'Versão', cfg_prop:'Proprietário',
     cfg_notif:'Notificações push', cfg_notif_btn:'Ativar',
     cfg_senha_atual:'Senha atual', cfg_senha_nova:'Nova senha', cfg_senha_conf:'Confirmar senha',
-    cfg_btn_senha:'Atualizar senha', cfg_excluir:'Excluir conta',
-    cfg_excluir_conf:'Confirmar exclusão',
-    /* Toasts */
+    cfg_btn_senha:'Atualizar senha', cfg_excluir_conf:'Confirmar exclusão',
     toast_curtiu:'Curtida registrada!', toast_descurtiu:'Curtida removida.',
     toast_login_cur:'Faça login para curtir.', toast_link_copi:'Link copiado!',
     toast_sessao_enc:'Sessão encerrada.', toast_compartilhar_nao:'Compartilhamento não suportado neste navegador.',
     toast_bem_vindo:'Bem-vindo,', toast_conta_criada:'Conta criada! Bem-vindo,',
-    /* Paginação */
     pag_anterior:'← Anterior', pag_proximo:'Próximo →',
-    /* Footer */
+    footer_slogan:'Podcast diário do mercado orizícola',
     footer_priv:'Política de Privacidade', footer_termos:'Termos de Uso', footer_cookies:'Cookies',
+    lang_em_breve:'em breve',
   },
 
   en: {
     nav_inicio:'Home', nav_tecnico:'Technical', nav_precos:'Prices', nav_especialista:'Specialist',
     hero_tag:'Daily Rice Market Analysis',
-    hero_h1b:'rice', hero_h1c:'in professional analysis',
+    hero_h1a:'The', hero_h1b:'rice', hero_h1c:'market in professional analysis',
     hero_p:'Daily podcast with Fábio Toledo on rice market prices, trends and classifications.',
     badge_novo:'New episode available',
     stat_dur:'Duration', stat_esc:'Plays', stat_cur:'Likes',
     sec_episodios:'Episodes',
     fil_todos:'All', fil_podcast:'🎙️ Daily Podcast', fil_curiosi:'💡 Did You Know',
     fil_cotacoes:'📈 Prices', fil_tecnico:'🔬 Technical', fil_entrevista:'🎤 Interview', fil_especial:'⭐ Special',
-    ep_escutas:'plays',
+    ep_escutas:'plays', ep_vazio:'No episodes in this category yet.',
+    tk_loading:'Loading prices...',
     player_sem_audio:'This episode has no recorded audio.',
-    player_audio_idioma:'Audio Language',
-    player_dub_pt:'🇧🇷 Portuguese',
-    player_dub_en:'🇺🇸 English',
+    player_audio_idioma:'Audio Language', player_dub_pt:'🇧🇷 Portuguese', player_dub_en:'🇺🇸 English',
     player_dub_indisponivel:'English version not available for this episode.',
     player_voltar:'Back 15s', player_avancar:'Forward 30s',
     modal_compartilhar:'Share', modal_fechar:'Close',
-    modal_escutas:'plays',
-    cot_titulo:'Today\'s Prices',
-    cot_produto:'Product', cot_unidade:'Unit', cot_preco:'Price', cot_variacao:'Change', cot_tendencia:'Trend', cot_fonte:'Source',
+    modal_escutas:'plays', modal_esc_7d:'Plays — last 7 days',
+    modal_sem_audio_h:'🎧 Episode without audio',
+    modal_sem_audio_p:'Record audio in the admin panel and publish to activate the player.',
+    cot_titulo:"Today's Prices",
+    cot_produto:'Product', cot_unidade:'Unit', cot_preco:'Price',
+    cot_variacao:'Change', cot_tendencia:'Trend', cot_fonte:'Source',
     cot_alta:'↑ Rising', cot_baixa:'↓ Falling', cot_estavel:'→ Stable',
     pre_tag:'Prices & Trends', pre_h1a:'Price', pre_h1b:'Table',
     pre_p:'Updated prices by classification — reference: 60 kg bag, ex-factory, RS.',
-    fil_sem:'No filter', fil_7d:'7 days', fil_30d:'30 days', fil_90d:'90 days',
+    pre_graf_h:'Price Evolution by Classification',
+    pre_graf_p:'Last 12 months — BRL per 60 kg bag',
+    pre_comp_h:'Current Comparison by Type',
+    pre_comp_p:"Today's price — BRL per 60 kg bag",
+    pre_det_titulo:'Detailed Prices',
+    pre_fil_cas:'Paddy Rice', pre_fil_mf:'Physical Market', pre_fil_agl:'Irrigated',
+    pre_fil_lf:'Long Grain', pre_fil_ben:'Milled', pre_fil_parb:'Parboiled',
+    pre_fil_int:'Whole Grain', pre_fil_cat:'Cateto', pre_fil_qui:'Broken Rice',
     tec_tag:'Knowledge Base', tec_h1a:'Technical', tec_h1b:'Information',
     tec_p:'Classifications, standards, processing and quality parameters of Brazilian rice.',
-    esp_tag:'About the specialist',
-    esp_traj:'Professional Background',
+    tec_mapa_h:'Official Classification (MAPA)',
+    tec_mapa_p:'IN nº 6/2009 — rice classified into groups, classes and types based on physical and sensory characteristics.',
+    tec_grupo_ben:'Milled Group', tec_grupo_ben_v:'Polished / Parboiled',
+    tec_grupo_nat:'Natural Group', tec_grupo_nat_v:'Paddy',
+    tec_grupo_int:'Whole Grain Group', tec_grupo_int_v:'Unpolished',
+    tec_tipos:'Types',
+    tec_qual_h:'Quality Parameters',
+    tec_qual_p:'Grading determined by % of defective grains and impurities in standardized laboratory samples.',
+    tec_umid:'Max. moisture', tec_imp:'T1 Impurities', tec_qbr:'T1 Broken grains',
+    tec_man:'Stained/Spotted', tec_ges:'Chalky T1',
+    tec_ben_h:'Processing',
+    tec_ben_p:'Industrial process transforming paddy rice into a consumer product through cleaning, hulling and polishing.',
+    tec_pre_limp:'Pre-cleaning', tec_pre_limp_v:'Straw separation',
+    tec_desc:'Hulling', tec_desc_v:'Rubber rollers',
+    tec_sep_c:'Husk separation', tec_sep_c_v:'Density table',
+    tec_brun:'Whitening', tec_brun_v:'Abrasive polisher',
+    tec_class:'Classification', tec_class_v:'Sieves + separator',
+    tec_reg_h:'Producing Regions',
+    tec_reg_p:'Largest producer outside Asia, Brazil concentrates production in the South and Midwest.',
+    tec_outros:'Others',
+    tec_uni_h:'Units of Measurement',
+    tec_uni_p:'Different units depending on the stage of the production chain.',
+    tec_saca:'Bag (sc)', tec_ton:'Tonne (t)', tec_arroba:'Arroba (@)', tec_lote:'Standard lot',
+    tec_cal_h:'Rice Calendar',
+    tec_cal_p:'Southern Brazilian harvest follows a calendar that impacts prices and trading strategies.',
+    tec_seme:'Planting', tec_irrig:'Full irrigation', tec_flora:'Flowering',
+    tec_colh:'Harvest', tec_pico:'Peak trading',
+    tec_tab_titulo:'Classification Table by Type',
+    tec_tab_tipo:'Type', tec_tab_qbr:'Broken Grains', tec_tab_ges:'Chalky',
+    tec_tab_man:'Stained/Spotted', tec_tab_imp:'Impurities', tec_tab_uso:'Main Use',
+    tec_uso_t1:'Table (premium)', tec_uso_t2:'Table (standard)',
+    tec_uso_t3:'Food industry', tec_uso_t4:'Breweries / feed', tec_uso_t5:'By-products / feed',
+    esp_tag:'About the specialist', esp_traj:'Professional Background',
     auth_entrar:'Sign in to your account', auth_registrar:'Create free account',
     auth_email:'E-mail', auth_senha:'Password', auth_nome:'Full name',
     auth_senha_min:'Password (min. 6 characters)',
@@ -2296,48 +2366,93 @@ const I18N = {
     menu_tema_claro:'Light mode', menu_tema_escuro:'Dark mode',
     menu_sair:'Log out', menu_admin_role:'Administrator', menu_user_role:'Member',
     cfg_titulo:'Settings', cfg_conta:'Account', cfg_nome:'Name', cfg_email:'E-mail',
-    cfg_tema:'Appearance', cfg_cor:'Accent color',
+    cfg_senha_label:'Password', cfg_senha_alt:'→ Change',
+    cfg_cor:'Accent color — 12 options',
+    cfg_priv_termos:'Privacy & Terms',
+    cfg_ver:'View →', cfg_excluir:'Delete account', cfg_excluir_btn:'Delete',
+    cfg_sobre:'About', cfg_versao:'Version', cfg_prop:'Owner',
     cfg_notif:'Push notifications', cfg_notif_btn:'Enable',
     cfg_senha_atual:'Current password', cfg_senha_nova:'New password', cfg_senha_conf:'Confirm password',
-    cfg_btn_senha:'Update password', cfg_excluir:'Delete account',
-    cfg_excluir_conf:'Confirm deletion',
+    cfg_btn_senha:'Update password', cfg_excluir_conf:'Confirm deletion',
     toast_curtiu:'Like added!', toast_descurtiu:'Like removed.',
     toast_login_cur:'Log in to like episodes.', toast_link_copi:'Link copied!',
     toast_sessao_enc:'Signed out.', toast_compartilhar_nao:'Sharing not supported in this browser.',
     toast_bem_vindo:'Welcome,', toast_conta_criada:'Account created! Welcome,',
     pag_anterior:'← Previous', pag_proximo:'Next →',
+    footer_slogan:'Daily rice market podcast',
     footer_priv:'Privacy Policy', footer_termos:'Terms of Use', footer_cookies:'Cookies',
+    lang_em_breve:'coming soon',
   },
 
   fr: {
     nav_inicio:'Accueil', nav_tecnico:'Technique', nav_precos:'Prix', nav_especialista:'Spécialiste',
     hero_tag:'Analyses Quotidiennes du Marché Orizicole',
-    hero_h1b:'riz', hero_h1c:'en analyse professionnelle',
+    hero_h1a:'Le marché du', hero_h1b:'riz', hero_h1c:'en analyse professionnelle',
     hero_p:'Podcast quotidien avec Fábio Toledo sur les prix, tendances et classifications du riz.',
     badge_novo:'Nouvel épisode disponible',
     stat_dur:'Durée', stat_esc:'Écoutes', stat_cur:'Mentions',
     sec_episodios:'Épisodes',
     fil_todos:'Tous', fil_podcast:'🎙️ Podcast Quotidien', fil_curiosi:'💡 Le Saviez-Vous',
     fil_cotacoes:'📈 Prix', fil_tecnico:'🔬 Technique', fil_entrevista:'🎤 Entretien', fil_especial:'⭐ Spécial',
-    ep_escutas:'écoutes',
-    player_sem_audio:'Cet épisode n\'a pas d\'audio enregistré.',
-    player_audio_idioma:'Langue Audio',
-    player_dub_pt:'🇧🇷 Portugais',
-    player_dub_en:'🇺🇸 Anglais',
+    ep_escutas:'écoutes', ep_vazio:'Aucun épisode dans cette catégorie.',
+    tk_loading:'Chargement des prix...',
+    player_sem_audio:"Cet épisode n'a pas d'audio enregistré.",
+    player_audio_idioma:'Langue Audio', player_dub_pt:'🇧🇷 Portugais', player_dub_en:'🇺🇸 Anglais',
     player_dub_indisponivel:'Version anglaise non disponible pour cet épisode.',
     player_voltar:'Reculer 15s', player_avancar:'Avancer 30s',
     modal_compartilhar:'Partager', modal_fechar:'Fermer',
-    modal_escutas:'écoutes',
+    modal_escutas:'écoutes', modal_esc_7d:'Écoutes — 7 derniers jours',
+    modal_sem_audio_h:'🎧 Épisode sans audio',
+    modal_sem_audio_p:"Enregistrez l'audio dans le panneau admin et publiez pour activer le lecteur.",
     cot_titulo:'Prix du Jour',
-    cot_produto:'Produit', cot_unidade:'Unité', cot_preco:'Prix', cot_variacao:'Variation', cot_tendencia:'Tendance', cot_fonte:'Source',
+    cot_produto:'Produit', cot_unidade:'Unité', cot_preco:'Prix',
+    cot_variacao:'Variation', cot_tendencia:'Tendance', cot_fonte:'Source',
     cot_alta:'↑ Hausse', cot_baixa:'↓ Baisse', cot_estavel:'→ Stable',
     pre_tag:'Prix & Tendances', pre_h1a:'Tableau des', pre_h1b:'Prix',
     pre_p:'Prix actualisés par classification — référence : sac 60 kg, départ usine, RS.',
-    fil_sem:'Sans filtre', fil_7d:'7 jours', fil_30d:'30 jours', fil_90d:'90 jours',
+    pre_graf_h:'Évolution des Prix par Classification',
+    pre_graf_p:'12 derniers mois — R$ par sac de 60 kg',
+    pre_comp_h:'Comparatif Actuel par Type',
+    pre_comp_p:'Prix du jour — R$ par sac 60 kg',
+    pre_det_titulo:'Prix Détaillés',
+    pre_fil_cas:'Riz Paddy', pre_fil_mf:'Marché Physique', pre_fil_agl:'Irrigué',
+    pre_fil_lf:'Long Grain', pre_fil_ben:'Usiné', pre_fil_parb:'Étuvé',
+    pre_fil_int:'Complet', pre_fil_cat:'Cateto', pre_fil_qui:'Brisures',
     tec_tag:'Base de Connaissances', tec_h1a:'Informations', tec_h1b:'Techniques',
     tec_p:'Classifications, normes, transformation et paramètres de qualité du riz brésilien.',
-    esp_tag:'À propos du spécialiste',
-    esp_traj:'Parcours Professionnel',
+    tec_mapa_h:'Classification Officielle (MAPA)',
+    tec_mapa_p:'IN nº 6/2009 — riz classifié en groupes, classes et types selon caractéristiques physiques et sensorielles.',
+    tec_grupo_ben:'Groupe Usiné', tec_grupo_ben_v:'Poli / Étuvé',
+    tec_grupo_nat:'Groupe Naturel', tec_grupo_nat_v:'Paddy',
+    tec_grupo_int:'Groupe Complet', tec_grupo_int_v:'Non poli',
+    tec_tipos:'Types',
+    tec_qual_h:'Paramètres de Qualité',
+    tec_qual_p:'Classement déterminé par % de grains défectueux et impuretés dans des échantillons standardisés.',
+    tec_umid:'Humidité max.', tec_imp:'Impuretés T1', tec_qbr:'Grains brisés T1',
+    tec_man:'Tachés/Mouchetés', tec_ges:'Crayeux T1',
+    tec_ben_h:'Transformation',
+    tec_ben_p:"Processus industriel transformant le riz paddy en produit consommable via nettoyage, décorticage et polissage.",
+    tec_pre_limp:'Pré-nettoyage', tec_pre_limp_v:'Séparation paille',
+    tec_desc:'Décorticage', tec_desc_v:'Rouleaux caoutchouc',
+    tec_sep_c:'Séparation balle', tec_sep_c_v:'Table densimétrique',
+    tec_brun:'Blanchiment', tec_brun_v:'Polisseuse abrasive',
+    tec_class:'Classification', tec_class_v:'Tamis + séparateur',
+    tec_reg_h:'Régions Productrices',
+    tec_reg_p:'Principal producteur hors Asie, le Brésil concentre sa production dans le Sud et le Centre-Ouest.',
+    tec_outros:'Autres',
+    tec_uni_h:'Unités de Mesure',
+    tec_uni_p:"Différentes unités selon l'étape de la chaîne de production.",
+    tec_saca:'Sac (sc)', tec_ton:'Tonne (t)', tec_arroba:'Arroba (@)', tec_lote:'Lot standard',
+    tec_cal_h:'Calendrier Rizicole',
+    tec_cal_p:'La récolte du sud du Brésil suit un calendrier qui impacte les prix et les stratégies commerciales.',
+    tec_seme:'Semis', tec_irrig:'Irrigation pleine', tec_flora:'Floraison',
+    tec_colh:'Récolte', tec_pico:'Pic commercial',
+    tec_tab_titulo:'Tableau de Classification par Type',
+    tec_tab_tipo:'Type', tec_tab_qbr:'Grains Brisés', tec_tab_ges:'Crayeux',
+    tec_tab_man:'Tachés/Mouchetés', tec_tab_imp:'Impuretés', tec_tab_uso:'Usage Principal',
+    tec_uso_t1:'Table (premium)', tec_uso_t2:'Table (standard)',
+    tec_uso_t3:'Industrie alimentaire', tec_uso_t4:'Brasseries / alimentation', tec_uso_t5:'Sous-produits / alimentation',
+    esp_tag:'À propos du spécialiste', esp_traj:'Parcours Professionnel',
     auth_entrar:'Connexion à votre compte', auth_registrar:'Créer un compte gratuit',
     auth_email:'E-mail', auth_senha:'Mot de passe', auth_nome:'Nom complet',
     auth_senha_min:'Mot de passe (min. 6 caractères)',
@@ -2352,19 +2467,25 @@ const I18N = {
     menu_tema_claro:'Mode clair', menu_tema_escuro:'Mode sombre',
     menu_sair:'Déconnexion', menu_admin_role:'Administrateur', menu_user_role:'Membre',
     cfg_titulo:'Paramètres', cfg_conta:'Compte', cfg_nome:'Nom', cfg_email:'E-mail',
-    cfg_tema:'Apparence', cfg_cor:'Couleur d\'accentuation',
+    cfg_senha_label:'Mot de passe', cfg_senha_alt:'→ Modifier',
+    cfg_cor:"Couleur d'accentuation — 12 options",
+    cfg_priv_termos:'Confidentialité & Conditions',
+    cfg_ver:'Voir →', cfg_excluir:'Supprimer le compte', cfg_excluir_btn:'Supprimer',
+    cfg_sobre:'À propos', cfg_versao:'Version', cfg_prop:'Propriétaire',
     cfg_notif:'Notifications push', cfg_notif_btn:'Activer',
     cfg_senha_atual:'Mot de passe actuel', cfg_senha_nova:'Nouveau mot de passe', cfg_senha_conf:'Confirmer',
-    cfg_btn_senha:'Mettre à jour', cfg_excluir:'Supprimer le compte',
-    cfg_excluir_conf:'Confirmer la suppression',
-    toast_curtiu:'J\'aime ajouté !', toast_descurtiu:'J\'aime retiré.',
+    cfg_btn_senha:'Mettre à jour', cfg_excluir_conf:'Confirmer la suppression',
+    toast_curtiu:"J'aime ajouté !", toast_descurtiu:"J'aime retiré.",
     toast_login_cur:'Connectez-vous pour aimer.', toast_link_copi:'Lien copié !',
     toast_sessao_enc:'Déconnecté.', toast_compartilhar_nao:'Partage non pris en charge.',
     toast_bem_vindo:'Bienvenue,', toast_conta_criada:'Compte créé ! Bienvenue,',
     pag_anterior:'← Précédent', pag_proximo:'Suivant →',
-    footer_priv:'Politique de Confidentialité', footer_termos:'Conditions d\'Utilisation', footer_cookies:'Cookies',
+    footer_slogan:'Podcast quotidien du marché rizicole',
+    footer_priv:'Politique de Confidentialité', footer_termos:"Conditions d'Utilisation", footer_cookies:'Cookies',
+    lang_em_breve:'bientôt',
   }
 };
+
 
 /* Idioma ativo */
 let LANG = localStorage.getItem('am_lang') || 'pt';
@@ -2374,28 +2495,90 @@ function t(key) {
   return (I18N[LANG] && I18N[LANG][key]) || I18N.pt[key] || key;
 }
 
-/* Aplica traduções em todos os elementos com data-i18n */
+/* ══════════════════════════════════════════
+   aplicarIdioma — tradução completa do DOM
+   Chamada ao trocar idioma e no boot
+══════════════════════════════════════════ */
 function aplicarIdioma() {
+  // 1. Elementos com data-i18n (textContent ou placeholder)
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
+    const val = t(key);
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-      el.placeholder = t(key);
+      el.placeholder = val;
+    } else if (el.tagName === 'OPTION') {
+      el.textContent = val;
     } else {
-      el.textContent = t(key);
+      el.textContent = val;
     }
   });
-  // Atualiza label do botão
-  const labels = { pt:'PT', en:'EN', es:'ES', fr:'FR', ru:'RU', zh:'ZH' };
+
+  // 2. Elementos com data-i18n-title (atributo title/aria-label)
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    el.title     = t(el.getAttribute('data-i18n-title'));
+    el.setAttribute('aria-label', t(el.getAttribute('data-i18n-title')));
+  });
+
+  // 3. Botão "Todos" com contador — precisa preservar o badge numérico
+  const todosBtn = document.querySelector('.fil-ep.ativo, .fil-ep[onclick*="todos"]');
+  const filtrosTodos = document.querySelectorAll('[data-i18n="fil_todos"]');
+  filtrosTodos.forEach(el => {
+    // Preserva span filho (contador) se existir
+    const badge = el.querySelector('span');
+    if (badge) {
+      const num = badge.textContent;
+      el.textContent = t('fil_todos') + ' ';
+      const newBadge = badge.cloneNode(true);
+      newBadge.textContent = num;
+      el.appendChild(newBadge);
+    } else {
+      el.textContent = t('fil_todos');
+    }
+  });
+
+  // 4. Botões filtros de episódios — re-injeta contadores da atualizarContadoresFiltro
+  try { atualizarContadoresFiltro(); } catch(e) {}
+
+  // 5. Ticker — "Carregando..."
+  const tkEl = document.getElementById('tkInner');
+  if (tkEl && (!S.cots || !S.cots.length)) tkEl.textContent = t('tk_loading');
+
+  // 6. Badges "em breve" no menu de idioma
+  document.querySelectorAll('.idioma-badge').forEach(el => {
+    el.textContent = t('lang_em_breve');
+  });
+
+  // 7. Label do botão de idioma e marca item ativo
   const labelEl = document.getElementById('idiomaLabel');
+  const labels  = { pt:'PT', en:'EN', fr:'FR', es:'ES', ru:'RU', zh:'ZH' };
   if (labelEl) labelEl.textContent = labels[LANG] || LANG.toUpperCase();
-  // Marca item ativo no menu
   document.querySelectorAll('.idioma-item').forEach(el => {
     el.classList.toggle('ativo', el.getAttribute('onclick')?.includes(`'${LANG}'`));
   });
-  // Título da página
-  document.title = LANG === 'en'
-    ? 'ArrozMarket — Daily Rice Market Analysis'
-    : 'ArrozMarket — Análises Diárias do Mercado Orizícola';
+
+  // 8. Título e meta description da página
+  const titles = {
+    pt: 'ArrozMarket — Análises Diárias do Mercado Orizícola',
+    en: 'ArrozMarket — Daily Rice Market Analysis',
+    fr: 'ArrozMarket — Analyses Quotidiennes du Marché Orizicole',
+  };
+  document.title = titles[LANG] || titles.pt;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) {
+    const descs = {
+      pt: 'Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.',
+      en: 'Daily podcast with Fábio Toledo on rice market prices, trends and classifications.',
+      fr: 'Podcast quotidien avec Fábio Toledo sur les prix, tendances et classifications du riz.',
+    };
+    metaDesc.setAttribute('content', descs[LANG] || descs.pt);
+  }
+
+  // 9. Re-renderiza componentes gerados por JS com strings
+  try { renderMenu(); }      catch(e) {}
+  try { renderTabCot(); }    catch(e) {}
+
+  // 10. Atributo lang do html
+  document.documentElement.lang = LANG === 'fr' ? 'fr' : LANG === 'en' ? 'en' : 'pt-BR';
 }
 
 /* Menu toggle */
@@ -2423,24 +2606,23 @@ function setIdioma(lang) {
   const disponiveis = ['pt', 'en', 'fr'];
   if (!disponiveis.includes(lang)) {
     const msgs = { es:'🇪🇸 Español', ru:'🇷🇺 Русский', zh:'🇨🇳 中文' };
-    toast((msgs[lang] || lang) + ' — em breve!', '');
+    toast((msgs[lang] || lang) + ' — ' + t('lang_em_breve') + '!', '');
     fecharIdiomaMenu();
     return;
   }
   LANG = lang;
   localStorage.setItem('am_lang', lang);
-  aplicarIdioma();
+  aplicarIdioma();   // cobre DOM, menu, tabela, título, attr lang
   fecharIdiomaMenu();
-  // Re-renderiza componentes dinâmicos com novo idioma
-  try { renderMenu(); } catch(e) {}
-  try { atualizarContadoresFiltro(); } catch(e) {}
-  try { renderTabCot(); } catch(e) {}
-  // Re-renderiza modal de auth se estiver aberto
-  const mAuth = document.getElementById('mAuth');
-  if (mAuth && mAuth.classList.contains('aberto')) {
-    const isTitulo = document.getElementById('authTitulo')?.textContent;
-    if (isTitulo) abrirAuth(isTitulo.includes('grátis') || isTitulo.includes('free') || isTitulo.includes('compte') ? 'registro' : 'login');
-  }
+  // Re-renderiza modal auth se aberto
+  try {
+    const mAuth = document.getElementById('mAuth');
+    if (mAuth?.classList.contains('aberto')) {
+      const tit = document.getElementById('mAuthTitulo')?.textContent || '';
+      const isReg = tit.includes('grátis') || tit.includes('free') || tit.includes('gratuit');
+      abrirAuth(isReg ? 'registro' : 'login');
+    }
+  } catch(e) {}
 }
 
 /* Init — aplica idioma salvo ao carregar */
@@ -2450,12 +2632,11 @@ function setIdioma(lang) {
 })();
 
 /* ═══ TEMA ═══ */
-function aplicarTema(t) {
-  document.documentElement.setAttribute('data-tema', t);
-  S.tema = t;
-  localStorage.setItem('am_tema', t);
-  // Garante que o atributo é removido quando escuro (estado padrão)
-  if (t === 'escuro') document.documentElement.removeAttribute('data-tema');
+function aplicarTema(tema) {
+  document.documentElement.setAttribute('data-tema', tema);
+  S.tema = tema;
+  localStorage.setItem('am_tema', tema);
+  if (tema === 'escuro') document.documentElement.removeAttribute('data-tema');
   else document.documentElement.setAttribute('data-tema', 'claro');
 }
 function alternarTema() {
@@ -2669,7 +2850,7 @@ function atualizarContadoresFiltro() {
   });
   // Todos
   const todosBtn = document.querySelector('.fil-ep:first-child');
-  if (todosBtn) todosBtn.innerHTML = `Todos <span style="background:rgba(255,255,255,.1);border-radius:10px;padding:.05rem .4rem;font-size:.65rem;margin-left:.3rem">${S.vids.length}</span>`;
+  if (todosBtn) todosBtn.innerHTML = `${t('fil_todos')} <span style="background:rgba(255,255,255,.1);border-radius:10px;padding:.05rem .4rem;font-size:.65rem;margin-left:.3rem">${S.vids.length}</span>`;
 }
 
 function renderDestaque() {
