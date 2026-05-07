@@ -1327,7 +1327,7 @@ footer strong { color: var(--gold); }
       <div class="idioma-item ativo"  onclick="setIdioma('pt')">🇧🇷 Português</div>
       <div class="idioma-item"        onclick="setIdioma('en')">🇺🇸 English</div>
       <div class="idioma-item"        onclick="setIdioma('fr')">🇫🇷 Français</div>
-      <div class="idioma-item idioma-soon" onclick="setIdioma('es')">🇪🇸 Español <span class="idioma-badge">em breve</span></div>
+      <div class="idioma-item"        onclick="setIdioma('es')">🇪🇸 Español</div>
       <div class="idioma-item idioma-soon" onclick="setIdioma('ru')">🇷🇺 Русский <span class="idioma-badge">em breve</span></div>
       <div class="idioma-item idioma-soon" onclick="setIdioma('zh')">🇨🇳 中文 <span class="idioma-badge">em breve</span></div>
     </div>
@@ -1352,7 +1352,7 @@ footer strong { color: var(--gold); }
     <button onclick="setIdioma('pt');fecharDrawer()" class="drawer-lang-btn" id="dlang-pt">🇧🇷 PT</button>
     <button onclick="setIdioma('en');fecharDrawer()" class="drawer-lang-btn" id="dlang-en">🇺🇸 EN</button>
     <button onclick="setIdioma('fr');fecharDrawer()" class="drawer-lang-btn" id="dlang-fr">🇫🇷 FR</button>
-    <button onclick="setIdioma('es');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇪🇸 ES</button>
+    <button onclick="setIdioma('es');fecharDrawer()" class="drawer-lang-btn" id="dlang-es">🇪🇸 ES</button>
     <button onclick="setIdioma('ru');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇷🇺 RU</button>
     <button onclick="setIdioma('zh');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇨🇳 ZH</button>
   </div>
@@ -1875,42 +1875,52 @@ const VIDS_LOCAL = [
   {id:1, titulo:'Impacto do clima na safra do RS',
    titulo_en:'Climate impact on the RS harvest',
    titulo_fr:'Impact du climat sur la récolte du RS',
+   titulo_es:'Impacto del clima en la cosecha de RS',
    data:'03/04/2025',dur:'09:32',views:2100,likes:87,  cat:'Podcast Diário',status:'pub'},
   {id:2, titulo:'Parboilizado em alta: por que sobe?',
    titulo_en:'Parboiled rice rising: why?',
    titulo_fr:'Riz étuvé en hausse : pourquoi ?',
+   titulo_es:'Parboilizado en alza: ¿por qué sube?',
    data:'02/04/2025',dur:'14:05',views:3800,likes:214, cat:'Cotações',status:'pub'},
   {id:3, titulo:'Abertura de abril: o que esperar',
    titulo_en:'April opening: what to expect',
    titulo_fr:'Ouverture d\'avril : à quoi s\'attendre',
+   titulo_es:'Apertura de abril: ¿qué esperar?',
    data:'01/04/2025',dur:'11:18',views:4200,likes:198, cat:'Podcast Diário',status:'pub'},
   {id:4, titulo:'Você sabia? O arroz é o 2° cereal mais consumido',
    titulo_en:'Did you know? Rice is the 2nd most consumed grain',
    titulo_fr:'Le saviez-vous ? Le riz est la 2e céréale la plus consommée',
+   titulo_es:'¿Sabías? El arroz es el 2° cereal más consumido',
    data:'31/03/2025',dur:'04:15',views:5600,likes:312, cat:'Curiosidades do Dia',status:'pub'},
   {id:5, titulo:'Arroz integral: demanda aquecida',
    titulo_en:'Whole grain rice: heated demand',
    titulo_fr:'Riz complet : demande en hausse',
+   titulo_es:'Arroz integral: demanda en alza',
    data:'28/03/2025',dur:'08:55',views:2900,likes:105, cat:'Podcast Diário',status:'pub'},
   {id:6, titulo:'Dólar e exportações — reflexo no preço',
    titulo_en:'Dollar and exports — impact on prices',
    titulo_fr:'Dollar et exportations — impact sur les prix',
+   titulo_es:'Dólar y exportaciones — reflejo en el precio',
    data:'27/03/2025',dur:'13:22',views:3300,likes:143, cat:'Podcast Diário',status:'pub'},
   {id:7, titulo:'Classificação Tipo 1 vs Tipo 2',
    titulo_en:'Type 1 vs Type 2 classification',
    titulo_fr:'Classification Type 1 vs Type 2',
+   titulo_es:'Clasificación Tipo 1 vs Tipo 2',
    data:'26/03/2025',dur:'15:10',views:4700,likes:267, cat:'Técnico',status:'pub'},
   {id:8, titulo:'Colheita RS 2025: ritmo e projeções',
    titulo_en:'RS 2025 harvest: pace and projections',
    titulo_fr:'Récolte RS 2025 : rythme et projections',
+   titulo_es:'Cosecha RS 2025: ritmo y proyecciones',
    data:'25/03/2025',dur:'12:38',views:6100,likes:389, cat:'Podcast Diário',status:'pub'},
   {id:9, titulo:'A jornada do arroz do campo ao prato',
    titulo_en:'The rice journey from field to table',
    titulo_fr:'Le voyage du riz du champ à l\'assiette',
+   titulo_es:'El viaje del arroz del campo al plato',
    data:'24/03/2025',dur:'03:48',views:4100,likes:221, cat:'Curiosidades do Dia',status:'pub'},
   {id:10, titulo:'Entrevista: produtor de Cachoeira do Sul fala da safra',
    titulo_en:'Interview: Cachoeira do Sul farmer talks about harvest',
    titulo_fr:'Entretien : un producteur de Cachoeira do Sul parle de la récolte',
+   titulo_es:'Entrevista: productor de Cachoeira do Sul habla de la cosecha',
    data:'21/03/2025',dur:'22:14',views:3700,likes:187, cat:'Entrevista',status:'pub'},
 ];
 
@@ -1919,6 +1929,7 @@ function vidTitulo(v) {
   if (!v) return '';
   if (LANG === 'en' && v.titulo_en) return v.titulo_en;
   if (LANG === 'fr' && v.titulo_fr) return v.titulo_fr;
+  if (LANG === 'es' && v.titulo_es) return v.titulo_es;
   return v.titulo || '';
 }
 
@@ -2079,7 +2090,7 @@ function notifLocal(titulo, corpo) {
 
 /* ═══ DATA ═══ */
 function renderData() {
-  const locales = { pt:'pt-BR', en:'en-US', fr:'fr-FR' };
+  const locales = { pt:'pt-BR', en:'en-US', fr:'fr-FR', es:'es-ES' };
   const locale  = locales[LANG] || 'pt-BR';
   const s = new Date().toLocaleDateString(locale, {day:'2-digit', month:'long', year:'numeric'});
   const navEl = document.getElementById('navData');
@@ -2525,6 +2536,107 @@ const I18N = {
     footer_slogan:'Podcast quotidien du marché rizicole',
     footer_priv:'Politique de Confidentialité', footer_termos:"Conditions d'Utilisation", footer_cookies:'Cookies',
     lang_em_breve:'bientôt',
+  },
+
+  es: {
+    nav_inicio:'Inicio', nav_tecnico:'Técnico', nav_precos:'Precios', nav_especialista:'Especialista',
+    hero_tag:'Análisis Diario del Mercado Arrocero',
+    hero_h1a:'El mercado del', hero_h1b:'arroz', hero_h1c:'en análisis profesional',
+    hero_p:'Podcast diario con Fábio Toledo sobre precios, tendencias y clasificaciones del arroz gaúcho.',
+    badge_novo:'Nuevo episodio disponible',
+    stat_dur:'Duración', stat_esc:'Reproducciones', stat_cur:'Me gusta',
+    sec_episodios:'Episodios',
+    fil_todos:'Todos', fil_podcast:'🎙️ Podcast Diario', fil_curiosi:'💡 ¿Sabías que?',
+    fil_cotacoes:'📈 Precios', fil_tecnico:'🔬 Técnico', fil_entrevista:'🎤 Entrevista', fil_especial:'⭐ Especial',
+    ep_escutas:'reproducciones', ep_vazio:'Aún no hay episodios en esta categoría.',
+    tk_loading:'Cargando precios...',
+    player_sem_audio:'Este episodio no tiene audio grabado.',
+    player_audio_idioma:'Idioma del Audio', player_dub_pt:'🇧🇷 Portugués', player_dub_en:'🇺🇸 Inglés',
+    player_dub_indisponivel:'Versión en inglés no disponible para este episodio.',
+    player_voltar:'Retroceder 15s', player_avancar:'Avanzar 30s',
+    modal_compartilhar:'Compartir', modal_fechar:'Cerrar',
+    modal_escutas:'reproducciones', modal_esc_7d:'Reproducciones — últimos 7 días',
+    modal_sem_audio_h:'🎧 Episodio sin audio',
+    modal_sem_audio_p:'Graba el audio en el panel admin y publícalo para activar el reproductor.',
+    cot_titulo:'Precios del Día',
+    cot_produto:'Producto', cot_unidade:'Unidad', cot_preco:'Precio',
+    cot_variacao:'Variación', cot_tendencia:'Tendencia', cot_fonte:'Fuente',
+    cot_alta:'↑ Alza', cot_baixa:'↓ Baja', cot_estavel:'→ Estable',
+    pre_tag:'Precios & Tendencias', pre_h1a:'Tabla de', pre_h1b:'Precios',
+    pre_p:'Precios actualizados por clasificación — referencia: saco 60 kg, franco fábrica, RS.',
+    pre_graf_h:'Evolución de Precios por Clasificación',
+    pre_graf_p:'Últimos 12 meses — R$ por saco de 60 kg',
+    pre_comp_h:'Comparativo Actual por Tipo',
+    pre_comp_p:'Precio de hoy — R$ por saco 60 kg',
+    pre_det_titulo:'Precios Detallados',
+    pre_fil_cas:'Arroz Cáscara', pre_fil_mf:'Mercado Físico', pre_fil_agl:'Riego',
+    pre_fil_lf:'Grano Largo', pre_fil_ben:'Beneficiado', pre_fil_parb:'Parboilizado',
+    pre_fil_int:'Integral', pre_fil_cat:'Cateto', pre_fil_qui:'Quebrado',
+    tec_tag:'Base de Conocimiento', tec_h1a:'Informaciones', tec_h1b:'Técnicas',
+    tec_p:'Clasificaciones, normas, procesamiento y parámetros de calidad del arroz brasileño.',
+    tec_mapa_h:'Clasificación Oficial (MAPA)',
+    tec_mapa_p:'IN nº 6/2009 — arroz clasificado en grupos, clases y tipos según características físicas y sensoriales.',
+    tec_grupo_ben:'Grupo Beneficiado', tec_grupo_ben_v:'Pulido / Parboilizado',
+    tec_grupo_nat:'Grupo Natural', tec_grupo_nat_v:'En cáscara',
+    tec_grupo_int:'Grupo Integral', tec_grupo_int_v:'Sin pulir',
+    tec_tipos:'Tipos',
+    tec_qual_h:'Parámetros de Calidad',
+    tec_qual_p:'Tipificación determinada por % de granos defectuosos e impurezas en muestras estandarizadas.',
+    tec_umid:'Humedad máx.', tec_imp:'Impurezas T1', tec_qbr:'Granos quebrados T1',
+    tec_man:'Manchados/Picados', tec_ges:'Yesados T1',
+    tec_ben_h:'Procesamiento',
+    tec_ben_p:'Proceso industrial que transforma el arroz en cáscara en producto de consumo mediante limpieza, descascarado y pulido.',
+    tec_pre_limp:'Prelimpieza', tec_pre_limp_v:'Separación de paja',
+    tec_desc:'Descascarado', tec_desc_v:'Rodillos de goma',
+    tec_sep_c:'Separación cáscara', tec_sep_c_v:'Mesa densimétrica',
+    tec_brun:'Blanqueado', tec_brun_v:'Pulidora abrasiva',
+    tec_class:'Clasificación', tec_class_v:'Cribas + separador',
+    tec_reg_h:'Regiones Productoras',
+    tec_reg_p:'Mayor productor fuera de Asia, Brasil concentra producción en el Sur y Centro-Oeste.',
+    tec_outros:'Otros',
+    tec_uni_h:'Unidades de Medida',
+    tec_uni_p:'Distintas unidades según la etapa de la cadena productiva.',
+    tec_saca:'Saco (sc)', tec_ton:'Tonelada (t)', tec_arroba:'Arroba (@)', tec_lote:'Lote estándar',
+    tec_cal_h:'Calendario Arrocero',
+    tec_cal_p:'La cosecha del sur de Brasil sigue un calendario que impacta precios y estrategias comerciales.',
+    tec_seme:'Siembra', tec_irrig:'Riego pleno', tec_flora:'Floración',
+    tec_colh:'Cosecha', tec_pico:'Pico comercial',
+    tec_tab_titulo:'Tabla de Clasificación por Tipo',
+    tec_tab_tipo:'Tipo', tec_tab_qbr:'Granos Quebrados', tec_tab_ges:'Yesados',
+    tec_tab_man:'Manchados/Picados', tec_tab_imp:'Impurezas', tec_tab_uso:'Uso Principal',
+    tec_uso_t1:'Mesa (premium)', tec_uso_t2:'Mesa (estándar)',
+    tec_uso_t3:'Industria alimentaria', tec_uso_t4:'Cervecerías / pienso', tec_uso_t5:'Subproductos / pienso',
+    esp_tag:'Sobre el especialista', esp_traj:'Trayectoria Profesional',
+    auth_entrar:'Iniciar sesión', auth_registrar:'Crear cuenta gratis',
+    auth_email:'Correo electrónico', auth_senha:'Contraseña', auth_nome:'Nombre completo',
+    auth_senha_min:'Contraseña (mín. 6 caracteres)',
+    auth_placeholder_nome:'Tu nombre', auth_placeholder_email:'tu@correo.com',
+    auth_btn_entrar:'Iniciar sesión', auth_btn_criar:'Crear cuenta',
+    auth_sem_conta:'¿No tienes cuenta?', auth_criar_now:'Crear ahora',
+    auth_ja_tem:'¿Ya tienes cuenta?', auth_entrar_now:'Iniciar sesión',
+    menu_login_msg:'Inicia sesión para acceder a tu cuenta',
+    menu_entrar:'Iniciar sesión', menu_criar:'Crear cuenta gratis',
+    menu_admin:'Panel Administrativo', menu_config:'Configuración',
+    menu_notif_on:'Notificaciones activas', menu_notif_off:'Activar notificaciones',
+    menu_tema_claro:'Modo claro', menu_tema_escuro:'Modo oscuro',
+    menu_sair:'Cerrar sesión', menu_admin_role:'Administrador', menu_user_role:'Miembro',
+    cfg_titulo:'Configuración', cfg_conta:'Cuenta', cfg_nome:'Nombre', cfg_email:'Correo',
+    cfg_senha_label:'Contraseña', cfg_senha_alt:'→ Cambiar',
+    cfg_cor:'Color de acento — 12 opciones',
+    cfg_priv_termos:'Privacidad & Términos',
+    cfg_ver:'Ver →', cfg_excluir:'Eliminar cuenta', cfg_excluir_btn:'Eliminar',
+    cfg_sobre:'Acerca de', cfg_versao:'Versión', cfg_prop:'Propietario',
+    cfg_notif:'Notificaciones push', cfg_notif_btn:'Activar',
+    cfg_senha_atual:'Contraseña actual', cfg_senha_nova:'Nueva contraseña', cfg_senha_conf:'Confirmar contraseña',
+    cfg_btn_senha:'Actualizar contraseña', cfg_excluir_conf:'Confirmar eliminación',
+    toast_curtiu:'¡Me gusta añadido!', toast_descurtiu:'Me gusta eliminado.',
+    toast_login_cur:'Inicia sesión para dar me gusta.', toast_link_copi:'¡Enlace copiado!',
+    toast_sessao_enc:'Sesión cerrada.', toast_compartilhar_nao:'Compartir no compatible en este navegador.',
+    toast_bem_vindo:'¡Bienvenido,', toast_conta_criada:'¡Cuenta creada! Bienvenido,',
+    pag_anterior:'← Anterior', pag_proximo:'Siguiente →',
+    footer_slogan:'Podcast diario del mercado arrocero',
+    footer_priv:'Política de Privacidad', footer_termos:'Términos de Uso', footer_cookies:'Cookies',
+    lang_em_breve:'próximamente',
   }
 };
 
@@ -2603,6 +2715,7 @@ function aplicarIdioma() {
     pt: 'ArrozMarket — Análises Diárias do Mercado Orizícola',
     en: 'ArrozMarket — Daily Rice Market Analysis',
     fr: 'ArrozMarket — Analyses Quotidiennes du Marché Orizicole',
+    es: 'ArrozMarket — Análisis Diario del Mercado Arrocero',
   };
   document.title = titles[LANG] || titles.pt;
   const metaDesc = document.querySelector('meta[name="description"]');
@@ -2611,6 +2724,7 @@ function aplicarIdioma() {
       pt: 'Podcast diário com Fábio Toledo sobre cotações, tendências e classificações do arroz gaúcho.',
       en: 'Daily podcast with Fábio Toledo on rice market prices, trends and classifications.',
       fr: 'Podcast quotidien avec Fábio Toledo sur les prix, tendances et classifications du riz.',
+      es: 'Podcast diario con Fábio Toledo sobre precios, tendencias y clasificaciones del arroz gaúcho.',
     };
     metaDesc.setAttribute('content', descs[LANG] || descs.pt);
   }
@@ -2620,7 +2734,8 @@ function aplicarIdioma() {
   try { renderTabCot(); }    catch(e) {}
 
   // 10. Atributo lang do html
-  document.documentElement.lang = LANG === 'fr' ? 'fr' : LANG === 'en' ? 'en' : 'pt-BR';
+  const langs = { pt:'pt-BR', en:'en', fr:'fr', es:'es' };
+  document.documentElement.lang = langs[LANG] || 'pt-BR';
 
   // 11. Formata data no locale do idioma
   try { renderData(); } catch(e) {}
@@ -2648,7 +2763,7 @@ document.addEventListener('click', e => {
 });
 
 function setIdioma(lang) {
-  const disponiveis = ['pt', 'en', 'fr'];
+  const disponiveis = ['pt', 'en', 'fr', 'es'];
   if (!disponiveis.includes(lang)) {
     const msgs = { es:'🇪🇸 Español', ru:'🇷🇺 Русский', zh:'🇨🇳 中文' };
     toast((msgs[lang] || lang) + ' — ' + t('lang_em_breve') + '!', '');
@@ -3416,7 +3531,7 @@ function renderAudios() {
     // Thumb: individual > categoria > gradiente CSS
     const catKey = cat.replace(/\s+/g,'_');
     const thumb = v.thumb || thumbsMap[catKey] || '';
-    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,titulo_en:v.titulo_en||'',titulo_fr:v.titulo_fr||'',data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
+    const vj = encodeURIComponent(JSON.stringify({id:v.id,titulo:v.titulo,titulo_en:v.titulo_en||'',titulo_fr:v.titulo_fr||'',titulo_es:v.titulo_es||'',data:v.data,dur:v.dur,url:v.url||'',likes:v.likes,cat,desc:v.desc||''}));
     return `<div class="card-v" onclick="abrirAudioEnc('${vj}')">
       <div class="card-thumb">
         <div class="card-thumb-bg" style="${thumb ? 'background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('+JSON.stringify(thumb)+') center/cover no-repeat' : 'background:'+catThumbBg(cat)}"><div class="play-sm"><div class="tri-sm"></div></div></div>
