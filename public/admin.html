@@ -2301,6 +2301,8 @@ async function publicarVideo(){
   });
   renderAtv(); limparForm();
   mostrar('p-videos', null);
+  // Carregar especialista da API para preencher o form
+  carregarEspDoServidor();
   toast('Episódio publicado com sucesso!', 'sucesso');
 
   // ── Envia notificação push local para todos os visitantes com SW ──
@@ -2643,6 +2645,16 @@ function criarModeloSheet(e){
 }
 
 /* ═══ ESPECIALISTA ═══ */
+async function carregarEspDoServidor() {
+  try {
+    const r = await apiAdm('GET', '/especialista');
+    if (r && typeof r === 'object' && Object.keys(r).length > 0) {
+      S._espAdmin = r;
+      carregarEspForm();
+    }
+  } catch(e) {}
+}
+
 async function getEspData(){
   // Carrega do servidor (global) com fallback localStorage
   try {

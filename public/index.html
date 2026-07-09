@@ -1697,6 +1697,38 @@ footer strong { color: var(--gold); }
     </div>
   </div>
 
+  <div id="dest-comentarios-wrap" style="margin-top:.8rem;margin-bottom:1.2rem;background:var(--dark2);border:1px solid rgba(200,168,75,.1);border-radius:8px;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;border-bottom:1px solid rgba(200,168,75,.07)">
+      <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)" data-i18n="com_titulo">Comentários</div>
+      <span id="dest-com-count" style="font-size:.7rem;color:var(--muted)"></span>
+    </div>
+    <!-- Form de comentário no destaque -->
+    <div id="dest-com-form" style="padding:.9rem 1.2rem;border-bottom:1px solid rgba(200,168,75,.07)">
+      <div style="display:flex;gap:.6rem;align-items:flex-start">
+        <div id="dest-com-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--dark4);border:1px solid rgba(200,168,75,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--gold);font-weight:700;flex-shrink:0">?</div>
+        <div style="flex:1">
+          <textarea id="dest-com-texto" rows="2" maxlength="600"
+            data-i18n="com_placeholder" placeholder="Deixe seu comentário..."
+            style="width:100%;background:var(--dark3);border:1px solid rgba(200,168,75,.15);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.5rem .7rem;resize:none;outline:none;box-sizing:border-box;transition:border-color .2s"
+            onfocus="this.style.borderColor='rgba(200,168,75,.4)'" onblur="this.style.borderColor='rgba(200,168,75,.15)'"
+            oninput="document.getElementById('dest-com-chars').textContent=this.value.length+'/600'"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.35rem">
+            <span id="dest-com-chars" style="font-size:.65rem;color:var(--muted)">0/600</span>
+            <button onclick="enviarComDestaque()" class="com-btn-send" data-i18n="com_enviar">Comentar</button>
+          </div>
+        </div>
+      </div>
+      <div id="dest-com-login" style="display:none;font-size:.76rem;color:var(--muted);margin-top:.5rem;text-align:center">
+        <span data-i18n="com_login_aviso">Faça login para comentar.</span>
+        <span style="color:var(--gold);cursor:pointer;margin-left:.3rem" onclick="abrirAuth('login')" data-i18n="com_login_btn">Entrar</span>
+      </div>
+    </div>
+    <!-- Lista -->
+    <div id="dest-com-lista" style="padding:.5rem 1.2rem 1rem;display:flex;flex-direction:column;gap:.6rem"></div>
+    <div id="dest-com-vazio" style="display:none;text-align:center;padding:1rem;color:var(--muted);font-size:.8rem" data-i18n="com_vazio">Seja o primeiro a comentar!</div>
+    <div id="dest-com-loading" style="text-align:center;padding:.8rem;color:var(--muted);font-size:.78rem" data-i18n="com_loading">Carregando comentários...</div>
+  </div>
+
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;margin-bottom:.75rem">
     <div class="rotulo" style="margin-bottom:0" data-i18n="sec_episodios">Episódios</div>
     <div class="filtros-ep" id="filtrosEp">
@@ -3199,12 +3231,17 @@ function renderDestaque() {
   const destAudio = document.getElementById('dest-audio-el');
   if (destAudio && dest.url && destAudio.src !== dest.url) {
     destAudio.src = dest.url;
+    destAudio.load();   // força browser a carregar metadados imediatamente
     DEST.audioCtx = null;
   }
 
-  /* atualiza o like do destaque com o do vídeo real */
-  S.likesDest = dest.likes || 0;
+  /* Like vinculado ao episódio pelo id — não global */
+  S.likesDest   = dest.likes || 0;
+  S.curtidoDest = localStorage.getItem('am_cd_' + dest.id) === '1';
   renderLikeDest();
+  // Carrega comentários do episódio destaque
+  destComentariosInit();
+  carregarComDestaque(dest.id);
 }
 
 /* ═══ PLAYER EMBUTIDO NO DESTAQUE ═══ */
@@ -3700,8 +3737,8 @@ function curtirDestaque(e) {
   if (!S.usuario) { toast(t('toast_login_cur'), 'err'); abrirAuth('login'); return; }
   S.curtidoDest = !S.curtidoDest;
   S.likesDest   = Math.max(0, S.likesDest + (S.curtidoDest ? 1 : -1));
-  localStorage.setItem('am_ld', S.likesDest);
-  localStorage.setItem('am_cd', S.curtidoDest ? '1' : '0');
+  const _destId = S.vidDest?.id || 0;
+  localStorage.setItem('am_cd_' + _destId, S.curtidoDest ? '1' : '0');
   renderLikeDest();
   toast(S.curtidoDest ? t('toast_curtiu') : t('toast_descurtiu'), S.curtidoDest ? 'ok' : '');
 }
@@ -4032,8 +4069,120 @@ function abrirAudio(v) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   COMENTÁRIOS — Sistema completo
+/* ══ COMENTÁRIOS DO DESTAQUE ══ */
+function destComentariosInit() {
+  const av = document.getElementById('dest-com-avatar');
+  const form = document.getElementById('dest-com-form');
+  const loginAv = document.getElementById('dest-com-login');
+  const textarea = document.getElementById('dest-com-texto');
+  if (S.usuario) {
+    if (av) { av.textContent = S.usuario.avatar || S.usuario.nome.slice(0,2).toUpperCase(); av.style.color = 'var(--gold)'; }
+    if (textarea) textarea.style.display = '';
+    if (loginAv) loginAv.style.display = 'none';
+    if (document.querySelector('#dest-com-form .com-btn-send'))
+      document.querySelector('#dest-com-form .com-btn-send').style.display = '';
+  } else {
+    if (av) { av.textContent = '?'; av.style.color = 'var(--muted)'; }
+    if (textarea) textarea.style.display = 'none';
+    if (loginAv) loginAv.style.display = 'block';
+    if (document.querySelector('#dest-com-form .com-btn-send'))
+      document.querySelector('#dest-com-form .com-btn-send').style.display = 'none';
+  }
+}
+
+async function carregarComDestaque(vid) {
+  const loadEl = document.getElementById('dest-com-loading');
+  const listaEl = document.getElementById('dest-com-lista');
+  const vazioEl = document.getElementById('dest-com-vazio');
+  const countEl = document.getElementById('dest-com-count');
+  if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = t('com_loading'); }
+  if (listaEl) listaEl.innerHTML = '';
+  if (vazioEl) vazioEl.style.display = 'none';
+  try {
+    const lista = await apiFetch('GET', `/audios/${parseInt(vid)}/comentarios`);
+    if (loadEl) loadEl.style.display = 'none';
+    if (countEl) countEl.textContent = lista.length > 0 ? `${lista.length}` : '';
+    if (!lista.length) { if (vazioEl) vazioEl.style.display = 'block'; return; }
+    // Render vetorial
+    const uid = S.usuario?.id || 0;
+    const rows = new Array(lista.length);
+    for (let i = 0; i < lista.length; i++) {
+      const co = lista[i];
+      const curtido = uid && (co.likedBy||[]).includes(uid);
+      rows[i] = `<div class="com-item">
+        ${comAvatar(co.avatar, co.nome)}
+        <div class="com-body">
+          <div class="com-meta"><span class="com-nome">${co.nome}</span><span class="com-ts">${fmtTs(co.ts)}</span></div>
+          <div class="com-txt">${co.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+          <div class="com-actions">
+            ${comLikeBtn(co.id, null, co.likes, curtido)}
+            <button class="com-resp-btn" onclick="toggleRespostaFormDest(${co.id})">
+              <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
+              ${t('com_responder')} ${(co.respostas||[]).length > 0 ? `<span class="com-resp-count">${co.respostas.length}</span>` : ''}
+            </button>
+          </div>
+          <div class="com-resp-form" id="drf-${co.id}" style="display:none">
+            <textarea class="com-resp-txt" placeholder="${t('com_placeholder')}" maxlength="600"></textarea>
+            <div style="display:flex;gap:.4rem;justify-content:flex-end;margin-top:.35rem">
+              <button class="com-btn-cancel" onclick="document.getElementById('drf-${co.id}').style.display='none'">Cancelar</button>
+              <button class="com-btn-send" onclick="enviarRespostaDestaque(${co.id})">Responder</button>
+            </div>
+          </div>
+          ${renderRespostas(co.respostas||[], co.id, uid)}
+        </div>
+      </div>`;
+    }
+    if (listaEl) listaEl.innerHTML = rows.join('');
+  } catch(e) {
+    if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = '—'; }
+  }
+}
+
+function toggleRespostaFormDest(cid) {
+  if (!S.usuario) { abrirAuth('login'); return; }
+  const el = document.getElementById(`drf-${cid}`);
+  if (!el) return;
+  const open = el.style.display === 'none' || !el.style.display;
+  el.style.display = open ? 'block' : 'none';
+  if (open) el.querySelector('textarea')?.focus();
+}
+
+async function enviarComDestaque() {
+  if (!S.usuario) { abrirAuth('login'); return; }
+  const vid = S.vidDest?.id;
+  const textarea = document.getElementById('dest-com-texto');
+  const texto = textarea?.value.trim();
+  if (!texto || texto.length < 2) return;
+  const btn = document.querySelector('#dest-com-form .com-btn-send');
+  if (btn) btn.disabled = true;
+  try {
+    await apiFetch('POST', `/audios/${parseInt(vid)}/comentarios`, { texto });
+    if (textarea) { textarea.value = ''; document.getElementById('dest-com-chars').textContent = '0/600'; }
+    toast(t('com_aprovacao'), 'ok');
+    await carregarComDestaque(vid);
+  } catch(e) {
+    toast('Erro: ' + (e.message||''), 'err');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function enviarRespostaDestaque(cid) {
+  const vid = S.vidDest?.id;
+  const form = document.getElementById(`drf-${cid}`);
+  const textarea = form?.querySelector('textarea');
+  const texto = textarea?.value.trim();
+  if (!texto || texto.length < 2) return;
+  const btn = form?.querySelector('.com-btn-send');
+  if (btn) btn.disabled = true;
+  try {
+    await apiFetch('POST', `/audios/${parseInt(vid)}/comentarios/${cid}/respostas`, { texto });
+    await carregarComDestaque(vid);
+  } catch(e) {
+    toast('Erro: ' + (e.message||''), 'err');
+    if (btn) btn.disabled = false;
+  }
+}
    - carregarComentarios(vid): busca e renderiza
    - enviarComentario(): posta e atualiza UI
    - renderComentarios(lista): monta HTML vetorial
