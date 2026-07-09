@@ -2406,7 +2406,7 @@ const I18N = {
     com_responder:'Responder',
     com_titulo:'Comentários', com_placeholder:'Deixe seu comentário...',
     com_enviar:'Comentar', com_vazio:'Seja o primeiro a comentar!',
-    com_loading:'Carregando comentários...', com_aprovacao:'Comentário enviado! Aguarda aprovação.',
+    com_loading:'Carregando comentários...', com_aprovacao:'Comentário publicado!',
     com_login_aviso:'Faça login para comentar.', com_login_btn:'Entrar',
     com_excluir:'Excluir',
   },
@@ -2514,7 +2514,7 @@ const I18N = {
     com_responder:'Reply',
     com_titulo:'Comments', com_placeholder:'Leave your comment...',
     com_enviar:'Comment', com_vazio:'Be the first to comment!',
-    com_loading:'Loading comments...', com_aprovacao:'Comment sent! Awaiting approval.',
+    com_loading:'Loading comments...', com_aprovacao:'Comment published!',
     com_login_aviso:'Log in to comment.', com_login_btn:'Sign in',
     com_excluir:'Delete',
   },
@@ -2622,7 +2622,7 @@ const I18N = {
     com_responder:'Répondre',
     com_titulo:'Commentaires', com_placeholder:'Laissez votre commentaire...',
     com_enviar:'Commenter', com_vazio:'Soyez le premier à commenter !',
-    com_loading:'Chargement des commentaires...', com_aprovacao:'Commentaire envoyé ! En attente de validation.',
+    com_loading:'Chargement des commentaires...', com_aprovacao:'Commentaire publié !',
     com_login_aviso:'Connectez-vous pour commenter.', com_login_btn:'Se connecter',
     com_excluir:'Supprimer',
   },
@@ -2730,7 +2730,7 @@ const I18N = {
     com_responder:'Responder',
     com_titulo:'Comentarios', com_placeholder:'Deja tu comentario...',
     com_enviar:'Comentar', com_vazio:'¡Sé el primero en comentar!',
-    com_loading:'Cargando comentarios...', com_aprovacao:'¡Comentario enviado! Pendiente de aprobación.',
+    com_loading:'Cargando comentarios...', com_aprovacao:'¡Comentario publicado!',
     com_login_aviso:'Inicia sesión para comentar.', com_login_btn:'Iniciar sesión',
     com_excluir:'Eliminar',
   }
@@ -4263,6 +4263,10 @@ function abrirAuth(modo) {
 function htmlLogin() {
   return `<div class="form-g"><label>${t('auth_email')}</label><input type="email" id="fE" placeholder="${t('auth_placeholder_email')}"></div>
           <div class="form-g"><label>${t('auth_senha')}</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+          <div style="display:flex;align-items:center;gap:.45rem;margin:.2rem 0 .6rem">
+            <input type="checkbox" id="fLembrar" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;flex-shrink:0">
+            <span style="font-size:.78rem;color:var(--muted);cursor:pointer" onclick="document.getElementById('fLembrar').click()">${t('auth_lembrar')}</span>
+          </div>
           <div class="form-erro" id="authErr"></div>
           <button class="btn-prim" onclick="doLogin()">${t('auth_btn_entrar')}</button>
           <div class="form-link">${t('auth_sem_conta')} <span onclick="abrirAuth('registro')">${t('auth_criar_now')}</span></div>`;

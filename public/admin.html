@@ -261,9 +261,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
     <div class="login-sub">Painel Administrativo</div>
     <div class="form-grupo"><label>E-mail</label><input type="email" id="loginUser" placeholder="admin@arrozmarket.com.br" autocomplete="username"></div>
     <div class="form-grupo"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
-    <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted);cursor:pointer;margin-bottom:.2rem">
-      <input type="checkbox" id="loginLembrar" style="accent-color:var(--gold)"> Lembrar-me neste dispositivo
-    </label>
+    <div style="display:flex;align-items:center;justify-content:flex-start;gap:.5rem;margin-bottom:.8rem">
+      <input type="checkbox" id="loginLembrar" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;flex-shrink:0">
+      <span style="font-size:.78rem;color:var(--muted);cursor:pointer;line-height:1" onclick="document.getElementById('loginLembrar').click()">Lembrar-me neste dispositivo</span>
+    </div>
     <button class="btn-login" id="btnLogin" onclick="fazerLogin()">Entrar no Painel</button>
     <div class="login-erro" id="loginErro" style="display:none"></div>
   </div>
@@ -2642,7 +2643,7 @@ function criarModeloSheet(e){
 }
 
 /* ═══ ESPECIALISTA ═══ */
-function getEspData(){
+async function getEspData(){
   // Carrega do servidor (global) com fallback localStorage
   try {
     const r = await apiAdm('GET', '/especialista');
@@ -2650,8 +2651,8 @@ function getEspData(){
   } catch(e) {}
   try { const r = JSON.parse(localStorage.getItem('am_esp')||'{}'); S._espAdmin=r; return r; } catch(e){ return {}; }
 }
-function carregarEspForm(){
-  const e = getEspData();
+async function carregarEspForm(){
+  const e = await getEspData();
   const g = (id,def='') => { const el=document.getElementById(id); if(el) el.value=e[id.replace('esp-','').replace(/-/g,'')]||def; };
   const esp = e;
   document.getElementById('esp-iniciais').value = esp.iniciais||'FT';

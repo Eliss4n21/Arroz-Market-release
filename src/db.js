@@ -102,7 +102,8 @@ const db = {
   addComentario(vid, dados) {
     if (!_db.comentarios) _db.comentarios = {};
     if (!_db.comentarios[vid]) _db.comentarios[vid] = [];
-    const novo = { id: Date.now(), ...dados, aprovado: false, ts: Date.now(),
+    // Auto-aprova comentários de usuários autenticados
+    const novo = { id: Date.now(), ...dados, aprovado: true, ts: Date.now(),
                    likes: 0, likedBy: [], respostas: [] };
     _db.comentarios[vid].unshift(novo);
     salvarDB(_db);
