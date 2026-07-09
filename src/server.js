@@ -12,6 +12,9 @@ const { scrapeCEPEA } = require('./scraper');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Hostinger usa proxy reverso — necessário para rate-limit e IP real
+app.set('trust proxy', 1);
+
 /* ── Rate limiting (graceful: não quebra se não instalado) ── */
 let rateLimit;
 try {
@@ -21,10 +24,12 @@ try {
 }
 const authLimiter = rateLimit({ windowMs:15*60*1000, max:20,
   message:{ erro:'Muitas tentativas. Aguarde 15 minutos.' },
-  standardHeaders:true, legacyHeaders:false });
+  standardHeaders:true, legacyHeaders:false,
+  validate:{ xForwardedForHeader:false } });
 const apiLimiter  = rateLimit({ windowMs:60*1000, max:300,
   message:{ erro:'Limite de requisições excedido.' },
-  standardHeaders:true, legacyHeaders:false });
+  standardHeaders:true, legacyHeaders:false,
+  validate:{ xForwardedForHeader:false } });
 
 /* ── Segurança ── */
 app.use(helmet({ contentSecurityPolicy:false, crossOriginEmbedderPolicy:false }));
