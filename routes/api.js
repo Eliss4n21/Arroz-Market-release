@@ -181,7 +181,8 @@ router.post('/admin/audios',   autenticar, soAdmin, (req, res) => {
   const baseLikes = Number.isFinite(+likes) && +likes >= 0 ? Math.round(+likes) : 0;
   res.status(201).json(db.addVideo({
     id: db.nextId(), titulo, titulo_en: titulo_en||'', titulo_fr: titulo_fr||'', titulo_es: titulo_es||'', data,
-    dur: dur||'00:00', url: url||'', url_en: url_en||'', cat: cat||'Podcast Diário',
+    dur: (dur && dur !== 'Infinity:NaN' && dur !== 'NaN:NaN' && dur !== '00:00') ? dur : '00:00',
+    url: url||'', url_en: url_en||'', cat: cat||'Podcast Diário',
     status: status||'pub', desc: desc||'',
     views: baseViews, likes: baseLikes,
   }));

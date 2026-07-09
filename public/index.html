@@ -968,8 +968,7 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
   position:absolute; top:50%; transform:translateY(-50%);
   left:0; height:3px;
   background: var(--gold); border-radius:2px; width:0%;
-  pointer-events:none; z-index:1;
-  transition: height .15s;
+  pointer-events:none; z-index:4;  /* acima do ::before (sem z-index) */
 }
 #dest-waveform-wrap:hover #dest-prog-fill { height: 5px; }
 
@@ -3161,8 +3160,9 @@ function renderDestaque() {
   if (vEl) vEl.textContent = fmtN(dest.views || 0);
 
   // Mostra duração do banco imediatamente se válida
-  const durValida = dest.dur && dest.dur !== '0:00' && dest.dur !== '--:--'
-    && dest.dur !== 'Infinity:NaN' && dest.dur !== 'undefined';
+  const durValida = dest.dur && dest.dur !== '0:00' && dest.dur !== '00:00'
+    && dest.dur !== '--:--' && dest.dur !== 'Infinity:NaN'
+    && dest.dur !== 'undefined' && dest.dur !== 'NaN:NaN';
   if (dEl) dEl.textContent = durValida ? dest.dur : '--:--';
 
   // Atualiza barra do player com duração do banco
@@ -3235,9 +3235,11 @@ function renderDestaque() {
     DEST.audioCtx = null;
   }
 
-  /* Like vinculado ao episódio pelo id — não global */
+  /* Like vinculado ao episódio — lê do S.curtidos (API) ou localStorage */
   S.likesDest   = dest.likes || 0;
-  S.curtidoDest = localStorage.getItem('am_cd_' + dest.id) === '1';
+  // Prioridade: S.curtidos (carregado da API) > localStorage por episódio
+  S.curtidoDest = S.curtidos?.[dest.id]
+    ?? (localStorage.getItem('am_cd_' + dest.id) === '1');
   renderLikeDest();
   // Carrega comentários do episódio destaque
   destComentariosInit();
@@ -3546,7 +3548,22 @@ function destInitEvents() {
     }
     destIniciarAudioCtx(audio);
   };
-  // Fix barra de progresso: atualizar também em timeupdate (mais confiável que só RAF)
+  // ondurationchange: dispara quando duração muda de Infinity/NaN para valor real
+  audio.ondurationchange = () => {
+    const dur = audio.duration;
+    if (!isFinite(dur) || dur <= 0) return;
+    const durStr = amFmt(dur);
+    document.getElementById('dest-time').textContent = '0:00 / ' + durStr;
+    const dEl = document.getElementById('durDest');
+    if (dEl && (dEl.textContent === '--:--' || dEl.textContent === '00:00' || dEl.textContent === '')) {
+      dEl.textContent = durStr;
+    }
+    if (S.vidDest) {
+      S.vidDest.dur = durStr;
+      const idx = S.vids.findIndex(v => v.id === S.vidDest.id);
+      if (idx >= 0) S.vids[idx].dur = durStr;
+    }
+  };
   audio.ontimeupdate = () => {
     const dur = audio.duration;
     if (!isFinite(dur) || dur <= 0) return;
@@ -3732,15 +3749,26 @@ function renderLikeDest() {
   }
 }
 
-function curtirDestaque(e) {
+async function curtirDestaque(e) {
   e.stopPropagation();
   if (!S.usuario) { toast(t('toast_login_cur'), 'err'); abrirAuth('login'); return; }
-  S.curtidoDest = !S.curtidoDest;
-  S.likesDest   = Math.max(0, S.likesDest + (S.curtidoDest ? 1 : -1));
-  const _destId = S.vidDest?.id || 0;
-  localStorage.setItem('am_cd_' + _destId, S.curtidoDest ? '1' : '0');
-  renderLikeDest();
-  toast(S.curtidoDest ? t('toast_curtiu') : t('toast_descurtiu'), S.curtidoDest ? 'ok' : '');
+  const vid = S.vidDest?.id;
+  if (!vid) return;
+  try {
+    // Usa a mesma API de curtir dos cards — vincula ao episódio no servidor
+    const r = await apiFetch('POST', '/audios/' + vid + '/curtir');
+    S.curtidoDest = r.curtido;
+    S.likesDest   = r.likes;
+    // Persiste localmente por episódio para feedback imediato sem re-fetch
+    localStorage.setItem('am_cd_' + vid, r.curtido ? '1' : '0');
+    // Sincroniza no array de vídeos
+    const v = S.vids.find(x => x.id === vid);
+    if (v) v.likes = r.likes;
+    renderLikeDest();
+    toast(r.curtido ? t('toast_curtiu') : t('toast_descurtiu'), r.curtido ? 'ok' : '');
+  } catch(err) {
+    toast('Erro ao curtir.', 'err');
+  }
 }
 
 /* ═══ LIKE CARDS DE VÍDEO ═══ */
