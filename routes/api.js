@@ -104,7 +104,73 @@ router.get('/audios/:id/curtida', autenticar, (req, res) => {
   res.json({ curtido: db.getCurtida(req.user.id, parseInt(req.params.id)) });
 });
 
-/* ═══ ADMIN ══════════════════════════════════════════════════════════ */
+/* ═══ COMENTÁRIOS ════════════════════════════════════════════════════ */
+
+// Listar comentários aprovados de um episódio (público)
+router.get('/audios/:id/comentarios', (req, res) => {
+  res.json(db.getComentarios(parseInt(req.params.id)));
+});
+
+// Postar comentário (requer login)
+router.post('/audios/:id/comentarios', autenticar, (req, res) => {
+  const vid   = parseInt(req.params.id);
+  const texto = (req.body.texto || '').trim();
+  if (!texto || texto.length < 2)  return res.status(400).json({ erro: 'Comentário muito curto.' });
+  if (texto.length > 600)          return res.status(400).json({ erro: 'Máximo 600 caracteres.' });
+  const novo = db.addComentario(vid, {
+    uid:    req.user.id,
+    nome:   req.user.nome,
+    avatar: req.user.avatar || req.user.nome.slice(0,2).toUpperCase(),
+    texto,
+  });
+  res.status(201).json(novo);
+});
+
+// Admin: listar todos (incluindo não aprovados)
+router.get('/admin/audios/:id/comentarios', autenticar, soAdmin, (req, res) => {
+  res.json(db.getAllComentarios(parseInt(req.params.id)));
+});
+
+// Admin: aprovar comentário
+router.put('/admin/comentarios/:vid/:cid/aprovar', autenticar, soAdmin, (req, res) => {
+  const r = db.aprovarComentario(parseInt(req.params.vid), parseInt(req.params.cid));
+  if (!r) return res.status(404).json({ erro: 'Comentário não encontrado.' });
+  res.json(r);
+});
+
+// Like em comentário ou resposta
+router.post('/audios/:id/comentarios/:cid/like', autenticar, (req, res) => {
+  const rid = req.body.rid ? parseInt(req.body.rid) : null;
+  const r = db.toggleLikeComentario(
+    parseInt(req.params.id), parseInt(req.params.cid), req.user.id, rid
+  );
+  if (!r) return res.status(404).json({ erro: 'Comentário não encontrado.' });
+  res.json(r);
+});
+
+// Responder comentário
+router.post('/audios/:id/comentarios/:cid/respostas', autenticar, (req, res) => {
+  const vid   = parseInt(req.params.id);
+  const cid   = parseInt(req.params.cid);
+  const texto = (req.body.texto || '').trim();
+  if (!texto || texto.length < 2)  return res.status(400).json({ erro: 'Resposta muito curta.' });
+  if (texto.length > 600)          return res.status(400).json({ erro: 'Máximo 600 caracteres.' });
+  const nova = db.addResposta(vid, cid, {
+    uid:    req.user.id,
+    nome:   req.user.nome,
+    avatar: req.user.avatar || req.user.nome.slice(0,2).toUpperCase(),
+    texto,
+  });
+  if (!nova) return res.status(404).json({ erro: 'Comentário não encontrado.' });
+  res.status(201).json(nova);
+});
+
+// Admin: deletar comentário ou resposta
+router.delete('/admin/comentarios/:vid/:cid', autenticar, soAdmin, (req, res) => {
+  const rid = req.query.rid ? parseInt(req.query.rid) : null;
+  db.deletarComentario(parseInt(req.params.vid), parseInt(req.params.cid), rid);
+  res.json({ ok: true });
+});
 
 router.get('/admin/audios',    autenticar, soAdmin, (_, res) => res.json(db.getAllVideos()));
 
@@ -205,9 +271,14 @@ router.post('/admin/audios/upload', autenticar, soAdmin, (req, res) => {
   req.on('error', e => res.status(500).json({ erro: e.message }));
 });
 
-/* Serve os arquivos de áudio estaticamente */
+/* Serve os arquivos de áudio estaticamente
+   Guard: só responde se fname tiver extensão de áudio (.wav/.mp3/etc)
+   Isso impede captura de subrotas como /audios/1/comentarios */
 router.get('/audios/:fname', (req, res) => {
-  const fname = req.params.fname.replace(/[^a-z0-9._-]/gi, '_');
+  const raw = req.params.fname;
+  // Se não contém ponto = não é arquivo = passa para próxima rota
+  if (!raw.includes('.')) return res.status(404).json({ erro: 'Rota não encontrada.' });
+  const fname = raw.replace(/[^a-z0-9._-]/gi, '_');
   const fpath = path.join(AUDIO_DIR, fname);
   if (!fs.existsSync(fpath)) return res.status(404).json({ erro: 'Áudio não encontrado.' });
   const ext  = path.extname(fname).toLowerCase();

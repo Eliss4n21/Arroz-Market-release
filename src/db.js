@@ -15,13 +15,11 @@ const AUDIO_DIR = process.env.AUDIO_DIR || path.join(DATA_DIR, 'audios');
   try { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); } catch(e) {}
 });
 
-const ADMIN_HASH = '$2a$10$wN2sY2K7DoZcMX.3k/aBAO6BkfcjmC4bg3C8Ofsg0S7XBsRLkdbni';
+const ADMIN_HASH = '$2a$10$.bi4pu462UPZHk.Xwzbwhe3/m/ZBca6573NVA2e8bw6hsrDhARjZO';
 
 const DEFAULT = {
   usuarios: [
-    { id:1, nome:'Administrador', email:'admin@arrozmarket.com.br',
-      senha:ADMIN_HASH, role:'admin', avatar:'AD', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
-    { id:2, nome:'Fábio Toledo', email:'fabio@arrozmarket.com.br',
+    { id:1, nome:'Fábio Toledo', email:'fabio.toledo@arrozmarket.online',
       senha:ADMIN_HASH, role:'admin', avatar:'FT', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
   ],
   videos: [
@@ -48,6 +46,7 @@ const DEFAULT = {
     { id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
   ],
   curtidas: {},
+  comentarios: {},  /* { videoId: [ {id, uid, nome, avatar, texto, ts, aprovado} ] } */
   config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10 }
 };
 
@@ -83,6 +82,70 @@ const db = {
     return { curtido, likes: i>=0?_db.videos[i].likes:0 };
   },
   getCurtida(uid,vid) { return !!_db.curtidas[`${uid}_${vid}`]; },
+
+  /* ─── COMENTÁRIOS ─── */
+  getComentarios(vid) {
+    if (!_db.comentarios) _db.comentarios = {};
+    return (_db.comentarios[vid] || []).filter(c => c.aprovado);
+  },
+  getAllComentarios(vid) {
+    if (!_db.comentarios) _db.comentarios = {};
+    return _db.comentarios[vid] || [];
+  },
+  addComentario(vid, dados) {
+    if (!_db.comentarios) _db.comentarios = {};
+    if (!_db.comentarios[vid]) _db.comentarios[vid] = [];
+    const novo = { id: Date.now(), ...dados, aprovado: false, ts: Date.now(),
+                   likes: 0, likedBy: [], respostas: [] };
+    _db.comentarios[vid].unshift(novo);
+    salvarDB(_db);
+    return novo;
+  },
+  addResposta(vid, cid, dados) {
+    if (!_db.comentarios?.[vid]) return null;
+    const i = _db.comentarios[vid].findIndex(c => c.id === cid);
+    if (i < 0) return null;
+    if (!_db.comentarios[vid][i].respostas) _db.comentarios[vid][i].respostas = [];
+    const nova = { id: Date.now(), ...dados, ts: Date.now(), likes: 0, likedBy: [] };
+    _db.comentarios[vid][i].respostas.push(nova);
+    salvarDB(_db);
+    return nova;
+  },
+  toggleLikeComentario(vid, cid, uid, rid) {
+    if (!_db.comentarios?.[vid]) return null;
+    const i = _db.comentarios[vid].findIndex(c => c.id === cid);
+    if (i < 0) return null;
+    // Se rid fornecido → like na resposta; senão → like no comentário
+    let alvo = rid
+      ? (_db.comentarios[vid][i].respostas || []).find(r => r.id === rid)
+      : _db.comentarios[vid][i];
+    if (!alvo) return null;
+    if (!alvo.likedBy) alvo.likedBy = [];
+    const idx = alvo.likedBy.indexOf(uid);
+    if (idx >= 0) { alvo.likedBy.splice(idx, 1); alvo.likes = Math.max(0, alvo.likes - 1); }
+    else          { alvo.likedBy.push(uid);        alvo.likes = (alvo.likes || 0) + 1; }
+    salvarDB(_db);
+    return { likes: alvo.likes, curtido: idx < 0 };
+  },
+  aprovarComentario(vid, cid) {
+    if (!_db.comentarios?.[vid]) return null;
+    const i = _db.comentarios[vid].findIndex(c => c.id === cid);
+    if (i < 0) return null;
+    _db.comentarios[vid][i].aprovado = true;
+    salvarDB(_db);
+    return _db.comentarios[vid][i];
+  },
+  deletarComentario(vid, cid, rid) {
+    if (!_db.comentarios?.[vid]) return;
+    if (rid) {
+      const i = _db.comentarios[vid].findIndex(c => c.id === cid);
+      if (i >= 0) _db.comentarios[vid][i].respostas =
+        (_db.comentarios[vid][i].respostas||[]).filter(r => r.id !== rid);
+    } else {
+      _db.comentarios[vid] = _db.comentarios[vid].filter(c => c.id !== cid);
+    }
+    salvarDB(_db);
+  },
   getConfig()         { return _db.config; },
   updateConfig(d)     { _db.config={..._db.config,...d}; salvarDB(_db); return _db.config; },
   nextId()            { return ++_db.config.proximoId; },

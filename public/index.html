@@ -399,7 +399,7 @@ body {
   background: var(--dark3); border: 1px solid rgba(200,168,75,.18);
   color: var(--muted); padding: .28rem .6rem; border-radius: 4px;
   font-size: .72rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: all .18s;
+  transition: all .18s; display: inline-flex; align-items: center; gap: 5px;
 }
 .drawer-lang-btn:hover { border-color: var(--gold); color: var(--gold); }
 .drawer-lang-soon { opacity: .5; cursor: default; }
@@ -1301,6 +1301,42 @@ footer strong { color: var(--gold); }
   .estat-n { font-size: .9rem; }
   .estat-l { font-size: .55rem; }
 }
+
+/* ══ COMENTÁRIOS ══════════════════════════════════════ */
+.com-item { display:flex; gap:.65rem; align-items:flex-start; padding:.85rem 0; border-bottom:1px solid rgba(200,168,75,.07); }
+.com-item:last-child { border-bottom:none; }
+.com-av { width:36px; height:36px; border-radius:50%; background:var(--dark4); border:1px solid rgba(200,168,75,.22); display:flex; align-items:center; justify-content:center; font-size:.72rem; color:var(--gold); font-weight:700; flex-shrink:0; }
+.com-body { flex:1; min-width:0; }
+.com-meta { display:flex; align-items:center; gap:.45rem; margin-bottom:.22rem; flex-wrap:wrap; }
+.com-nome { font-size:.82rem; color:var(--cream); font-weight:500; }
+.com-ts   { font-size:.65rem; color:var(--muted); }
+.com-txt  { font-size:.82rem; color:var(--muted); line-height:1.6; word-break:break-word; }
+.com-actions { display:flex; align-items:center; gap:.5rem; margin-top:.45rem; }
+.com-like-btn { display:inline-flex; align-items:center; gap:.3rem; background:transparent; border:1px solid rgba(200,168,75,.15); color:var(--muted); padding:.22rem .6rem; border-radius:20px; cursor:pointer; font-size:.72rem; font-family:'DM Sans',sans-serif; transition:all .18s; }
+.com-like-btn svg { width:12px; height:12px; fill:currentColor; }
+.com-like-btn:hover { border-color:var(--green2); color:var(--green2); }
+.com-like-btn.curtido { border-color:var(--green2); color:var(--green2); background:rgba(74,124,89,.08); }
+.com-resp-btn { display:inline-flex; align-items:center; gap:.3rem; background:transparent; border:none; color:var(--muted); padding:.22rem .4rem; cursor:pointer; font-size:.72rem; font-family:'DM Sans',sans-serif; transition:color .18s; }
+.com-resp-btn svg { width:12px; height:12px; fill:currentColor; }
+.com-resp-btn:hover { color:var(--gold); }
+.com-resp-count { background:rgba(200,168,75,.12); color:var(--gold); border-radius:10px; padding:.05rem .38rem; font-size:.62rem; margin-left:.15rem; }
+.com-respostas { margin-top:.65rem; padding-left:1.1rem; border-left:2px solid rgba(200,168,75,.15); display:flex; flex-direction:column; gap:.55rem; }
+.com-resp-item { display:flex; gap:.5rem; align-items:flex-start; }
+.com-resp-item .com-av { width:28px; height:28px; font-size:.62rem; }
+.com-resp-form { margin-top:.55rem; }
+.com-resp-txt { width:100%; background:var(--dark3); border:1px solid rgba(200,168,75,.15); border-radius:6px; color:var(--cream); font-family:'DM Sans',sans-serif; font-size:.8rem; padding:.5rem .7rem; resize:none; outline:none; box-sizing:border-box; min-height:62px; transition:border-color .2s; }
+.com-resp-txt:focus { border-color:rgba(200,168,75,.4); }
+.com-btn-cancel { background:transparent; border:1px solid rgba(200,168,75,.18); color:var(--muted); padding:.28rem .7rem; border-radius:4px; cursor:pointer; font-size:.75rem; font-family:'DM Sans',sans-serif; }
+.com-btn-send   { background:var(--gold); border:none; color:#0b0b09; padding:.28rem .8rem; border-radius:4px; cursor:pointer; font-size:.75rem; font-weight:500; font-family:'DM Sans',sans-serif; }
+.com-btn-send:disabled { opacity:.5; cursor:default; }
+/* Tema claro */
+[data-tema="claro"] .com-av       { background:#EAEAE4; }
+[data-tema="claro"] .com-nome     { color:#1C1C1A; }
+[data-tema="claro"] .com-txt      { color:#5A5A55; }
+[data-tema="claro"] .com-resp-txt { background:#F2F1EC; border-color:rgba(0,0,0,.15); color:#1C1C1A; }
+[data-tema="claro"] .com-like-btn { border-color:rgba(0,0,0,.15); }
+[data-tema="claro"] .com-item     { border-bottom-color:rgba(0,0,0,.06); }
+[data-tema="claro"] .com-respostas { border-left-color:rgba(0,0,0,.1); }
 </style>
 </head>
 <body>
@@ -1324,12 +1360,12 @@ footer strong { color: var(--gold); }
     <!-- Dropdown de idioma -->
     <div id="idiomaMenu">
       <div style="padding:.5rem 1.1rem .3rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(200,168,75,.08);margin-bottom:.2rem">Idioma / Language</div>
-      <div class="idioma-item ativo"  onclick="setIdioma('pt')">🇧🇷 Português</div>
-      <div class="idioma-item"        onclick="setIdioma('en')">🇺🇸 English</div>
-      <div class="idioma-item"        onclick="setIdioma('fr')">🇫🇷 Français</div>
-      <div class="idioma-item"        onclick="setIdioma('es')">🇪🇸 Español</div>
-      <div class="idioma-item idioma-soon" onclick="setIdioma('ru')">🇷🇺 Русский <span class="idioma-badge">em breve</span></div>
-      <div class="idioma-item idioma-soon" onclick="setIdioma('zh')">🇨🇳 中文 <span class="idioma-badge">em breve</span></div>
+      <div class="idioma-item ativo"  onclick="setIdioma('pt')"><span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> Português</div>
+      <div class="idioma-item"        onclick="setIdioma('en')"><span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> English</div>
+      <div class="idioma-item"        onclick="setIdioma('fr')"><span role="img" aria-label="França" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect width="7.3" height="16" fill="#002395"/><rect x="14.7" width="7.3" height="16" fill="#ED2939"/></svg></span> Français</div>
+      <div class="idioma-item"        onclick="setIdioma('es')"><span role="img" aria-label="Espanha" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#c60b1e"/><rect y="3.5" width="22" height="9" fill="#ffc400"/></svg></span> Español</div>
+      <div class="idioma-item idioma-soon" onclick="setIdioma('ru')"><span role="img" aria-label="Rússia" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="5.3" width="22" height="5.4" fill="#0039A6"/><rect y="10.7" width="22" height="5.3" fill="#D52B1E"/></svg></span> Русский <span class="idioma-badge">em breve</span></div>
+      <div class="idioma-item idioma-soon" onclick="setIdioma('zh')"><span role="img" aria-label="China" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#DE2910"/><polygon points="4,2.5 4.8,5 2.5,3.5 5.5,3.5 3.2,5" fill="#FFDE00"/></svg></span> 中文 <span class="idioma-badge">em breve</span></div>
     </div>
     <!-- Hamburguer — visível só no mobile -->
     <button id="nav-hamburger" onclick="toggleDrawer()" aria-label="Menu">
@@ -1349,12 +1385,12 @@ footer strong { color: var(--gold); }
   <a onclick="ir('especialista',this);fecharDrawer()" data-i18n="nav_especialista">Especialista</a>
   <div style="margin-top:.4rem;padding:.5rem 0 .2rem;border-top:1px solid rgba(200,168,75,.08);display:flex;gap:.4rem;flex-wrap:wrap">
     <span style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);align-self:center;margin-right:.2rem">Idioma:</span>
-    <button onclick="setIdioma('pt');fecharDrawer()" class="drawer-lang-btn" id="dlang-pt">🇧🇷 PT</button>
-    <button onclick="setIdioma('en');fecharDrawer()" class="drawer-lang-btn" id="dlang-en">🇺🇸 EN</button>
-    <button onclick="setIdioma('fr');fecharDrawer()" class="drawer-lang-btn" id="dlang-fr">🇫🇷 FR</button>
-    <button onclick="setIdioma('es');fecharDrawer()" class="drawer-lang-btn" id="dlang-es">🇪🇸 ES</button>
-    <button onclick="setIdioma('ru');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇷🇺 RU</button>
-    <button onclick="setIdioma('zh');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon">🇨🇳 ZH</button>
+    <button onclick="setIdioma('pt');fecharDrawer()" class="drawer-lang-btn" id="dlang-pt"><span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> PT</button>
+    <button onclick="setIdioma('en');fecharDrawer()" class="drawer-lang-btn" id="dlang-en"><span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> EN</button>
+    <button onclick="setIdioma('fr');fecharDrawer()" class="drawer-lang-btn" id="dlang-fr"><span role="img" aria-label="França" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect width="7.3" height="16" fill="#002395"/><rect x="14.7" width="7.3" height="16" fill="#ED2939"/></svg></span> FR</button>
+    <button onclick="setIdioma('es');fecharDrawer()" class="drawer-lang-btn" id="dlang-es"><span role="img" aria-label="Espanha" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#c60b1e"/><rect y="3.5" width="22" height="9" fill="#ffc400"/></svg></span> ES</button>
+    <button onclick="setIdioma('ru');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon"><span role="img" aria-label="Rússia" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="5.3" width="22" height="5.4" fill="#0039A6"/><rect y="10.7" width="22" height="5.3" fill="#D52B1E"/></svg></span> RU</button>
+    <button onclick="setIdioma('zh');fecharDrawer()" class="drawer-lang-btn drawer-lang-soon"><span role="img" aria-label="China" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#DE2910"/><polygon points="4,2.5 4.8,5 2.5,3.5 5.5,3.5 3.2,5" fill="#FFDE00"/></svg></span> ZH</button>
   </div>
 </div>
 
@@ -1434,8 +1470,8 @@ footer strong { color: var(--gold); }
               <span id="am-lang-label" style="font-size:.65rem;color:rgba(255,255,255,.55);letter-spacing:.04em">PT</span>
               <div id="am-lang-menu" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:var(--dark2);border:1px solid var(--gold-b);border-radius:6px;min-width:150px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.5);overflow:hidden">
                 <div style="padding:.3rem .8rem .2rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid rgba(200,168,75,.08)" data-i18n="player_audio_idioma">Idioma do Áudio</div>
-                <div id="am-lang-pt" onclick="amSetLang('pt',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''">🇧🇷 <span data-i18n="player_dub_pt">Português</span></div>
-                <div id="am-lang-en" onclick="amSetLang('en',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''">🇺🇸 <span data-i18n="player_dub_en">English</span></div>
+                <div id="am-lang-pt" onclick="amSetLang('pt',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''"><span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> <span data-i18n="player_dub_pt">Português</span></div>
+                <div id="am-lang-en" onclick="amSetLang('en',event)" style="padding:.5rem .9rem;font-size:.78rem;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:.4rem" onmouseover="this.style.background='var(--dark3)'" onmouseout="this.style.background=''"><span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> <span data-i18n="player_dub_en">English</span></div>
               </div>
             </div>
             <select id="am-speed" onchange="amSpeed(this.value)" title="Velocidade" style="background:transparent;border:none;color:rgba(255,255,255,.55);font-size:.68rem;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;">
@@ -1467,6 +1503,37 @@ footer strong { color: var(--gold); }
           <span id="likeModalN">0</span>
         </button>
       </div>
+    </div>
+
+    <!-- ═══ COMENTÁRIOS ═══ -->
+    <div id="secao-comentarios" style="border-top:1px solid rgba(200,168,75,.08);padding:1rem 1.5rem 1.2rem">
+      <div style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.9rem" data-i18n="com_titulo">Comentários</div>
+
+      <!-- Formulário novo comentário -->
+      <div id="com-form-wrap">
+        <div style="display:flex;gap:.6rem;align-items:flex-start">
+          <div id="com-avatar-mini" style="width:32px;height:32px;border-radius:50%;background:var(--dark4);border:1px solid var(--gold-b);display:flex;align-items:center;justify-content:center;font-size:.72rem;color:var(--gold);font-weight:700;flex-shrink:0">?</div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:.5rem">
+            <textarea id="com-texto" rows="2" data-i18n="com_placeholder" placeholder="Deixe seu comentário..." maxlength="600"
+              style="width:100%;background:var(--dark3);border:1px solid rgba(200,168,75,.15);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.55rem .75rem;resize:none;outline:none;transition:border-color .2s;box-sizing:border-box"
+              onfocus="this.style.borderColor='rgba(200,168,75,.4)'" onblur="this.style.borderColor='rgba(200,168,75,.15)'"
+              oninput="document.getElementById('com-chars').textContent=this.value.length+'/600'"></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <span id="com-chars" style="font-size:.65rem;color:var(--muted)">0/600</span>
+              <button onclick="enviarComentario()" style="background:var(--gold);color:#0b0b09;border:none;padding:.38rem .9rem;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'" data-i18n="com_enviar">Comentar</button>
+            </div>
+          </div>
+        </div>
+        <div id="com-login-aviso" style="display:none;font-size:.76rem;color:var(--muted);margin-top:.5rem;text-align:center">
+          <span data-i18n="com_login_aviso">Faça login para comentar.</span>
+          <span style="color:var(--gold);cursor:pointer;margin-left:.3rem" onclick="fModal('modal');abrirAuth('login')" data-i18n="com_login_btn">Entrar</span>
+        </div>
+      </div>
+
+      <!-- Lista de comentários -->
+      <div id="com-lista" style="margin-top:1rem;display:flex;flex-direction:column;gap:.8rem"></div>
+      <div id="com-vazio" style="display:none;text-align:center;padding:1rem;color:var(--muted);font-size:.8rem" data-i18n="com_vazio">Seja o primeiro a comentar!</div>
+      <div id="com-loading" style="text-align:center;padding:.8rem;color:var(--muted);font-size:.78rem" data-i18n="com_loading">Carregando comentários...</div>
     </div>
   </div>
 </div>
@@ -2248,7 +2315,7 @@ const I18N = {
     ep_escutas:'escutas', ep_vazio:'Nenhum episódio nesta categoria ainda.',
     tk_loading:'Carregando cotações...',
     player_sem_audio:'Este episódio não possui áudio gravado.',
-    player_audio_idioma:'Idioma do Áudio', player_dub_pt:'🇧🇷 Português', player_dub_en:'🇺🇸 English',
+    player_audio_idioma:'Idioma do Áudio', player_dub_pt:'<span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> Português', player_dub_en:'<span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> English',
     player_dub_indisponivel:'Versão em inglês não disponível para este episódio.',
     player_voltar:'Voltar 15s', player_avancar:'Avançar 30s',
     modal_compartilhar:'Compartilhar', modal_fechar:'Fechar',
@@ -2334,6 +2401,12 @@ const I18N = {
     footer_slogan:'Podcast diário do mercado orizícola',
     footer_priv:'Política de Privacidade', footer_termos:'Termos de Uso', footer_cookies:'Cookies',
     lang_em_breve:'em breve',
+    com_responder:'Responder',
+    com_titulo:'Comentários', com_placeholder:'Deixe seu comentário...',
+    com_enviar:'Comentar', com_vazio:'Seja o primeiro a comentar!',
+    com_loading:'Carregando comentários...', com_aprovacao:'Comentário enviado! Aguarda aprovação.',
+    com_login_aviso:'Faça login para comentar.', com_login_btn:'Entrar',
+    com_excluir:'Excluir',
   },
 
   en: {
@@ -2349,7 +2422,7 @@ const I18N = {
     ep_escutas:'plays', ep_vazio:'No episodes in this category yet.',
     tk_loading:'Loading prices...',
     player_sem_audio:'This episode has no recorded audio.',
-    player_audio_idioma:'Audio Language', player_dub_pt:'🇧🇷 Portuguese', player_dub_en:'🇺🇸 English',
+    player_audio_idioma:'Audio Language', player_dub_pt:'<span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> Portuguese', player_dub_en:'<span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> English',
     player_dub_indisponivel:'English version not available for this episode.',
     player_voltar:'Back 15s', player_avancar:'Forward 30s',
     modal_compartilhar:'Share', modal_fechar:'Close',
@@ -2435,6 +2508,12 @@ const I18N = {
     footer_slogan:'Daily rice market podcast',
     footer_priv:'Privacy Policy', footer_termos:'Terms of Use', footer_cookies:'Cookies',
     lang_em_breve:'coming soon',
+    com_responder:'Reply',
+    com_titulo:'Comments', com_placeholder:'Leave your comment...',
+    com_enviar:'Comment', com_vazio:'Be the first to comment!',
+    com_loading:'Loading comments...', com_aprovacao:'Comment sent! Awaiting approval.',
+    com_login_aviso:'Log in to comment.', com_login_btn:'Sign in',
+    com_excluir:'Delete',
   },
 
   fr: {
@@ -2450,7 +2529,7 @@ const I18N = {
     ep_escutas:'écoutes', ep_vazio:'Aucun épisode dans cette catégorie.',
     tk_loading:'Chargement des prix...',
     player_sem_audio:"Cet épisode n'a pas d'audio enregistré.",
-    player_audio_idioma:'Langue Audio', player_dub_pt:'🇧🇷 Portugais', player_dub_en:'🇺🇸 Anglais',
+    player_audio_idioma:'Langue Audio', player_dub_pt:'<span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> Portugais', player_dub_en:'<span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> Anglais',
     player_dub_indisponivel:'Version anglaise non disponible pour cet épisode.',
     player_voltar:'Reculer 15s', player_avancar:'Avancer 30s',
     modal_compartilhar:'Partager', modal_fechar:'Fermer',
@@ -2536,6 +2615,12 @@ const I18N = {
     footer_slogan:'Podcast quotidien du marché rizicole',
     footer_priv:'Politique de Confidentialité', footer_termos:"Conditions d'Utilisation", footer_cookies:'Cookies',
     lang_em_breve:'bientôt',
+    com_responder:'Répondre',
+    com_titulo:'Commentaires', com_placeholder:'Laissez votre commentaire...',
+    com_enviar:'Commenter', com_vazio:'Soyez le premier à commenter !',
+    com_loading:'Chargement des commentaires...', com_aprovacao:'Commentaire envoyé ! En attente de validation.',
+    com_login_aviso:'Connectez-vous pour commenter.', com_login_btn:'Se connecter',
+    com_excluir:'Supprimer',
   },
 
   es: {
@@ -2551,7 +2636,7 @@ const I18N = {
     ep_escutas:'reproducciones', ep_vazio:'Aún no hay episodios en esta categoría.',
     tk_loading:'Cargando precios...',
     player_sem_audio:'Este episodio no tiene audio grabado.',
-    player_audio_idioma:'Idioma del Audio', player_dub_pt:'🇧🇷 Portugués', player_dub_en:'🇺🇸 Inglés',
+    player_audio_idioma:'Idioma del Audio', player_dub_pt:'<span role="img" aria-label="Brasil" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#009c3b"/><polygon points="11,2 20,8 11,14 2,8" fill="#ffdf00"/><circle cx="11" cy="8" r="3.4" fill="#002776"/><path d="M8.1,6.8 Q11,5.5 13.9,6.8" stroke="#fff" stroke-width=".7" fill="none"/></svg></span> Portugués', player_dub_en:'<span role="img" aria-label="Estados Unidos" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="0"  width="22" height="1.6" fill="#B22234"/><rect y="3.2" width="22" height="1.6" fill="#B22234"/><rect y="6.4" width="22" height="1.6" fill="#B22234"/><rect y="9.6" width="22" height="1.6" fill="#B22234"/><rect y="12.8" width="22" height="1.6" fill="#B22234"/><rect width="9" height="8.8" fill="#3C3B6E"/></svg></span> Inglés',
     player_dub_indisponivel:'Versión en inglés no disponible para este episodio.',
     player_voltar:'Retroceder 15s', player_avancar:'Avanzar 30s',
     modal_compartilhar:'Compartir', modal_fechar:'Cerrar',
@@ -2637,6 +2722,12 @@ const I18N = {
     footer_slogan:'Podcast diario del mercado arrocero',
     footer_priv:'Política de Privacidad', footer_termos:'Términos de Uso', footer_cookies:'Cookies',
     lang_em_breve:'próximamente',
+    com_responder:'Responder',
+    com_titulo:'Comentarios', com_placeholder:'Deja tu comentario...',
+    com_enviar:'Comentar', com_vazio:'¡Sé el primero en comentar!',
+    com_loading:'Cargando comentarios...', com_aprovacao:'¡Comentario enviado! Pendiente de aprobación.',
+    com_login_aviso:'Inicia sesión para comentar.', com_login_btn:'Iniciar sesión',
+    com_excluir:'Eliminar',
   }
 };
 
@@ -2765,7 +2856,7 @@ document.addEventListener('click', e => {
 function setIdioma(lang) {
   const disponiveis = ['pt', 'en', 'fr', 'es'];
   if (!disponiveis.includes(lang)) {
-    const msgs = { es:'🇪🇸 Español', ru:'🇷🇺 Русский', zh:'🇨🇳 中文' };
+    const msgs = { es:'<span role="img" aria-label="Espanha" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#c60b1e"/><rect y="3.5" width="22" height="9" fill="#ffc400"/></svg></span> Español', ru:'<span role="img" aria-label="Rússia" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#fff"/><rect y="5.3" width="22" height="5.4" fill="#0039A6"/><rect y="10.7" width="22" height="5.3" fill="#D52B1E"/></svg></span> Русский', zh:'<span role="img" aria-label="China" style="display:inline-flex;align-items:center"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 16" style="width:20px;height:14px;border-radius:2px;display:inline-block;vertical-align:middle;flex-shrink:0"><rect width="22" height="16" fill="#DE2910"/><polygon points="4,2.5 4.8,5 2.5,3.5 5.5,3.5 3.2,5" fill="#FFDE00"/></svg></span> 中文' };
     toast((msgs[lang] || lang) + ' — ' + t('lang_em_breve') + '!', '');
     fecharIdiomaMenu();
     return;
@@ -3711,12 +3802,10 @@ function amSpeed(v) {
 function abrirAudio(v) {
   S.mAudAtual = v;
   document.getElementById('modalTitulo').textContent = vidTitulo(v);
-  // Badge de categoria no modal
   const cat = v.cat || 'Podcast Diário';
   const catCfg = (typeof CAT_CFG !== 'undefined' && CAT_CFG[cat]) || { cls:'cat-podcast', emoji:'🎙️' };
   const catHtml = `<span class="card-cat-badge ${catCfg.cls}" style="margin-right:.5rem">${catCfg.emoji} ${cat}</span>`;
   document.getElementById('modalInfo').innerHTML = catHtml + v.data + ' · ' + v.dur;
-  // Mostrar descrição se disponível
   const descEl = document.getElementById('modalDesc');
   if (descEl) {
     if (v.desc && v.desc.trim()) {
@@ -3804,6 +3893,31 @@ function abrirAudio(v) {
   document.getElementById('modal').classList.add('aberto');
   document.body.style.overflow = 'hidden';
 
+  // Carrega comentários do episódio
+  carregarComentarios(v.id);
+
+  // Atualiza avatar mini no form de comentário
+  const avatarMini = document.getElementById('com-avatar-mini');
+  if (avatarMini) {
+    avatarMini.textContent = S.usuario ? (S.usuario.avatar || S.usuario.nome.slice(0,2).toUpperCase()) : '?';
+    avatarMini.style.color = S.usuario ? 'var(--gold)' : 'var(--muted)';
+  }
+  // Mostra form ou aviso de login
+  const formWrap = document.getElementById('com-form-wrap');
+  const loginAv  = document.getElementById('com-login-aviso');
+  const textarea  = document.getElementById('com-texto');
+  if (formWrap && loginAv) {
+    if (S.usuario) {
+      if (textarea) textarea.style.display = '';
+      document.querySelector('#com-form-wrap button') && (document.querySelector('#com-form-wrap button').style.display = '');
+      loginAv.style.display = 'none';
+    } else {
+      if (textarea) textarea.style.display = 'none';
+      document.querySelector('#com-form-wrap button') && (document.querySelector('#com-form-wrap button').style.display = 'none');
+      loginAv.style.display = 'block';
+    }
+  }
+
   // Para qualquer áudio em andamento
   cancelAnimationFrame(AM.rafId);
   AM.playing = false;
@@ -3872,6 +3986,184 @@ function abrirAudio(v) {
   } else {
     cover.style.display = 'none';
     noUrl.style.display = '';
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   COMENTÁRIOS — Sistema completo
+   - carregarComentarios(vid): busca e renderiza
+   - enviarComentario(): posta e atualiza UI
+   - renderComentarios(lista): monta HTML vetorial
+══════════════════════════════════════════════════════ */
+function fmtTs(ts) {
+  const d = new Date(ts);
+  const locales = { pt:'pt-BR', en:'en-US', fr:'fr-FR', es:'es-ES' };
+  return d.toLocaleDateString(locales[LANG]||'pt-BR', {day:'2-digit', month:'short', year:'numeric'})
+    + ' ' + d.toLocaleTimeString(locales[LANG]||'pt-BR', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ── helpers de comentário ── */
+function comAvatar(av, nm) {
+  return `<div class="com-av">${av || (nm||'?').slice(0,2).toUpperCase()}</div>`;
+}
+function comLikeBtn(cid, rid, likes, curtido) {
+  const uid = S.usuario?.id || 0;
+  const cls = curtido ? 'com-like-btn curtido' : 'com-like-btn';
+  const rid_ = rid ? `,${rid}` : '';
+  return `<button class="${cls}" onclick="likeComentario(${cid}${rid_},this)">
+    <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+    <span>${likes||0}</span>
+  </button>`;
+}
+function comRespostaForm(cid) {
+  return `<div class="com-resp-form" id="rf-${cid}" style="display:none">
+    <textarea class="com-resp-txt" placeholder="${t('com_placeholder')}" maxlength="600"
+      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    <div style="display:flex;gap:.4rem;justify-content:flex-end;margin-top:.35rem">
+      <button class="com-btn-cancel" onclick="document.getElementById('rf-${cid}').style.display='none'">Cancelar</button>
+      <button class="com-btn-send"   onclick="enviarResposta(${cid})">Responder</button>
+    </div>
+  </div>`;
+}
+
+function renderRespostas(respostas, cid, uid) {
+  if (!respostas || !respostas.length) return '';
+  const n = respostas.length;
+  const rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const r = respostas[i];
+    const curtido = uid && (r.likedBy||[]).includes(uid);
+    rows[i] = `<div class="com-resp-item">
+      ${comAvatar(r.avatar, r.nome)}
+      <div class="com-body">
+        <div class="com-meta"><span class="com-nome">${r.nome}</span><span class="com-ts">${fmtTs(r.ts)}</span></div>
+        <div class="com-txt">${r.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        <div class="com-actions">${comLikeBtn(cid, r.id, r.likes, curtido)}</div>
+      </div>
+    </div>`;
+  }
+  return `<div class="com-respostas">${rows.join('')}</div>`;
+}
+
+function renderComentarios(lista) {
+  const listEl  = document.getElementById('com-lista');
+  const vazioEl = document.getElementById('com-vazio');
+  const loadEl  = document.getElementById('com-loading');
+  if (!listEl) return;
+  if (loadEl)  loadEl.style.display = 'none';
+  if (!lista || !lista.length) {
+    listEl.innerHTML = '';
+    if (vazioEl) vazioEl.style.display = 'block';
+    return;
+  }
+  if (vazioEl) vazioEl.style.display = 'none';
+  const uid = S.usuario?.id || 0;
+  const n   = lista.length;
+  const rows = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const c       = lista[i];
+    const curtido = uid && (c.likedBy||[]).includes(uid);
+    rows[i] = `<div class="com-item" id="com-${c.id}">
+      ${comAvatar(c.avatar, c.nome)}
+      <div class="com-body">
+        <div class="com-meta">
+          <span class="com-nome">${c.nome}</span>
+          <span class="com-ts">${fmtTs(c.ts)}</span>
+        </div>
+        <div class="com-txt">${c.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        <div class="com-actions">
+          ${comLikeBtn(c.id, null, c.likes, curtido)}
+          <button class="com-resp-btn" onclick="toggleRespostaForm(${c.id})">
+            <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
+            ${t('com_responder')}
+            ${(c.respostas||[]).length > 0 ? `<span class="com-resp-count">${(c.respostas).length}</span>` : ''}
+          </button>
+        </div>
+        ${comRespostaForm(c.id)}
+        ${renderRespostas(c.respostas||[], c.id, uid)}
+      </div>
+    </div>`;
+  }
+  listEl.innerHTML = rows.join('');
+}
+
+async function carregarComentarios(vid) {
+  const loadEl  = document.getElementById('com-loading');
+  const listEl  = document.getElementById('com-lista');
+  const vazioEl = document.getElementById('com-vazio');
+  if (loadEl)  { loadEl.style.display = 'block'; loadEl.textContent = t('com_loading'); }
+  if (listEl)  listEl.innerHTML = '';
+  if (vazioEl) vazioEl.style.display = 'none';
+  try {
+    const r = await apiFetch('GET', `/audios/${vid}/comentarios`);
+    renderComentarios(r);
+  } catch(e) {
+    if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = '—'; }
+  }
+}
+
+function toggleRespostaForm(cid) {
+  if (!S.usuario) { abrirAuth('login'); return; }
+  const el = document.getElementById(`rf-${cid}`);
+  if (!el) return;
+  const open = el.style.display === 'none' || !el.style.display;
+  el.style.display = open ? 'block' : 'none';
+  if (open) el.querySelector('textarea')?.focus();
+}
+
+async function enviarResposta(cid) {
+  const vid     = S.mAudAtual?.id;
+  const form    = document.getElementById(`rf-${cid}`);
+  const textarea = form?.querySelector('textarea');
+  const texto   = textarea?.value.trim();
+  if (!texto || texto.length < 2) return;
+  const btn = form?.querySelector('.com-btn-send');
+  if (btn) btn.disabled = true;
+  try {
+    await apiFetch('POST', `/audios/${vid}/comentarios/${cid}/respostas`, { texto });
+    await carregarComentarios(vid);
+  } catch(e) {
+    toast('Erro ao responder: ' + (e.message||''), 'err');
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function likeComentario(cid, ridOrBtn, btnOrUndef) {
+  if (!S.usuario) { abrirAuth('login'); return; }
+  // likeComentario(cid, btn) ou likeComentario(cid, rid, btn)
+  let rid = null, btn;
+  if (typeof ridOrBtn === 'number') { rid = ridOrBtn; btn = btnOrUndef; }
+  else btn = ridOrBtn;
+  const vid  = S.mAudAtual?.id;
+  const body = rid ? { rid } : {};
+  try {
+    const r = await apiFetch('POST', `/audios/${vid}/comentarios/${cid}/like`, body);
+    // Atualiza contador e estilo sem re-render completo
+    if (btn) {
+      const span = btn.querySelector('span');
+      if (span) span.textContent = r.likes;
+      btn.classList.toggle('curtido', r.curtido);
+    }
+  } catch(e) { toast('Erro ao curtir.','err'); }
+}
+
+async function enviarComentario() {
+  if (!S.usuario) { abrirAuth('login'); return; }
+  const vid      = S.mAudAtual?.id;
+  const textarea = document.getElementById('com-texto');
+  const texto    = textarea?.value.trim();
+  if (!texto || texto.length < 2) return;
+  const btnEnv = document.querySelector('#com-form-wrap button[onclick]');
+  if (btnEnv) btnEnv.disabled = true;
+  try {
+    await apiFetch('POST', `/audios/${vid}/comentarios`, { texto });
+    if (textarea) { textarea.value = ''; document.getElementById('com-chars').textContent = '0/600'; }
+    toast(t('com_aprovacao'), 'ok');
+    await carregarComentarios(vid);
+  } catch(e) {
+    toast('Erro ao enviar: ' + (e.message||''), 'err');
+  } finally {
+    if (btnEnv) btnEnv.disabled = false;
   }
 }
 
