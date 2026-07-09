@@ -2145,7 +2145,7 @@ function notifLocal(titulo, corpo) {
     } catch(e) { S.vids = VIDS_LOCAL; try { renderAudios(); renderDestaque(); } catch(_){} }
     try { carregarCotacoes(); } catch(e) { try { renderTicker(); renderTabCot(); } catch(_){} }
     try { carregarAudios(); }   catch(e) {}
-    try { renderEspecialista(); } catch(e) {}
+    try { carregarEspecialista(); } catch(e) {}
     try { renderLikeDest(); }   catch(e) {}
     // Aplica idioma DEPOIS de tudo renderizado para traduzir o DOM completo
     try { aplicarIdioma(); }    catch(e) {}
@@ -3471,20 +3471,48 @@ function destInitEvents() {
     cancelAnimationFrame(DEST.rafId);
   };
   audio.onloadedmetadata = () => {
-    if (!isFinite(audio.duration) || audio.duration <= 0) return;
+    if (!isFinite(audio.duration) || audio.duration <= 0) {
+      // Tenta novamente após 300ms (alguns browsers precisam de tempo)
+      setTimeout(() => {
+        if (isFinite(audio.duration) && audio.duration > 0) {
+          const dur = amFmt(audio.duration);
+          document.getElementById('dest-time').textContent = '0:00 / ' + dur;
+          const dEl = document.getElementById('durDest');
+          if (dEl) dEl.textContent = dur;
+          if (S.vidDest) {
+            S.vidDest.dur = dur;
+            const idx = S.vids.findIndex(v => v.id === S.vidDest.id);
+            if (idx >= 0) S.vids[idx].dur = dur;
+          }
+        }
+      }, 300);
+      return;
+    }
     const dur = amFmt(audio.duration);
-    // Atualiza barra do player
     document.getElementById('dest-time').textContent = '0:00 / ' + dur;
-    // Atualiza stat de duração
     const dEl = document.getElementById('durDest');
     if (dEl) dEl.textContent = dur;
-    // Persiste no objeto e no array para não perder ao re-render
     if (S.vidDest) {
       S.vidDest.dur = dur;
       const idx = S.vids.findIndex(v => v.id === S.vidDest.id);
       if (idx >= 0) S.vids[idx].dur = dur;
     }
     destIniciarAudioCtx(audio);
+  };
+  // Fix barra de progresso: atualizar também em timeupdate (mais confiável que só RAF)
+  audio.ontimeupdate = () => {
+    if (!DEST.playing) return;
+    const dur = audio.duration;
+    if (!isFinite(dur) || dur <= 0) return;
+    const pct = (audio.currentTime / dur * 100).toFixed(2) + '%';
+    const fill = document.getElementById('dest-prog-fill');
+    const line = document.getElementById('dest-prog-line');
+    const wrap = document.getElementById('dest-waveform-wrap');
+    if (fill) fill.style.width = pct;
+    if (line) line.style.left  = pct;
+    if (wrap) wrap.style.setProperty('--prog', pct);
+    document.getElementById('dest-time').textContent =
+      amFmt(audio.currentTime) + ' / ' + amFmt(dur);
   };
 }
 
@@ -4442,48 +4470,47 @@ function apFiltro(f, btn) {
 
 
 /* ═══ ESPECIALISTA — carrega dados do localStorage ═══ */
-function getEsp() {
-  const DEF = {
-    iniciais:"FT", nome:"Fábio Toledo", cargo:"Especialista em Mercado Orizícola",
-    local:"São Gabriel — RS",
-    frase:'"O arroz gaúcho não é apenas um grão — é identidade, tecnologia e mercado."',
-    p1:"Natural de São Gabriel (RS), Fábio Toledo construiu sua trajetória inteiramente dentro do setor orizícola. Formado em Agronomia pela UFSM, com especialização em Mercados Agrícolas.",
-    p2:"Acumula mais de duas décadas de experiência em análise de preços, classificação de grãos e consultoria para cooperativas, beneficiadoras e tradings do Sul do Brasil.",
-    stat1n:"22",   stat1l:"Anos de mercado",
-    stat2n:"850+", stat2l:"Análises publicadas",
-    stat3n:"340+", stat3l:"Vídeos gravados",
-    stat4n:"RS/SC",stat4l:"Abrangência",
-    yt:"", li:"", ig:"",
-    timeline:[
-      {ano:"2002",titulo:"Graduação em Agronomia — UFSM",empresa:"Universidade Federal de Santa Maria",desc:"Ênfase em culturas irrigadas e lavouras orizícolas."},
-      {ano:"2003",titulo:"Analista de Mercado Júnior",empresa:"Cotrijal — Cooperativa Agropecuária e Industrial",desc:"Análise de preços e acompanhamento de safra."},
-      {ano:"2006",titulo:"Gerente de Classificação e Qualidade",empresa:"Camil Alimentos S.A.",desc:"Padronização de grãos para as linhas Premium e Tradicional."},
-      {ano:"2011",titulo:"Consultor de Mercado Sênior",empresa:"Josapar — Joaquim Oliveira S.A. Participações",desc:"Precificação e negociação de grandes lotes no RS e SC."},
-      {ano:"2016",titulo:"Especialista em Comercialização",empresa:"Cooperativa Languiru (Cotril)",desc:"Estratégias de venda e exportação."},
-      {ano:"2019",titulo:"Toledo Agro Consultoria",empresa:"Consultoria própria — São Gabriel, RS",desc:"Atendimento a beneficiadoras, cooperativas e investidores."},
-      {ano:"2025",titulo:"Lançamento da plataforma ArrozMarket",empresa:"Hub digital — São Gabriel, RS",desc:"Análises, cotações em tempo real e acervo de vídeos."}
-    ]
-  };
+/* Dados padrão do especialista */
+const ESP_DEFAULT = {
+  iniciais:"FT", nome:"Fábio Toledo", cargo:"Especialista em Mercado Orizícola",
+  local:"São Gabriel — RS",
+  frase:'O arroz gaúcho não é apenas um grão — é identidade, tecnologia e mercado.',
+  p1:"Natural de São Gabriel (RS), Fábio Toledo construiu sua trajetória inteiramente dentro do setor orizícola.",
+  p2:"Acumula mais de duas décadas de experiência em análise de preços, classificação de grãos e consultoria para cooperativas, beneficiadoras e tradings do Sul do Brasil.",
+  stat1n:"22", stat1l:"Anos de mercado", stat2n:"850+", stat2l:"Análises publicadas",
+  stat3n:"340+", stat3l:"Vídeos gravados", stat4n:"RS/SC", stat4l:"Abrangência",
+  yt:"", li:"", ig:"",
+  timeline:[
+    {ano:"2002",titulo:"Graduação em Agronomia — UFSM",empresa:"Universidade Federal de Santa Maria",desc:"Ênfase em culturas irrigadas e lavouras orizícolas."},
+    {ano:"2003",titulo:"Analista de Mercado Júnior",empresa:"Cotrijal",desc:"Análise de preços e acompanhamento de safra."},
+    {ano:"2006",titulo:"Gerente de Classificação e Qualidade",empresa:"Camil Alimentos S.A.",desc:"Padronização de grãos para as linhas Premium e Tradicional."},
+    {ano:"2011",titulo:"Consultor de Mercado Sênior",empresa:"Josapar S.A.",desc:"Precificação e negociação de grandes lotes no RS e SC."},
+    {ano:"2016",titulo:"Especialista em Comercialização",empresa:"Cooperativa Languiru",desc:"Estratégias de venda e exportação."},
+    {ano:"2019",titulo:"Toledo Agro Consultoria",empresa:"Consultoria própria — São Gabriel, RS",desc:"Atendimento a beneficiadoras, cooperativas e investidores."},
+    {ano:"2025",titulo:"Lançamento da plataforma ArrozMarket",empresa:"Hub digital — São Gabriel, RS",desc:"Análises, cotações em tempo real e acervo de vídeos."}
+  ]
+};
+
+function getEsp() { return S._esp || ESP_DEFAULT; }
+
+async function carregarEspecialista() {
   try {
-    const raw = localStorage.getItem('am_esp');
-    if (!raw) return DEF;
-    const saved = JSON.parse(raw);
-    if (!saved || typeof saved !== 'object') return DEF;
-    // Merge: usa valor salvo se existir e não for undefined/null/""
-    // para campos de texto simples; para timeline usa o salvo se tiver itens
-    const merged = {};
-    for (const k of Object.keys(DEF)) {
+    const data = await apiFetch('GET', '/especialista');
+    const merged = { ...ESP_DEFAULT };
+    for (const k of Object.keys(data)) {
       if (k === 'timeline') {
-        merged.timeline = (saved.timeline && saved.timeline.length > 0)
-          ? saved.timeline : DEF.timeline;
-      } else {
-        merged[k] = (saved[k] !== undefined && saved[k] !== null && saved[k] !== '')
-          ? saved[k] : DEF[k];
+        merged.timeline = (data.timeline && data.timeline.length > 0) ? data.timeline : ESP_DEFAULT.timeline;
+      } else if (data[k] !== undefined && data[k] !== null && data[k] !== '') {
+        merged[k] = data[k];
       }
     }
-    return merged;
-  } catch(e) { return DEF; }
+    S._esp = merged;
+  } catch(e) {
+    try { const raw = localStorage.getItem('am_esp'); if(raw) S._esp={...ESP_DEFAULT,...JSON.parse(raw)}; } catch(_){}
+  }
+  renderEspecialista();
 }
+
 function renderEspecialista() {
   const e = getEsp();
   const tl = (e.timeline || []).map(t =>

@@ -2617,7 +2617,12 @@ function criarModeloSheet(e){
 
 /* ═══ ESPECIALISTA ═══ */
 function getEspData(){
-  try { return JSON.parse(localStorage.getItem('am_esp')||'{}'); } catch(e){ return {}; }
+  // Carrega do servidor (global) com fallback localStorage
+  try {
+    const r = await apiAdm('GET', '/especialista');
+    if (r && typeof r === 'object') { S._espAdmin = r; return r; }
+  } catch(e) {}
+  try { const r = JSON.parse(localStorage.getItem('am_esp')||'{}'); S._espAdmin=r; return r; } catch(e){ return {}; }
 }
 function carregarEspForm(){
   const e = getEspData();
@@ -2662,32 +2667,38 @@ function addItemTimeline(){
   renderTimelineForm(_tlData);
 }
 function remItemTimeline(i){ _tlData.splice(i,1); renderTimelineForm(_tlData); }
-function salvarEspecialista(){
-  // Helper: lê campo com fallback para valor atual salvo
-  const existing = JSON.parse(localStorage.getItem('am_esp') || '{}');
+async function salvarEspecialista(){
+  const existing = S._espAdmin || {};
   const g = (id, fallback) => {
     const el = document.getElementById(id);
-    return (el && el.value !== undefined) ? el.value : (existing[fallback] || '');
+    return (el && el.value !== undefined && el.value !== '') ? el.value : (existing[fallback] || '');
   };
   const esp = {
     iniciais: g('esp-iniciais','iniciais') || 'FT',
     nome:     g('esp-nome','nome')         || 'Fábio Toledo',
     cargo:    g('esp-cargo','cargo')       || 'Especialista em Mercado Orizícola',
     local:    g('esp-local','local')       || 'São Gabriel — RS',
-    frase:    g('esp-frase','frase')       || '"O arroz gaúcho não é apenas um grão — é identidade, tecnologia e mercado."',
-    p1:       g('esp-p1','p1')             || existing.p1 || '',
-    p2:       g('esp-p2','p2')             || existing.p2 || '',
+    frase:    g('esp-frase','frase')       || '',
+    p1:       g('esp-p1','p1')             || '',
+    p2:       g('esp-p2','p2')             || '',
     stat1n:   g('esp-s1n','stat1n') || '22',    stat1l: g('esp-s1l','stat1l') || 'Anos de mercado',
     stat2n:   g('esp-s2n','stat2n') || '850+',  stat2l: g('esp-s2l','stat2l') || 'Análises publicadas',
     stat3n:   g('esp-s3n','stat3n') || '340+',  stat3l: g('esp-s3l','stat3l') || 'Vídeos gravados',
     stat4n:   g('esp-s4n','stat4n') || 'RS/SC', stat4l: g('esp-s4l','stat4l') || 'Abrangência',
-    yt: g('esp-yt','yt') || '',
-    li: g('esp-li','li') || '',
-    ig: g('esp-ig','ig') || '',
+    yt: g('esp-yt','yt') || '', li: g('esp-li','li') || '', ig: g('esp-ig','ig') || '',
     timeline: (_tlData && _tlData.length > 0) ? _tlData : (existing.timeline || []),
   };
-  localStorage.setItem('am_esp', JSON.stringify(esp));
-  toast('✅ Página Especialista atualizada! Recarregue o site para ver.','sucesso');
+  try {
+    await apiAdm('PUT', '/admin/especialista', esp);
+    S._espAdmin = esp;
+    // Retrocompatibilidade — salva também no localStorage
+    localStorage.setItem('am_esp', JSON.stringify(esp));
+    toast('✅ Especialista atualizado globalmente!', 'sucesso');
+  } catch(e) {
+    // Fallback: salva só no localStorage
+    localStorage.setItem('am_esp', JSON.stringify(esp));
+    toast('⚠️ Salvo localmente — verifique conexão com servidor.', 'ouro');
+  }
 }
 
 /* ═══ THUMBNAILS PADRÃO POR CATEGORIA ═══ */

@@ -47,7 +47,14 @@ const DEFAULT = {
   ],
   curtidas: {},
   comentarios: {},  /* { videoId: [ {id, uid, nome, avatar, texto, ts, aprovado} ] } */
-  config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10 }
+  config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10 },
+  especialista: {
+    nome:'Fábio Toledo', cargo:'Especialista em Mercado Orizícola', local:'São Gabriel — RS',
+    frase:'O arroz gaúcho é o termômetro do agronegócio brasileiro.',
+    p1:'Com mais de 22 anos de experiência no mercado orizícola, Fábio Toledo acompanha de perto cada movimento das cotações, safras e tendências do setor.',
+    p2:'Seu trabalho une análise técnica rigorosa com linguagem acessível, tornando o mercado compreensível para produtores, corretores e consumidores.',
+    anos:'22+', analises:'1.200+', abrangencia:'Nacional', redes:[], timeline:[]
+  }
 };
 
 function lerDB()    { try { if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8')); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
@@ -145,6 +152,12 @@ const db = {
       _db.comentarios[vid] = _db.comentarios[vid].filter(c => c.id !== cid);
     }
     salvarDB(_db);
+  },
+  getEspecialista()     { if(!_db.especialista) _db.especialista={}; return _db.especialista; },
+  updateEspecialista(d) {
+    if(!_db.especialista) _db.especialista={};
+    _db.especialista={..._db.especialista,...d};
+    salvarDB(_db); return _db.especialista;
   },
   getConfig()         { return _db.config; },
   updateConfig(d)     { _db.config={..._db.config,...d}; salvarDB(_db); return _db.config; },
