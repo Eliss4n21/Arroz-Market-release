@@ -153,6 +153,8 @@ const db = {
     }
     salvarDB(_db);
   },
+  getThumbs()           { return _db.thumbs || {}; },
+  updateThumbs(d)       { _db.thumbs={..._db.thumbs||{},...d}; salvarDB(_db); return _db.thumbs; },
   getEspecialista()     { if(!_db.especialista) _db.especialista={}; return _db.especialista; },
   updateEspecialista(d) {
     if(!_db.especialista) _db.especialista={};

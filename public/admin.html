@@ -261,6 +261,9 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
     <div class="login-sub">Painel Administrativo</div>
     <div class="form-grupo"><label>E-mail</label><input type="email" id="loginUser" placeholder="admin@arrozmarket.com.br" autocomplete="username"></div>
     <div class="form-grupo"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+    <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted);cursor:pointer;margin-bottom:.2rem">
+      <input type="checkbox" id="loginLembrar" style="accent-color:var(--gold)"> Lembrar-me neste dispositivo
+    </label>
     <button class="btn-login" id="btnLogin" onclick="fazerLogin()">Entrar no Painel</button>
     <div class="login-erro" id="loginErro" style="display:none"></div>
   </div>
@@ -928,12 +931,27 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
 /* ═══ HELPER API ═══ */
 const API_ADMIN = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
   ? 'http://localhost:3000/api' : '/api';
-let adminToken = localStorage.getItem('am_admin_tok') || null;
+let adminToken = null;
+// Só usa token salvo se "lembrar-me" estava ativo
+const _lembrar = localStorage.getItem('am_admin_lembrar') === '1';
+if (_lembrar) adminToken = localStorage.getItem('am_admin_tok') || null;
 
 async function apiAdm(method, path, body) {
   const h = {'Content-Type':'application/json'};
   if (adminToken) h['Authorization'] = 'Bearer ' + adminToken;
   const r = await fetch(API_ADMIN + path, {method, headers:h, body:body?JSON.stringify(body):undefined});
+  if (r.status === 401) {
+    // Token expirado — limpa e mostra login
+    adminToken = null;
+    localStorage.removeItem('am_admin_tok');
+    localStorage.removeItem('am_admin_lembrar');
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app-wrap').style.opacity = '0';
+    document.getElementById('app-wrap').style.pointerEvents = 'none';
+    const erroEl = document.getElementById('loginErro');
+    if (erroEl) { erroEl.textContent = 'Sessão expirada. Faça login novamente.'; erroEl.style.display = 'block'; }
+    throw new Error('Sessão expirada');
+  }
   const j = await r.json();
   if (!r.ok) throw new Error(j.erro || 'Erro API');
   return j;
@@ -1092,7 +1110,14 @@ async function fazerLogin(){
     }
 
     adminToken = j.token;
-    localStorage.setItem('am_admin_tok', adminToken);
+    const lembrar = document.getElementById('loginLembrar')?.checked;
+    if (lembrar) {
+      localStorage.setItem('am_admin_tok', adminToken);
+      localStorage.setItem('am_admin_lembrar', '1');
+    } else {
+      localStorage.removeItem('am_admin_tok');
+      localStorage.removeItem('am_admin_lembrar');
+    }
 
     document.getElementById('login-screen').style.display = 'none';
     const w = document.getElementById('app-wrap');
@@ -1111,6 +1136,7 @@ function sair(){
   clearInterval(S.timer);
   adminToken = null;
   localStorage.removeItem('am_admin_tok');
+  localStorage.removeItem('am_admin_lembrar');
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app-wrap').style.opacity='0';
   document.getElementById('app-wrap').style.pointerEvents='none';
@@ -2754,8 +2780,14 @@ function limparThumbCat(cat) {
   toast('Thumbnail removido.','ouro');
 }
 
-function salvarThumbsPadrao() {
-  toast('✅ Thumbnails padrão salvos!','sucesso');
+async function salvarThumbsPadrao() {
+  const saved = getThumbsPadrao();
+  try {
+    await apiAdm('PUT', '/admin/thumbs', saved);
+    toast('✅ Thumbnails salvos globalmente!', 'sucesso');
+  } catch(e) {
+    toast('⚠️ Salvo localmente — verifique servidor.', 'ouro');
+  }
 }
 
 /* Retorna thumbnail padrão para uma categoria (usado ao publicar) */

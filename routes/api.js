@@ -220,6 +220,9 @@ router.put('/admin/usuarios/:id/role', autenticar, soAdmin, (req, res) => {
 });
 
 /* ── ESPECIALISTA ── */
+router.get('/thumbs', (_, res) => res.json(db.getThumbs()));
+router.put('/admin/thumbs', autenticar, soAdmin, (req, res) => res.json(db.updateThumbs(req.body)));
+
 router.get('/especialista', (_, res) => res.json(db.getEspecialista()));
 router.put('/admin/especialista', autenticar, soAdmin, (req, res) => {
   res.json(db.updateEspecialista(req.body));

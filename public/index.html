@@ -935,10 +935,11 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
   content: ''; position: absolute;
   left: 0; right: 0; top: 50%; transform: translateY(-50%);
   height: 3px;
-  background: rgba(255,255,255,.22);
+  background: rgba(255,255,255,.15);
   border-radius: 2px;
   transition: height .15s;
   pointer-events: none;
+  border: none; outline: none;
 }
 #dest-waveform-wrap:hover::before { height: 5px; }
 #dest-waveform-canvas { width:100%; height:3px; display:block; position:relative; z-index:1; }
@@ -953,11 +954,11 @@ table.tab tr:hover td { background: rgba(200,168,75,.03); }
 #dest-waveform-wrap::after {
   content:''; position:absolute; top:50%; transform:translate(-50%,-50%);
   left: var(--prog, 0%);
-  width:13px; height:13px; border-radius:50%;
+  width:12px; height:12px; border-radius:50%;
   background: var(--gold); opacity:0;
-  transition: opacity .15s; pointer-events:none;
-  box-shadow: 0 0 8px rgba(200,168,75,.7);
-  z-index:3;
+  transition: opacity .18s; pointer-events:none;
+  box-shadow: 0 0 6px rgba(200,168,75,.6);
+  z-index:3; border: none; outline: none;
 }
 #dest-waveform-wrap:hover::after,
 #dest-waveform-wrap.dragging::after { opacity:1; }
@@ -1912,7 +1913,7 @@ const POLS = {
 /* ═══ ESTADO ÚNICO ═══ */
 const S = {
   usuario:  JSON.parse(localStorage.getItem('am_u')   || 'null'),
-  token:    localStorage.getItem('am_tok') || null,
+  token:    localStorage.getItem('am_tok') || sessionStorage.getItem('am_tok') || null,
   tema:     localStorage.getItem('am_tema') || 'escuro',
   cor:      localStorage.getItem('am_cor')  || '#C8A84B',
   G:        {},          /* gráficos Chart.js */
@@ -2375,6 +2376,7 @@ const I18N = {
     auth_email:'E-mail', auth_senha:'Senha', auth_nome:'Nome completo',
     auth_senha_min:'Senha (mín. 6 caracteres)',
     auth_placeholder_nome:'Seu nome', auth_placeholder_email:'seu@email.com',
+    auth_lembrar:'Lembrar-me',
     auth_btn_entrar:'Entrar', auth_btn_criar:'Criar conta',
     auth_sem_conta:'Não tem conta?', auth_criar_now:'Criar agora',
     auth_ja_tem:'Já tem conta?', auth_entrar_now:'Entrar',
@@ -2482,6 +2484,7 @@ const I18N = {
     auth_email:'E-mail', auth_senha:'Password', auth_nome:'Full name',
     auth_senha_min:'Password (min. 6 characters)',
     auth_placeholder_nome:'Your name', auth_placeholder_email:'your@email.com',
+    auth_lembrar:'Remember me',
     auth_btn_entrar:'Sign in', auth_btn_criar:'Create account',
     auth_sem_conta:'No account?', auth_criar_now:'Create now',
     auth_ja_tem:'Already have an account?', auth_entrar_now:'Sign in',
@@ -2589,6 +2592,7 @@ const I18N = {
     auth_email:'E-mail', auth_senha:'Mot de passe', auth_nome:'Nom complet',
     auth_senha_min:'Mot de passe (min. 6 caractères)',
     auth_placeholder_nome:'Votre nom', auth_placeholder_email:'votre@email.com',
+    auth_lembrar:'Se souvenir de moi',
     auth_btn_entrar:'Se connecter', auth_btn_criar:'Créer un compte',
     auth_sem_conta:'Pas de compte ?', auth_criar_now:'Créer maintenant',
     auth_ja_tem:'Déjà un compte ?', auth_entrar_now:'Se connecter',
@@ -2696,6 +2700,7 @@ const I18N = {
     auth_email:'Correo electrónico', auth_senha:'Contraseña', auth_nome:'Nombre completo',
     auth_senha_min:'Contraseña (mín. 6 caracteres)',
     auth_placeholder_nome:'Tu nombre', auth_placeholder_email:'tu@correo.com',
+    auth_lembrar:'Recordarme',
     auth_btn_entrar:'Iniciar sesión', auth_btn_criar:'Crear cuenta',
     auth_sem_conta:'¿No tienes cuenta?', auth_criar_now:'Crear ahora',
     auth_ja_tem:'¿Ya tienes cuenta?', auth_entrar_now:'Iniciar sesión',
@@ -3022,7 +3027,12 @@ function renderTabCot() {
 /* ═══ VÍDEOS ═══ */
 /* Lê thumbnails padrão salvos pelo admin */
 function getThumbsPadraoPublico() {
-  try { return JSON.parse(localStorage.getItem('am_thumbs_padrao') || '{}'); } catch(e) { return {}; }
+  return S._thumbs || {};
+}
+async function carregarThumbsPadrao() {
+  try { S._thumbs = await apiFetch('GET', '/thumbs'); } catch(e) {
+    try { S._thumbs = JSON.parse(localStorage.getItem('am_thumbs_padrao')||'{}'); } catch(_) {}
+  }
 }
 function getThumbPadraoPublico(cat) {
   const saved = getThumbsPadraoPublico();
@@ -4269,7 +4279,8 @@ function htmlReg() {
 async function doLogin() {
   try {
     const r = await apiFetch('POST', '/auth/login', { email: el('fE')?.value, senha: el('fS')?.value });
-    salvarSessao(r); fModal('mAuth'); toast(t('toast_bem_vindo') + ' ' + r.usuario.nome + '!', 'ok');
+    const _lem = document.getElementById('fLembrar')?.checked;
+    salvarSessao(r, _lem); fModal('mAuth'); toast(t('toast_bem_vindo') + ' ' + r.usuario.nome + '!', 'ok');
   } catch (err) { mostrarErro(err.message); }
 }
 async function doReg() {
@@ -4279,15 +4290,22 @@ async function doReg() {
   } catch (err) { mostrarErro(err.message); }
 }
 function mostrarErro(msg) { const e = el('authErr'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
-function salvarSessao(r) {
+function salvarSessao(r, lembrar) {
   S.usuario = r.usuario; S.token = r.token;
-  localStorage.setItem('am_u',   JSON.stringify(r.usuario));
-  localStorage.setItem('am_tok', r.token);
+  if (lembrar !== false) {
+    localStorage.setItem('am_u', JSON.stringify(r.usuario));
+    localStorage.setItem('am_tok', r.token);
+    localStorage.setItem('am_lembrar','1');
+  } else {
+    sessionStorage.setItem('am_u', JSON.stringify(r.usuario));
+    sessionStorage.setItem('am_tok', r.token);
+    localStorage.removeItem('am_tok'); localStorage.removeItem('am_u'); localStorage.removeItem('am_lembrar');
+  }
   renderAvatar(); renderMenu(); renderAudios();
 }
 function sair() {
   S.usuario = null; S.token = null;
-  localStorage.removeItem('am_u'); localStorage.removeItem('am_tok');
+  ['am_u','am_tok','am_lembrar'].forEach(k=>{ localStorage.removeItem(k); sessionStorage.removeItem(k); });
   renderAvatar(); renderMenu(); renderAudios(); fecharMenu();
   toast(t('toast_sessao_enc'), '');
 }
