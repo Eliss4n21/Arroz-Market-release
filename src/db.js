@@ -62,6 +62,10 @@ function salvarDB(d){ try { fs.writeFileSync(DB_PATH, JSON.stringify(d,null,2));
 
 let _db = lerDB();
 if (!_db.usuarios?.length) { _db = JSON.parse(JSON.stringify(DEFAULT)); salvarDB(_db); }
+// Migração: adiciona campos novos sem apagar dados existentes
+if (!_db.especialista) { _db.especialista = DEFAULT.especialista; salvarDB(_db); }
+if (!_db.comentarios)  { _db.comentarios  = {}; salvarDB(_db); }
+if (!_db.thumbs)       { _db.thumbs       = {}; salvarDB(_db); }
 
 const db = {
   get()  { return _db; },
