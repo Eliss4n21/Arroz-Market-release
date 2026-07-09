@@ -70,6 +70,20 @@ router.post('/auth/login', async (req, res) => {
 
 /* ═══ AUTENTICADAS ═══════════════════════════════════════════════════ */
 
+// Salvar duração real de um episódio (obtida pelo browser após carregar o áudio)
+router.put('/me/dur/:id', autenticar, (req, res) => {
+  const id  = parseInt(req.params.id);
+  const dur = (req.body.dur || '').trim();
+  // Validar formato mm:ss ou h:mm:ss
+  if (!dur || !/^\d+:\d{2}$/.test(dur)) return res.json({ ok: false });
+  const v = db.getAllVideos().find(x => x.id === id);
+  if (!v) return res.json({ ok: false });
+  // Só atualiza se dur atual é inválido
+  const invalido = !v.dur || v.dur === '00:00' || v.dur === 'Infinity:NaN' || v.dur === '--:--';
+  if (invalido) db.updateVideo(id, { dur });
+  res.json({ ok: true, dur: invalido ? dur : v.dur });
+});
+
 router.get('/me', autenticar, (req, res) => {
   const { senha, ...sem } = req.user; res.json(sem);
 });

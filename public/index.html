@@ -32,6 +32,8 @@
 <!-- ═══ PWA ═══ -->
 <meta name="theme-color" content="#C8A84B">
 <meta name="mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ArrozMarket">
 <link rel="manifest" href="/manifest.json">
@@ -1725,7 +1727,7 @@ footer strong { color: var(--gold); }
     <!-- Lista -->
     <div id="dest-com-lista" style="padding:.5rem 1.2rem 1rem;display:flex;flex-direction:column;gap:.6rem"></div>
     <div id="dest-com-vazio" style="display:none;text-align:center;padding:1rem;color:var(--muted);font-size:.8rem" data-i18n="com_vazio">Seja o primeiro a comentar!</div>
-    <div id="dest-com-loading" style="text-align:center;padding:.8rem;color:var(--muted);font-size:.78rem" data-i18n="com_loading">Carregando comentários...</div>
+    <div id="dest-com-loading" style="display:none;text-align:center;padding:.8rem;color:var(--muted);font-size:.78rem" data-i18n="com_loading">Carregando comentários...</div>
   </div>
 
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;margin-bottom:.75rem">
@@ -3183,11 +3185,14 @@ function renderDestaque() {
       const durStr = amFmt(tmp.duration);
       if (dEl) dEl.textContent = durStr;
       if (destTimeEl) destTimeEl.textContent = '0:00 / ' + durStr;
-      // Persiste no objeto para próximos renders
       S.vidDest.dur = durStr;
       const idx = S.vids.findIndex(v => v.id === dest.id);
       if (idx >= 0) S.vids[idx].dur = durStr;
-      tmp.src = ''; // libera memória
+      // Persiste a duração real no servidor para não precisar recalcular
+      if (S.token) {
+        apiFetch('PUT', '/me/dur/' + dest.id, { dur: durStr }).catch(() => {});
+      }
+      tmp.src = '';
     };
     tmp.onerror = () => { tmp.src = ''; };
   }
@@ -4128,11 +4133,16 @@ async function carregarComDestaque(vid) {
   if (vazioEl) vazioEl.style.display = 'none';
   try {
     const lista = await apiFetch('GET', `/audios/${parseInt(vid)}/comentarios`);
-    if (loadEl) loadEl.style.display = 'none';
-    if (countEl) countEl.textContent = lista.length > 0 ? `${lista.length}` : '';
-    if (!lista.length) { if (vazioEl) vazioEl.style.display = 'block'; return; }
-    // Render vetorial
-    const uid = S.usuario?.id || 0;
+    // Oculta loading em TODOS os caminhos
+    if (loadEl)  loadEl.style.display  = 'none';
+    if (countEl) countEl.textContent   = lista.length > 0 ? String(lista.length) : '';
+    if (!lista || !lista.length) {
+      if (vazioEl) vazioEl.style.display = 'block';
+      return;
+    }
+    if (vazioEl) vazioEl.style.display = 'none';
+    // Render vetorial — O(n) sem concatenação
+    const uid  = S.usuario?.id || 0;
     const rows = new Array(lista.length);
     for (let i = 0; i < lista.length; i++) {
       const co = lista[i];
@@ -4162,7 +4172,8 @@ async function carregarComDestaque(vid) {
     }
     if (listaEl) listaEl.innerHTML = rows.join('');
   } catch(e) {
-    if (loadEl) { loadEl.style.display = 'block'; loadEl.textContent = '—'; }
+    if (loadEl) { loadEl.style.display = 'none'; }
+    if (vazioEl) { vazioEl.style.display = 'block'; vazioEl.textContent = ''; }
   }
 }
 

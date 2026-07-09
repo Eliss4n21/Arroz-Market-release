@@ -61,7 +61,7 @@ app.use(express.json({ limit:'50mb' }));
 app.use(express.urlencoded({ extended:true }));
 
 /* ── Estáticos ── */
-app.use(express.static(path.join(__dirname,'../public'), { maxAge:'1d', etag:true }));
+app.use(express.static(path.join(__dirname,'../public'), { maxAge:'0', etag:false }));
 
 /* ── API com rate limiting ── */
 app.use('/api', apiLimiter);
