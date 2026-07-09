@@ -3284,11 +3284,11 @@ function destRaf() {
   DEST.rafId = requestAnimationFrame(() => {
     if (!DEST.playing) return;
     const audio = document.getElementById('dest-audio-el');
-    const dur = audio.duration || 1;
-    const cur = audio.currentTime;
-    const pct = cur / dur;
-    // Atualiza tempo
-    document.getElementById('dest-time').textContent = amFmt(cur) + ' / ' + amFmt(dur);
+    const dur = isFinite(audio.duration) && audio.duration > 0 ? audio.duration : 0;
+    const cur = audio.currentTime || 0;
+    const pct = dur > 0 ? cur / dur : 0;
+    // Atualiza tempo só se duração válida
+    if (dur > 0) document.getElementById('dest-time').textContent = amFmt(cur) + ' / ' + amFmt(dur);
     // Atualiza barra de progresso e waveform
     destDrawStaticWave();
     // Anima barras de pulso sonoro no fundo conforme áudio
@@ -3511,7 +3511,6 @@ function destInitEvents() {
   };
   // Fix barra de progresso: atualizar também em timeupdate (mais confiável que só RAF)
   audio.ontimeupdate = () => {
-    if (!DEST.playing) return;
     const dur = audio.duration;
     if (!isFinite(dur) || dur <= 0) return;
     const pct = (audio.currentTime / dur * 100).toFixed(2) + '%';
@@ -3521,6 +3520,11 @@ function destInitEvents() {
     if (fill) fill.style.width = pct;
     if (line) line.style.left  = pct;
     if (wrap) wrap.style.setProperty('--prog', pct);
+    // Atualiza duração no stat se ainda indefinida
+    const dEl = document.getElementById('durDest');
+    if (dEl && (dEl.textContent === '--:--' || dEl.textContent === '')) {
+      dEl.textContent = amFmt(dur);
+    }
     document.getElementById('dest-time').textContent =
       amFmt(audio.currentTime) + ' / ' + amFmt(dur);
   };
@@ -3838,6 +3842,7 @@ function amSpeed(v) {
 }
 
 function abrirAudio(v) {
+  v = { ...v, id: parseInt(v.id) };
   S.mAudAtual = v;
   document.getElementById('modalTitulo').textContent = vidTitulo(v);
   const cat = v.cat || 'Podcast Diário';
@@ -3932,7 +3937,7 @@ function abrirAudio(v) {
   document.body.style.overflow = 'hidden';
 
   // Carrega comentários do episódio
-  carregarComentarios(v.id);
+  carregarComentarios(parseInt(v.id));
 
   // Atualiza avatar mini no form de comentário
   const avatarMini = document.getElementById('com-avatar-mini');
@@ -4187,7 +4192,7 @@ async function likeComentario(cid, ridOrBtn, btnOrUndef) {
 
 async function enviarComentario() {
   if (!S.usuario) { abrirAuth('login'); return; }
-  const vid      = S.mAudAtual?.id;
+  const vid      = parseInt(S.mAudAtual?.id);
   const textarea = document.getElementById('com-texto');
   const texto    = textarea?.value.trim();
   if (!texto || texto.length < 2) return;
@@ -4263,9 +4268,9 @@ function abrirAuth(modo) {
 function htmlLogin() {
   return `<div class="form-g"><label>${t('auth_email')}</label><input type="email" id="fE" placeholder="${t('auth_placeholder_email')}"></div>
           <div class="form-g"><label>${t('auth_senha')}</label><input type="password" id="fS" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-          <div style="display:flex;align-items:center;gap:.45rem;margin:.2rem 0 .6rem">
-            <input type="checkbox" id="fLembrar" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;flex-shrink:0">
-            <span style="font-size:.78rem;color:var(--muted);cursor:pointer" onclick="document.getElementById('fLembrar').click()">${t('auth_lembrar')}</span>
+          <div style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0 .7rem;padding:0">
+            <input type="checkbox" id="fLembrar" style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer;flex-shrink:0;margin:0">
+            <span style="font-size:.78rem;color:var(--muted);cursor:pointer;line-height:1;user-select:none" onclick="document.getElementById('fLembrar').click()">${t('auth_lembrar')}</span>
           </div>
           <div class="form-erro" id="authErr"></div>
           <button class="btn-prim" onclick="doLogin()">${t('auth_btn_entrar')}</button>
@@ -4517,7 +4522,7 @@ function getEsp() { return S._esp || ESP_DEFAULT; }
 
 async function carregarEspecialista() {
   try {
-    const data = await apiFetch('GET', '/especialista');
+    const data = await apiFetch('GET', '/especialista?t=' + Date.now());
     const merged = { ...ESP_DEFAULT };
     for (const k of Object.keys(data)) {
       if (k === 'timeline') {
