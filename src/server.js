@@ -74,7 +74,12 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static(path.join(__dirname,'../public'), { maxAge:'1h', etag:true, index:false }));
+app.use(express.static(path.join(__dirname,'../public'), {
+  maxAge:'1h', etag:true, index:false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.wasm')) res.setHeader('Content-Type', 'application/wasm');
+  },
+}));
 
 /* ── API com rate limiting ── */
 app.use('/api', apiLimiter);

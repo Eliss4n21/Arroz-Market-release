@@ -368,10 +368,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
         <div class="painel-titulo">Gravar & Publicar Episódio</div>
         <div class="painel-sub">Grave seu áudio diretamente no navegador, edite os cortes e publique na página principal.</div>
 
-        <!-- ESTÚDIO DE GRAVAÇÃO -->
-        <div class="card" style="margin-bottom:1.2rem">
-          <div class="card-cab">
-            <div class="card-titulo">🎙️ Estúdio de Gravação</div>
+        <!-- ESTÚDIO DE GRAVAÇÃO — estilo mesa de mixagem -->
+        <div class="card" style="margin-bottom:1.2rem;border:1px solid rgba(200,168,75,.3);background:linear-gradient(180deg,#17160F,#100F0A)">
+          <div class="card-cab" style="border-bottom:1px solid rgba(200,168,75,.2)">
+            <div class="card-titulo">🎚️ Estúdio de Gravação</div>
             <div style="display:flex;align-items:center;gap:.6rem">
               <!-- Upload externo -->
               <label style="display:flex;align-items:center;gap:.4rem;padding:.3rem .8rem;background:var(--dark3);border:1px solid rgba(200,168,75,.22);color:var(--gold);border-radius:var(--r);cursor:pointer;font-size:.75rem;transition:all .2s" onmouseover="this.style.background='var(--gold-dim)'" onmouseout="this.style.background='var(--dark3)'">
@@ -383,30 +383,40 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             </div>
           </div>
           <div class="card-corpo">
-            <!-- Visualizador de onda -->
-            <div style="position:relative;background:#0a0a08;border:1px solid rgba(200,168,75,.12);border-radius:var(--r);height:90px;margin-bottom:1rem;overflow:hidden">
-              <canvas id="rec-canvas" style="width:100%;height:100%;display:block"></canvas>
-              <div id="rec-timer" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold);opacity:.85;pointer-events:none;letter-spacing:.04em">0:00</div>
-              <div id="rec-idle-msg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:var(--muted)">Pressione <strong style="color:var(--gold);margin:0 .35rem">Gravar</strong> para iniciar</div>
+            <!-- Painel monitor: waveform (osciloscópio) + medidor VU -->
+            <div style="display:flex;gap:.6rem;margin-bottom:1rem">
+              <div style="flex:1;position:relative;background:#050403;border:1px solid rgba(200,168,75,.22);border-radius:4px;height:96px;overflow:hidden;box-shadow:inset 0 3px 10px rgba(0,0,0,.6)">
+                <canvas id="rec-canvas" style="width:100%;height:100%;display:block"></canvas>
+                <div id="rec-timer" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold);opacity:.85;pointer-events:none;letter-spacing:.04em;text-shadow:0 0 12px rgba(200,168,75,.4)">0:00</div>
+                <div id="rec-idle-msg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:var(--muted)">Pressione <strong style="color:var(--gold);margin:0 .35rem">Gravar</strong> para iniciar</div>
+              </div>
+              <div style="width:46px;flex-shrink:0;background:#050403;border:1px solid rgba(200,168,75,.22);border-radius:4px;padding:.45rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;box-shadow:inset 0 3px 10px rgba(0,0,0,.6)">
+                <span style="font-size:.52rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">VU</span>
+                <canvas id="rec-vu-canvas" width="16" height="62" style="border-radius:2px"></canvas>
+                <span id="rec-vu-label" style="font-size:.5rem;color:var(--muted);letter-spacing:.03em">-∞</span>
+              </div>
             </div>
 
-            <!-- Controles de gravação -->
-            <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem">
-              <button id="btn-rec" onclick="recToggle()" style="display:flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem;background:rgba(192,74,74,.18);border:1px solid rgba(192,74,74,.45);color:#E07070;border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;transition:all .2s">
-                <span id="rec-dot" style="width:9px;height:9px;border-radius:50%;background:#E07070;display:block"></span> Gravar
-              </button>
-              <button id="btn-rec-pause" onclick="recPauseToggle()" style="display:none;align-items:center;gap:.5rem;padding:.55rem 1rem;background:var(--amber-dim);border:1px solid rgba(200,150,72,.4);color:var(--amber);border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:all .2s">⏸ Pausar</button>
-              <button id="btn-rec-stop" onclick="recStop()" style="display:none;align-items:center;gap:.5rem;padding:.55rem 1rem;background:var(--dark3);border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:all .2s">⏹ Parar</button>
-              <div style="flex:1"></div>
-              <label style="font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.5rem">
-                🎚 Volume mic:
-                <input type="range" id="rec-gain" min="0" max="3" step="0.1" value="1" oninput="setRecGain(this.value)" style="accent-color:var(--gold);width:90px">
-                <span id="rec-gain-val">1.0×</span>
-              </label>
-              <label style="font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;cursor:pointer" title="Cancela eco, suprime ruído de fundo, corta ronco e chiado, e uniformiza a voz">
-                <input type="checkbox" id="rec-antiruido" checked style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer">
-                🔇 Anti-ruído
-              </label>
+            <!-- Controles agrupados em seções tipo mesa de mixagem -->
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem">
+              <div style="display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;background:rgba(0,0,0,.28);border:1px solid rgba(200,168,75,.14);border-radius:4px">
+                <button id="btn-rec" onclick="recToggle()" style="display:flex;align-items:center;gap:.5rem;padding:.5rem 1.1rem;background:rgba(192,74,74,.18);border:1px solid rgba(192,74,74,.45);color:#E07070;border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;transition:all .2s">
+                  <span id="rec-dot" style="width:9px;height:9px;border-radius:50%;background:#E07070;display:block"></span> Gravar
+                </button>
+                <button id="btn-rec-pause" onclick="recPauseToggle()" style="display:none;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--amber-dim);border:1px solid rgba(200,150,72,.4);color:var(--amber);border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:all .2s">⏸ Pausar</button>
+                <button id="btn-rec-stop" onclick="recStop()" style="display:none;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--dark3);border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:var(--r);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;transition:all .2s">⏹ Parar</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:1rem;padding:.5rem .8rem;background:rgba(0,0,0,.28);border:1px solid rgba(200,168,75,.14);border-radius:4px;flex:1;flex-wrap:wrap">
+                <label style="font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.5rem">
+                  🎚 Volume mic:
+                  <input type="range" id="rec-gain" min="0" max="3" step="0.1" value="1" oninput="setRecGain(this.value)" style="accent-color:var(--gold);width:90px">
+                  <span id="rec-gain-val">1.0×</span>
+                </label>
+                <label style="font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;cursor:pointer" title="RNNoise (rede neural) + filtros — remove ruído de fundo mesmo durante a fala">
+                  <input type="checkbox" id="rec-antiruido" checked style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer">
+                  🔇 Anti-ruído
+                </label>
+              </div>
             </div>
 
             <!-- Player customizado do áudio gravado (sem barra azul completa) -->
@@ -1596,48 +1606,47 @@ async function recToggle() {
   } catch(e) {
     toast('Microfone não autorizado ou indisponível.', 'erro'); return;
   }
-  // Web Audio API para visualização, ganho e filtragem
-  REC.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Web Audio API para visualização, ganho e filtragem — 48kHz exigido pelo RNNoise
+  REC.audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
   const src = REC.audioCtx.createMediaStreamSource(REC.stream);
   REC.gainNode = REC.audioCtx.createGain();
   REC.gainNode.gain.value = parseFloat(document.getElementById('rec-gain').value);
   REC.analyser = REC.audioCtx.createAnalyser();
   REC.analyser.fftSize = 256;
 
-  // ── Cadeia anti-ruído por filtros ──
+  // ── Cadeia anti-ruído: filtros + RNNoise (rede neural real) ──
   let cadeia = src;
   if (antiRuido) {
     // Highpass 85Hz — corta ronco/rumble de mesa e ar-condicionado
     const hp = REC.audioCtx.createBiquadFilter();
     hp.type = 'highpass'; hp.frequency.value = 85; hp.Q.value = 0.7;
-    // Lowpass 12kHz — corta chiado agudo (hiss)
+    // Lowpass 12kHz — corta chiado agudo fora da faixa de voz
     const lp = REC.audioCtx.createBiquadFilter();
     lp.type = 'lowpass'; lp.frequency.value = 12000; lp.Q.value = 0.7;
     // Compressor suave — uniformiza a voz e reduz picos
     const comp = REC.audioCtx.createDynamicsCompressor();
     comp.threshold.value = -24; comp.knee.value = 30; comp.ratio.value = 3;
     comp.attack.value = 0.003; comp.release.value = 0.25;
-    // Noise gate — silencia ruído de fundo constante (ventilador, zumbido,
-    // trânsito) nos momentos de pausa da fala. Não corta 100% para evitar
-    // artefato de "buraco" no áudio — reduz para ~12% do volume original.
-    const gate = REC.audioCtx.createScriptProcessor(2048, 1, 1);
-    let envelope = 0;
-    const limiar  = 0.014;  // amplitude RMS abaixo disso é considerado ruído
-    const ataque  = 0.35;   // abre rápido quando a fala começa
-    const alivio  = 0.94;   // fecha suavemente quando a fala para
-    gate.onaudioprocess = (ev) => {
-      const inp = ev.inputBuffer.getChannelData(0);
-      const out = ev.outputBuffer.getChannelData(0);
-      for (let i = 0; i < inp.length; i++) {
-        const nivel = Math.abs(inp[i]);
-        envelope = nivel > envelope ? (envelope*ataque + nivel*(1-ataque)) : (envelope*alivio + nivel*(1-alivio));
-        const g = envelope > limiar ? 1 : Math.max(0, envelope/limiar) * 0.12;
-        out[i] = inp[i] * g;
-      }
-    };
-    src.connect(hp); hp.connect(lp); lp.connect(comp); comp.connect(gate);
-    cadeia = gate;
-    REC._filtros = { hp, lp, comp, gate };
+
+    src.connect(hp); hp.connect(lp);
+    let saida = lp;
+    try {
+      // RNNoise: supressão espectral real (rede neural), remove ruído
+      // de fundo constante MESMO durante a fala — filtros sozinhos só
+      // ajudam nas pausas. Mesma tecnologia usada em Discord/Krisp.
+      const { RnnoiseWorkletNode, loadRnnoise } = await import('/nsuppr/index.js');
+      await REC.audioCtx.audioWorklet.addModule('/nsuppr/rnnoise-worklet.js');
+      const wasmBinary = await loadRnnoise({ url: '/nsuppr/rnnoise.wasm', simdUrl: '/nsuppr/rnnoise_simd.wasm' });
+      const rnnoise = new RnnoiseWorkletNode(REC.audioCtx, { maxChannels: 1, wasmBinary });
+      lp.connect(rnnoise);
+      saida = rnnoise;
+      REC._rnnoise = rnnoise;
+    } catch(e) {
+      console.warn('[REC] RNNoise indisponível, usando só filtros:', e.message);
+    }
+    saida.connect(comp);
+    cadeia = comp;
+    REC._filtros = { hp, lp, comp };
   }
   cadeia.connect(REC.gainNode);
   REC.gainNode.connect(REC.analyser);
@@ -1698,8 +1707,9 @@ function recStop() {
   document.getElementById('btn-rec').style.display = 'flex';
   document.getElementById('btn-rec-pause').style.display = 'none';
   document.getElementById('btn-rec-stop').style.display = 'none';
-  // Desconecta o noise gate (ScriptProcessorNode) — evita processamento residual
-  if (REC._filtros?.gate) { try { REC._filtros.gate.onaudioprocess = null; REC._filtros.gate.disconnect(); } catch(e) {} }
+  // Desconecta e destrói o nó RNNoise (libera memória WASM)
+  if (REC._rnnoise) { try { REC._rnnoise.destroy(); REC._rnnoise.disconnect(); } catch(e) {} }
+  REC._rnnoise = null;
   REC._filtros = null;
 }
 
@@ -2223,26 +2233,81 @@ function recDrawWave() {
   ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
   const W = canvas.offsetWidth, H = canvas.offsetHeight;
 
+  // VU meter — canvas separado
+  const vuCanvas = document.getElementById('rec-vu-canvas');
+  const vuCtx    = vuCanvas ? vuCanvas.getContext('2d') : null;
+  const vuLabel  = document.getElementById('rec-vu-label');
+  let vuPeakHold = 0, vuPeakTimer = 0;
+
+  function drawGrade() {
+    // Linhas de grade estilo osciloscópio de estúdio
+    ctx.strokeStyle = 'rgba(200,168,75,.06)';
+    ctx.lineWidth = 1;
+    for (let gy = 0; gy <= 4; gy++) {
+      const y = (H/4) * gy;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+  }
+
   function draw() {
     if (!REC.recording || REC.paused) return;
     REC.canvasRaf = requestAnimationFrame(draw);
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#0a0a08';
+    ctx.fillStyle = '#050403';
     ctx.fillRect(0,0,W,H);
+    drawGrade();
     if (!REC.analyser) return;
     const data = new Uint8Array(REC.analyser.frequencyBinCount);
     REC.analyser.getByteTimeDomainData(data);
-    ctx.strokeStyle = 'rgba(192,74,74,.85)';
+
+    // Waveform com leve brilho dourado (estilo osciloscópio profissional)
+    ctx.shadowBlur = 4; ctx.shadowColor = 'rgba(200,168,75,.5)';
+    ctx.strokeStyle = 'rgba(200,168,75,.9)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     const sliceW = W / data.length;
     let x = 0;
+    let peak = 0;
     for (let i=0; i<data.length; i++) {
+      const norm = (data[i]-128)/128;      // -1..1
+      peak = Math.max(peak, Math.abs(norm));
       const v = data[i]/128, y = v * H/2;
       i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
       x += sliceW;
     }
     ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // ── VU meter: zonas verde/amarelo/vermelho + peak hold ──
+    if (vuCtx) {
+      const vw = vuCanvas.width, vh = vuCanvas.height;
+      vuCtx.clearRect(0,0,vw,vh);
+      vuCtx.fillStyle = '#0a0906';
+      vuCtx.fillRect(0,0,vw,vh);
+      const nivel = Math.min(1, peak * 1.4); // leve realce visual
+      const barH  = nivel * vh;
+      // Gradiente de zona: verde até 65%, amarelo até 88%, vermelho acima
+      const grad = vuCtx.createLinearGradient(0,vh,0,0);
+      grad.addColorStop(0,    '#4A7C59');
+      grad.addColorStop(0.65, '#6BA67A');
+      grad.addColorStop(0.72, '#D4C060');
+      grad.addColorStop(0.88, '#E0A050');
+      grad.addColorStop(1,    '#E07070');
+      vuCtx.fillStyle = grad;
+      vuCtx.fillRect(0, vh-barH, vw, barH);
+      // Peak hold — pequena linha que desce lentamente
+      if (nivel > vuPeakHold) { vuPeakHold = nivel; vuPeakTimer = 18; }
+      else if (vuPeakTimer > 0) { vuPeakTimer--; }
+      else { vuPeakHold = Math.max(0, vuPeakHold - 0.02); }
+      vuCtx.fillStyle = vuPeakHold > 0.88 ? '#E07070' : '#F4EFE6';
+      vuCtx.fillRect(0, vh - vuPeakHold*vh - 1, vw, 2);
+      if (vuLabel) {
+        const db = nivel > 0.01 ? (20*Math.log10(nivel)).toFixed(0) : '-∞';
+        vuLabel.textContent = db;
+        vuLabel.style.color = nivel > 0.88 ? '#E07070' : nivel > 0.65 ? '#D4C060' : 'var(--muted)';
+      }
+    }
   }
   draw();
 }
