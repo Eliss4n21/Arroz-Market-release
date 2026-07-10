@@ -56,7 +56,7 @@ app.use(cors({ origin:ORIGIN, methods:['GET','POST','PUT','DELETE','OPTIONS'],
                allowedHeaders:['Content-Type','Authorization','X-Filename'] }));
 
 /* ── Middlewares gerais ── */
-app.use(compression());
+app.use(compression({ level: 6, threshold: 1024 }));
 app.use(express.json({ limit:'50mb' }));
 app.use(express.urlencoded({ extended:true }));
 
