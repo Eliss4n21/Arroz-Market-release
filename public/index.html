@@ -889,6 +889,8 @@ function notifLocal(titulo, corpo) {
     try { aplicarIdioma(); }    catch(e) {}
     // Restaura a página do hash da URL (refresh mantém especialista/precos/tecnico)
     try { irParaHashInicial(); } catch(e) {}
+    // Atualiza dados da sessão (ex: cargo de admin promovido) sem exigir novo login
+    try { atualizarSessaoUsuario(); } catch(e) {}
   }, 150);
   setInterval(function() {
     try { carregarCotacoes(); } catch(e) {}
@@ -1154,7 +1156,7 @@ const I18N = {
     cfg_senha_atual:'Senha atual', cfg_senha_nova:'Nova senha', cfg_senha_conf:'Confirmar senha',
     cfg_btn_senha:'Atualizar senha', cfg_excluir_conf:'Confirmar exclusão',
     toast_curtiu:'Curtida registrada!', toast_descurtiu:'Curtida removida.',
-    toast_login_cur:'Faça login para curtir.', toast_link_copi:'Link copiado!',
+    toast_login_cur:'Faça login para curtir.', toast_login_ouvir:'Crie uma conta grátis para ouvir os episódios.', toast_link_copi:'Link copiado!',
     toast_sessao_enc:'Sessão encerrada.', toast_compartilhar_nao:'Compartilhamento não suportado neste navegador.',
     toast_bem_vindo:'Bem-vindo,', toast_conta_criada:'Conta criada! Bem-vindo,',
     pag_anterior:'← Anterior', pag_proximo:'Próximo →',
@@ -1262,7 +1264,7 @@ const I18N = {
     cfg_senha_atual:'Current password', cfg_senha_nova:'New password', cfg_senha_conf:'Confirm password',
     cfg_btn_senha:'Update password', cfg_excluir_conf:'Confirm deletion',
     toast_curtiu:'Like added!', toast_descurtiu:'Like removed.',
-    toast_login_cur:'Log in to like episodes.', toast_link_copi:'Link copied!',
+    toast_login_cur:'Log in to like episodes.', toast_login_ouvir:'Create a free account to listen to episodes.', toast_link_copi:'Link copied!',
     toast_sessao_enc:'Signed out.', toast_compartilhar_nao:'Sharing not supported in this browser.',
     toast_bem_vindo:'Welcome,', toast_conta_criada:'Account created! Welcome,',
     pag_anterior:'← Previous', pag_proximo:'Next →',
@@ -1370,7 +1372,7 @@ const I18N = {
     cfg_senha_atual:'Mot de passe actuel', cfg_senha_nova:'Nouveau mot de passe', cfg_senha_conf:'Confirmer',
     cfg_btn_senha:'Mettre à jour', cfg_excluir_conf:'Confirmer la suppression',
     toast_curtiu:"J'aime ajouté !", toast_descurtiu:"J'aime retiré.",
-    toast_login_cur:'Connectez-vous pour aimer.', toast_link_copi:'Lien copié !',
+    toast_login_cur:'Connectez-vous pour aimer.', toast_login_ouvir:'Créez un compte gratuit pour écouter les épisodes.', toast_link_copi:'Lien copié !',
     toast_sessao_enc:'Déconnecté.', toast_compartilhar_nao:'Partage non pris en charge.',
     toast_bem_vindo:'Bienvenue,', toast_conta_criada:'Compte créé ! Bienvenue,',
     pag_anterior:'← Précédent', pag_proximo:'Suivant →',
@@ -1478,7 +1480,7 @@ const I18N = {
     cfg_senha_atual:'Contraseña actual', cfg_senha_nova:'Nueva contraseña', cfg_senha_conf:'Confirmar contraseña',
     cfg_btn_senha:'Actualizar contraseña', cfg_excluir_conf:'Confirmar eliminación',
     toast_curtiu:'¡Me gusta añadido!', toast_descurtiu:'Me gusta eliminado.',
-    toast_login_cur:'Inicia sesión para dar me gusta.', toast_link_copi:'¡Enlace copiado!',
+    toast_login_cur:'Inicia sesión para dar me gusta.', toast_login_ouvir:'Crea una cuenta gratis para escuchar los episodios.', toast_link_copi:'¡Enlace copiado!',
     toast_sessao_enc:'Sesión cerrada.', toast_compartilhar_nao:'Compartir no compatible en este navegador.',
     toast_bem_vindo:'¡Bienvenido,', toast_conta_criada:'¡Cuenta creada! Bienvenido,',
     pag_anterior:'← Anterior', pag_proximo:'Siguiente →',
@@ -2062,6 +2064,7 @@ function destRaf() {
 }
 
 function destToggle() {
+  if (!S.usuario) { toast(t('toast_login_ouvir'), 'err'); abrirAuth('registro'); return; }
   const audio = document.getElementById('dest-audio-el');
   const v = S.vidDest;
 
@@ -2598,6 +2601,7 @@ function amSkip(sec) {
 
 /* Play/Pause */
 function amToggle() {
+  if (!S.usuario) { toast(t('toast_login_ouvir'), 'err'); abrirAuth('registro'); return; }
   const a = amGetAudio();
   if (!a || !AM.audioUrl) return;
   if (AM.playing) { a.pause(); AM.playing = false; document.getElementById('am-ico-play').style.display=''; document.getElementById('am-ico-pause').style.display='none'; document.getElementById('am-eq-bars').classList.remove('ativo'); cancelAnimationFrame(AM.rafId); }
@@ -2647,22 +2651,21 @@ function abrirAudio(v) {
   }
 
   // ── Mini gráfico de escutas (últimos 7 dias, Float32Array) ──
+  // Carregado de forma assíncrona e isolada: se o Chart.js ainda não foi
+  // baixado (usuário não visitou a aba Preços), o áudio NÃO pode ficar
+  // bloqueado esperando — por isso o gráfico roda em callback separado.
   const chartWrap = document.getElementById('modalViewsChart');
   const chartEl   = document.getElementById('canvasViewsModal');
   if (chartWrap && chartEl) {
     chartWrap.style.display = 'block';
-    // Destrói gráfico anterior se existir
     if (S.G._modalViews) { S.G._modalViews.destroy(); S.G._modalViews = null; }
 
-    // Gera histórico semanal vetorial a partir das views totais
     const total = v.views || 0;
     const n     = 7;
     const raw   = new Float32Array(n);
-    // Distribui as views em curva realista (mais pesado nos últimos dias)
     const weights = new Float32Array([0.06, 0.08, 0.10, 0.13, 0.17, 0.21, 0.25]);
     let sumW = 0; for (let i=0;i<n;i++) sumW += weights[i];
     for (let i=0;i<n;i++) raw[i] = Math.round(total * (weights[i]/sumW));
-    // Pequena variação aleatória para parecer real
     for (let i=0;i<n-1;i++) raw[i] = Math.max(0, raw[i] + Math.round((Math.random()-.5) * raw[i] * 0.3));
 
     const dias = Array.from({length:n},(_,i)=>{
@@ -2670,32 +2673,37 @@ function abrirAudio(v) {
       return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
     });
 
-    const claro = document.documentElement.getAttribute('data-tema')==='claro';
-    const tick  = claro ? '#6B6B65' : '#7A7670';
-    const grid  = claro ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.035)';
-
-    S.G._modalViews = new Chart(chartEl.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: dias,
-        datasets: [{
-          data:            Array.from(raw),
-          backgroundColor: 'rgba(200,168,75,.35)',
-          borderColor:     'rgba(200,168,75,.85)',
-          borderWidth:     1,
-          borderRadius:    3,
-        }]
-      },
-      options: {
-        responsive: true,
-        animation:  { duration: 400 },
-        plugins:    { legend:{ display:false }, tooltip:{ callbacks:{ label: c=>' '+c.parsed.y.toLocaleString('pt-BR')+' escutas' } } },
-        scales: {
-          x: { ticks:{ color:tick, font:{size:9,family:'DM Sans'} }, grid:{ color:grid } },
-          y: { ticks:{ color:tick, font:{size:9,family:'DM Sans'}, callback: v=>v>=1000?Math.round(v/100)/10+'k':v }, grid:{ color:grid }, border:{display:false} }
-        }
-      }
-    });
+    try {
+      carregarChartJs(() => {
+        try {
+          const claro = document.documentElement.getAttribute('data-tema')==='claro';
+          const tick  = claro ? '#6B6B65' : '#7A7670';
+          const grid  = claro ? 'rgba(0,0,0,.06)' : 'rgba(255,255,255,.035)';
+          S.G._modalViews = new Chart(chartEl.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: dias,
+              datasets: [{
+                data:            Array.from(raw),
+                backgroundColor: 'rgba(200,168,75,.35)',
+                borderColor:     'rgba(200,168,75,.85)',
+                borderWidth:     1,
+                borderRadius:    3,
+              }]
+            },
+            options: {
+              responsive: true,
+              animation:  { duration: 400 },
+              plugins:    { legend:{ display:false }, tooltip:{ callbacks:{ label: c=>' '+c.parsed.y.toLocaleString('pt-BR')+' escutas' } } },
+              scales: {
+                x: { ticks:{ color:tick, font:{size:9,family:'DM Sans'} }, grid:{ color:grid } },
+                y: { ticks:{ color:tick, font:{size:9,family:'DM Sans'}, callback: v=>v>=1000?Math.round(v/100)/10+'k':v }, grid:{ color:grid }, border:{display:false} }
+              }
+            }
+          });
+        } catch(e) { console.warn('[Modal] Falha ao criar mini-gráfico:', e.message); }
+      });
+    } catch(e) { console.warn('[Modal] Chart.js indisponível:', e.message); }
   }
 
   // ── Rastreia visualização no servidor e actualiza contador local ──
@@ -3227,6 +3235,25 @@ async function doReg() {
   } catch (err) { mostrarErro(err.message); }
 }
 function mostrarErro(msg) { const e = el('authErr'); if (e) { e.textContent = msg; e.style.display = 'block'; } }
+/* Atualiza S.usuario com dados frescos do servidor (ex: cargo de admin
+   promovido depois do login) — sem isso, mudanças de cargo só apareciam
+   depois de sair e entrar de novo na conta. */
+async function atualizarSessaoUsuario() {
+  if (!S.usuario || !S.token) return;
+  try {
+    const fresh = await apiFetch('GET', '/me');
+    const roleAntigo = S.usuario.role;
+    S.usuario = { ...S.usuario, ...fresh };
+    // Persiste no mesmo storage que já estava sendo usado (local ou sessão)
+    if (localStorage.getItem('am_lembrar') === '1') {
+      localStorage.setItem('am_u', JSON.stringify(S.usuario));
+    } else {
+      sessionStorage.setItem('am_u', JSON.stringify(S.usuario));
+    }
+    if (roleAntigo !== S.usuario.role) { renderMenu(); renderAvatar(); }
+  } catch(e) { /* token inválido já é tratado pelo apiFetch */ }
+}
+
 function salvarSessao(r, lembrar) {
   S.usuario = r.usuario; S.token = r.token;
   if (lembrar !== false) {
