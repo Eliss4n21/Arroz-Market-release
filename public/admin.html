@@ -1619,6 +1619,22 @@ async function recInitEditor(blob) {
   const dur = decoded.duration;
   document.getElementById('edit-start').value = '0:00.0';
   document.getElementById('edit-end').value = recFmtD(dur);
+
+  // ── Re-encoda IMEDIATAMENTE para WAV com cabeçalho correto ──
+  // Sem isso, o blob bruto do MediaRecorder (webm/opus) fica com
+  // duração "Infinity" no Chrome até ser totalmente reproduzido —
+  // é a causa raiz do player não mostrar duração/progresso de primeira.
+  // Isso garante que MESMO sem cortes, o áudio publicado já é válido.
+  try {
+    const wavLimpo = audioBufferToWavBlob(decoded);
+    REC.blob = wavLimpo;
+    if (REC.blobUrl) URL.revokeObjectURL(REC.blobUrl);
+    REC.blobUrl = URL.createObjectURL(wavLimpo);
+    const audioEl = document.getElementById('rec-audio-el');
+    if (audioEl) audioEl.src = REC.blobUrl;
+  } catch(e) {
+    console.warn('[REC] Falha ao normalizar WAV — usando blob original:', e.message);
+  }
 }
 
 function editDrawWaveform() {
@@ -1781,6 +1797,48 @@ async function editApplyCut() {
   toast('Corte aplicado! O trecho está marcado em vermelho — clique ↺ para restaurar.','sucesso');
 }
 
+/* ── Converte AudioBuffer → WAV Blob (sem MediaRecorder) ──
+   Função única e global — usada tanto após gravar quanto após cortar,
+   garantindo que TODO áudio publicado tenha cabeçalho WAV válido
+   com duração correta (evita o bug de duração Infinity do Chrome
+   com blobs brutos do MediaRecorder). ── */
+function audioBufferToWavBlob(buffer) {
+  const numCh   = buffer.numberOfChannels;
+  const length  = buffer.length;
+  const sRate   = buffer.sampleRate;
+  const bytesPerSample = 2; // PCM 16-bit
+  const blockAlign = numCh * bytesPerSample;
+  const byteRate   = sRate * blockAlign;
+  const dataSize   = length * blockAlign;
+  const ab = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(ab);
+
+  function writeStr(off, str) { for(let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
+  writeStr(0,  'RIFF');
+  view.setUint32(4,  36 + dataSize, true);
+  writeStr(8,  'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1,  true);   // PCM
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, sRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  let offset2 = 44;
+  for (let i = 0; i < length; i++) {
+    for (let c = 0; c < numCh; c++) {
+      const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
+      view.setInt16(offset2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset2 += 2;
+    }
+  }
+  return new Blob([ab], { type: 'audio/wav' });
+}
+
 async function editRebuildAudio() {
   const buf = EDIT_SEGS.origBuf;
   if (!buf) return;
@@ -1809,45 +1867,6 @@ async function editRebuildAudio() {
 
   const rendered = await actx.startRendering();
   REC.editAudioBuffer = rendered;
-
-  // ── Converte AudioBuffer → WAV Blob (sem MediaRecorder) ──
-  function audioBufferToWavBlob(buffer) {
-    const numCh   = buffer.numberOfChannels;
-    const length  = buffer.length;
-    const sRate   = buffer.sampleRate;
-    const bytesPerSample = 2; // PCM 16-bit
-    const blockAlign = numCh * bytesPerSample;
-    const byteRate   = sRate * blockAlign;
-    const dataSize   = length * blockAlign;
-    const ab = new ArrayBuffer(44 + dataSize);
-    const view = new DataView(ab);
-
-    function writeStr(off, str) { for(let i=0;i<str.length;i++) view.setUint8(off+i, str.charCodeAt(i)); }
-    writeStr(0,  'RIFF');
-    view.setUint32(4,  36 + dataSize, true);
-    writeStr(8,  'WAVE');
-    writeStr(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1,  true);   // PCM
-    view.setUint16(22, numCh, true);
-    view.setUint32(24, sRate, true);
-    view.setUint32(28, byteRate, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, 16, true);
-    writeStr(36, 'data');
-    view.setUint32(40, dataSize, true);
-
-    // Interleave channels
-    let offset2 = 44;
-    for (let i = 0; i < length; i++) {
-      for (let c = 0; c < numCh; c++) {
-        const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
-        view.setInt16(offset2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-        offset2 += 2;
-      }
-    }
-    return new Blob([ab], { type: 'audio/wav' });
-  }
 
   const wavBlob = audioBufferToWavBlob(rendered);
   REC.blob = wavBlob;
