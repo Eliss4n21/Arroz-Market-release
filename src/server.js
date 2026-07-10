@@ -60,8 +60,21 @@ app.use(compression({ level: 6, threshold: 1024 }));
 app.use(express.json({ limit:'50mb' }));
 app.use(express.urlencoded({ extended:true }));
 
-/* ── Estáticos ── */
-app.use(express.static(path.join(__dirname,'../public'), { maxAge:'0', etag:false }));
+/* ── Estáticos ──
+   index.html/index e outros HTML NUNCA devem ser cacheados — o site é um SPA
+   e qualquer cache intermediário (proxy, CDN, browser) servindo uma versão
+   antiga faz recursos novos (ex: roteamento por hash) parecerem "não funcionar"
+   mesmo com o deploy correto no servidor. maxAge:'0' sozinho permite cache
+   com revalidação; no-store impede completamente. */
+app.use((req, res, next) => {
+  if (req.path === '/' || req.path.endsWith('.html') || req.path === '/sw.js') {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+app.use(express.static(path.join(__dirname,'../public'), { maxAge:'1h', etag:true, index:false }));
 
 /* ── API com rate limiting ── */
 app.use('/api', apiLimiter);
