@@ -356,6 +356,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
           <input type="text" id="buscaV" placeholder="🔍 Buscar episódio..." oninput="filtrarV(this.value)" style="background:var(--dark2);border:1px solid rgba(200,168,75,.18);color:var(--cream);padding:.55rem 1rem;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;width:280px">
           <button class="btn btn-prim" onclick="mostrar('p-publicar',null)">🎙️ Novo Episódio</button>
         </div>
+        <div id="barraSelecaoV" style="display:none;align-items:center;gap:.8rem;background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.25);border-radius:var(--r);padding:.6rem 1rem;margin-bottom:.8rem">
+          <span style="font-size:.82rem;color:var(--cream)"><b id="countSelV">0</b> selecionado(s)</span>
+          <button class="btn btn-danger btn-sm" onclick="excluirSelecionadosV()">🗑️ Excluir selecionados</button>
+        </div>
         <div class="card"><table class="tabela-adm" id="tabAudios"></table></div>
       </div>
 
@@ -1278,13 +1282,14 @@ async function aprovarCom(vid, cid, btn) {
 }
 
 async function deletarCom(vid, cid, btn) {
-  if (!confirm('Excluir este comentário?')) return;
-  btn.disabled = true;
-  try {
-    await apiAdm('DELETE', `/admin/comentarios/${vid}/${cid}`);
-    toast('Comentário excluído.', 'sucesso');
-    carregarTodosComentarios();
-  } catch(e) { toast('Erro ao excluir.', 'erro'); btn.disabled = false; }
+  confirmarAcao('Excluir este comentário?', async () => {
+    btn.disabled = true;
+    try {
+      await apiAdm('DELETE', `/admin/comentarios/${vid}/${cid}`);
+      toast('Comentário excluído.', 'sucesso');
+      carregarTodosComentarios();
+    } catch(e) { toast('Erro ao excluir.', 'erro'); btn.disabled = false; }
+  });
 }
 
 /* ═══ TOAST ═══ */
@@ -1297,6 +1302,26 @@ function toast(msg,tipo='ouro'){
 /* ═══ MODAL ═══ */
 function abrirModal(titulo,html){ document.getElementById('modal-titulo').textContent=titulo; document.getElementById('modal-corpo').innerHTML=html; document.getElementById('modal').classList.add('aberto'); }
 function fecharModal(){ document.getElementById('modal').classList.remove('aberto'); }
+
+/* Confirmação própria — substitui confirm() nativo, que o Chrome pode
+   bloquear permanentemente após o usuário marcar "impedir mais caixas
+   de diálogo". window._confAcao guarda a ação pendente. */
+let _confAcao = null;
+function confirmarAcao(msg, onConfirm) {
+  _confAcao = onConfirm;
+  abrirModal('Confirmar ação', `
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.2rem">${msg}</p>
+    <div style="display:flex;justify-content:flex-end;gap:.6rem">
+      <button class="btn btn-sec" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-danger" onclick="_confirmarAcaoExecutar()">Confirmar</button>
+    </div>`);
+}
+function _confirmarAcaoExecutar() {
+  const fn = _confAcao;
+  fecharModal();
+  _confAcao = null;
+  if (fn) fn();
+}
 document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') fecharModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') fecharModal(); });
 
@@ -1369,6 +1394,8 @@ function renderLogApi(){
 /* ═══ VÍDEOS ═══ */
 const sMap={pub:'badge-pub',rascunho:'badge-rascunho',agendado:'badge-agendado'};
 const sLbl={pub:'Publicado',rascunho:'Rascunho',agendado:'Agendado'};
+const S_selecionados = new Set(); // ids selecionados para exclusão em lote
+
 function renderTabV(lista){
   // Ordena por data de publicação mais recente primeiro (vetorial: ordenação in-place em cópia)
   const vs = (lista || S.videos).slice().sort((a,b) => {
@@ -1380,23 +1407,72 @@ function renderTabV(lista){
     };
     return toTs(b.data) - toTs(a.data);
   });
+  // Remove da seleção ids que não existem mais na lista atual
+  const idsAtuais = new Set(vs.map(v => v.id));
+  for (const id of Array.from(S_selecionados)) if (!idsAtuais.has(id)) S_selecionados.delete(id);
+
   document.getElementById('tabAudios').innerHTML=
-    `<thead><tr><th>#</th><th>Título</th><th>Categoria</th><th>Data</th><th>Duração</th><th>Views</th><th>Status</th><th>Ações</th></tr></thead><tbody>`+
+    `<thead><tr><th style="width:32px"><input type="checkbox" id="chkTodos" onchange="toggleTodosV(this)"></th><th>#</th><th>Título</th><th>Categoria</th><th>Data</th><th>Duração</th><th>Views</th><th>Status</th><th>Ações</th></tr></thead><tbody>`+
     vs.map((v,i)=>{
       const catMap={'Podcast Diário':'color:#C8A84B','Curiosidades do Dia':'color:#6BA4D4','Cotações':'color:#6BA67A','Técnico':'color:#C07AD4','Entrevista':'color:#D49060','Especial':'color:#D4C060'};
       const catStyle=catMap[v.cat]||'color:var(--muted)';
-      return `<tr><td style="color:var(--muted)">${i+1}</td><td style="max-width:200px;color:var(--cream)">${v.titulo}</td><td style="font-size:.72rem;${catStyle}">${v.cat||'—'}</td><td>${v.data}</td><td>${v.dur}</td><td>${(v.views||0).toLocaleString('pt-BR')}</td><td><span class="badge ${sMap[v.status]}">${sLbl[v.status]}</span></td><td><div class="acoes"><button class="btn btn-sec btn-xs" onclick="editarV(${v.id})">✏️</button><button class="btn btn-danger btn-xs" onclick="excluirV(${v.id})">🗑️</button></div></td></tr>`;}).join('')+'</tbody>';
+      const marcado = S_selecionados.has(v.id) ? 'checked' : '';
+      return `<tr><td><input type="checkbox" class="chkV" data-id="${v.id}" ${marcado} onchange="toggleSelV(${v.id},this)"></td><td style="color:var(--muted)">${i+1}</td><td style="max-width:200px;color:var(--cream)">${v.titulo}</td><td style="font-size:.72rem;${catStyle}">${v.cat||'—'}</td><td>${v.data}</td><td>${v.dur}</td><td>${(v.views||0).toLocaleString('pt-BR')}</td><td><span class="badge ${sMap[v.status]}">${sLbl[v.status]}</span></td><td><div class="acoes"><button class="btn btn-sec btn-xs" onclick="editarV(${v.id})">✏️</button><button class="btn btn-danger btn-xs" onclick="excluirV(${v.id})">🗑️</button></div></td></tr>`;}).join('')+'</tbody>';
   document.getElementById('badgeV').textContent=S.videos.length;
   document.getElementById('m-vids').textContent=S.videos.length;
+  atualizarBarraSelecaoV();
 }
+
+function toggleSelV(id, el) {
+  if (el.checked) S_selecionados.add(id); else S_selecionados.delete(id);
+  atualizarBarraSelecaoV();
+  const todos = document.getElementById('chkTodos');
+  const chks  = document.querySelectorAll('.chkV');
+  if (todos) todos.checked = chks.length > 0 && Array.from(chks).every(c => c.checked);
+}
+function toggleTodosV(el) {
+  document.querySelectorAll('.chkV').forEach(c => {
+    c.checked = el.checked;
+    const id = parseInt(c.dataset.id);
+    if (el.checked) S_selecionados.add(id); else S_selecionados.delete(id);
+  });
+  atualizarBarraSelecaoV();
+}
+function atualizarBarraSelecaoV() {
+  const barra = document.getElementById('barraSelecaoV');
+  const cont  = document.getElementById('countSelV');
+  if (!barra) return;
+  if (S_selecionados.size > 0) {
+    barra.style.display = 'flex';
+    if (cont) cont.textContent = S_selecionados.size;
+  } else {
+    barra.style.display = 'none';
+  }
+}
+async function excluirSelecionadosV() {
+  const ids = Array.from(S_selecionados);
+  if (!ids.length) return;
+  confirmarAcao(`Excluir <b>${ids.length}</b> episódio(s) selecionado(s)? Essa ação não pode ser desfeita.`, async () => {
+    for (const id of ids) {
+      try { await apiAdm('DELETE', '/admin/audios/' + id); } catch(e) {}
+    }
+    S.videos = S.videos.filter(v => !ids.includes(v.id));
+    S_selecionados.clear();
+    salvarV(); renderTabV(); renderCatBreakdown();
+    toast(`${ids.length} episódio(s) excluído(s).`, 'ouro');
+  });
+}
+
 function filtrarV(q){ renderTabV(S.videos.filter(v=>v.titulo.toLowerCase().includes(q.toLowerCase())||v.cat.toLowerCase().includes(q.toLowerCase()))); }
 async function excluirV(id){
-  if(!confirm('Excluir este vídeo?')) return;
-  try {
-    await apiAdm('DELETE', '/admin/audios/' + id);
-  } catch(e) { console.warn('[Admin] API excluir vídeo:', e.message); }
-  S.videos = S.videos.filter(v => v.id !== id);
-  salvarV(); renderTabV(); renderCatBreakdown(); toast('Vídeo excluído.','ouro');
+  confirmarAcao('Excluir este vídeo? Essa ação não pode ser desfeita.', async () => {
+    try {
+      await apiAdm('DELETE', '/admin/audios/' + id);
+    } catch(e) { console.warn('[Admin] API excluir vídeo:', e.message); }
+    S.videos = S.videos.filter(v => v.id !== id);
+    S_selecionados.delete(id);
+    salvarV(); renderTabV(); renderCatBreakdown(); toast('Vídeo excluído.','ouro');
+  });
 }
 function editarV(id){
   const v=S.videos.find(v=>v.id===id); if(!v) return;
@@ -1635,6 +1711,9 @@ async function recInitEditor(blob) {
   const dur = decoded.duration;
   document.getElementById('edit-start').value = '0:00.0';
   document.getElementById('edit-end').value = recFmtD(dur);
+  // Preenche a duração real imediatamente — sem isso, só era preenchida
+  // se o admin desse play no preview ou fizesse um corte manualmente.
+  document.getElementById('v-dur').value = recFmt(dur);
 
   // ── Re-encoda IMEDIATAMENTE para WAV com cabeçalho correto ──
   // Sem isso, o blob bruto do MediaRecorder (webm/opus) fica com
@@ -2097,7 +2176,7 @@ function recDownload() {
 
 function recDescartarGravacao() {
   const audioEl = document.getElementById('rec-audio-el');
-  audioEl.pause(); audioEl.src = '';
+  audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load();
   RECP.playing = false;
   cancelAnimationFrame(RECP.rafId);
   document.getElementById('rec-prog-fill').style.width = '0%';
@@ -2425,7 +2504,7 @@ function previewAudioEN(url) {
     aud.src = url;
     wrap.style.display = 'block';
   } else {
-    aud.src = '';
+    aud.removeAttribute('src');
     wrap.style.display = 'none';
   }
 }

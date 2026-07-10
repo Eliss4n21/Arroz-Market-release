@@ -1917,9 +1917,9 @@ function renderDestaque() {
       if (S.token) {
         apiFetch('PUT', '/me/dur/' + dest.id, { dur: durStr }).catch(() => {});
       }
-      tmp.src = '';
+      tmp.removeAttribute('src');
     };
-    tmp.onerror = () => { tmp.src = ''; };
+    tmp.onerror = () => { tmp.removeAttribute('src'); };
   }
 
   /* Categoria dinâmica no cabeçalho do destaque */
@@ -2467,6 +2467,20 @@ async function curtirDestaque(e) {
     const v = S.vids.find(x => x.id === vid);
     if (v) v.likes = r.likes;
     renderLikeDest();
+    // Sincroniza o card correspondente na grade abaixo, se existir no DOM
+    const cardBtn = document.getElementById('lk-' + vid);
+    if (cardBtn) {
+      cardBtn.className = 'btn-like-card' + (r.curtido ? ' curtido' : '');
+      const cardNum = document.getElementById('lc-' + vid);
+      if (cardNum) cardNum.textContent = fmtN(r.likes);
+    }
+    // Sincroniza o modal se o mesmo episódio estiver aberto
+    if (S.mAudAtual && S.mAudAtual.id === vid) {
+      const modalBtn = document.getElementById('btnLikeModal');
+      const modalNum = document.getElementById('likeModalN');
+      if (modalBtn) modalBtn.className = 'btn-like-dest' + (r.curtido ? ' curtido' : '');
+      if (modalNum) modalNum.textContent = fmtN(r.likes);
+    }
     toast(r.curtido ? t('toast_curtiu') : t('toast_descurtiu'), r.curtido ? 'ok' : '');
   } catch(err) {
     toast('Erro ao curtir.', 'err');
@@ -2490,6 +2504,12 @@ async function curtirCard(e, id) {
     if (S.mAudAtual && S.mAudAtual.id === id) {
       document.getElementById('btnLikeModal').className = 'btn-like-dest' + (r.curtido ? ' curtido' : '');
       document.getElementById('likeModalN').textContent = fmtN(r.likes);
+    }
+    /* Atualiza o destaque se o mesmo episódio estiver em exibição ali */
+    if (S.vidDest && S.vidDest.id === id) {
+      S.curtidoDest = r.curtido;
+      S.likesDest   = r.likes;
+      renderLikeDest();
     }
     const v = S.vids.find(x => x.id === id);
     if (v) v.likes = r.likes;
@@ -2750,7 +2770,7 @@ function abrirAudio(v) {
   const epTit  = document.getElementById('am-ep-titulo');
 
   // Reseta controles
-  a.pause(); a.src = '';
+  a.pause(); a.removeAttribute('src'); a.load();
   document.getElementById('am-ico-play').style.display  = '';
   document.getElementById('am-ico-pause').style.display = 'none';
   document.getElementById('am-prog').style.width = '0%';
@@ -2871,7 +2891,7 @@ async function carregarComDestaque(vid) {
           <div class="com-meta"><span class="com-nome">${co.nome}</span><span class="com-ts">${fmtTs(co.ts)}</span></div>
           <div class="com-txt">${co.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
           <div class="com-actions">
-            ${comLikeBtn(co.id, null, co.likes, curtido)}
+            ${comLikeBtn(co.id, null, co.likes, curtido, vid)}
             <button class="com-resp-btn" onclick="toggleRespostaFormDest(${co.id})">
               <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
               ${t('com_responder')} ${(co.respostas||[]).length > 0 ? `<span class="com-resp-count">${co.respostas.length}</span>` : ''}
@@ -2884,7 +2904,7 @@ async function carregarComDestaque(vid) {
               <button class="com-btn-send" onclick="enviarRespostaDestaque(${co.id})">Responder</button>
             </div>
           </div>
-          ${renderRespostas(co.respostas||[], co.id, uid)}
+          ${renderRespostas(co.respostas||[], co.id, uid, vid)}
         </div>
       </div>`;
     }
@@ -2957,11 +2977,11 @@ function fmtTs(ts) {
 function comAvatar(av, nm) {
   return `<div class="com-av">${av || (nm||'?').slice(0,2).toUpperCase()}</div>`;
 }
-function comLikeBtn(cid, rid, likes, curtido) {
+function comLikeBtn(cid, rid, likes, curtido, vid) {
   const uid = S.usuario?.id || 0;
   const cls = curtido ? 'com-like-btn curtido' : 'com-like-btn';
   const rid_ = rid ? `,${rid}` : '';
-  return `<button class="${cls}" onclick="likeComentario(${cid}${rid_},this)">
+  return `<button class="${cls}" onclick="likeComentario(${vid},${cid}${rid_},this)">
     <svg viewBox="0 0 24 24"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
     <span>${likes||0}</span>
   </button>`;
@@ -2977,7 +2997,7 @@ function comRespostaForm(cid) {
   </div>`;
 }
 
-function renderRespostas(respostas, cid, uid) {
+function renderRespostas(respostas, cid, uid, vid) {
   if (!respostas || !respostas.length) return '';
   const n = respostas.length;
   const rows = new Array(n);
@@ -2989,7 +3009,7 @@ function renderRespostas(respostas, cid, uid) {
       <div class="com-body">
         <div class="com-meta"><span class="com-nome">${r.nome}</span><span class="com-ts">${fmtTs(r.ts)}</span></div>
         <div class="com-txt">${r.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
-        <div class="com-actions">${comLikeBtn(cid, r.id, r.likes, curtido)}</div>
+        <div class="com-actions">${comLikeBtn(cid, r.id, r.likes, curtido, vid)}</div>
       </div>
     </div>`;
   }
@@ -3023,7 +3043,7 @@ function renderComentarios(lista) {
         </div>
         <div class="com-txt">${c.texto.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
         <div class="com-actions">
-          ${comLikeBtn(c.id, null, c.likes, curtido)}
+          ${comLikeBtn(c.id, null, c.likes, curtido, S.mAudAtual?.id)}
           <button class="com-resp-btn" onclick="toggleRespostaForm(${c.id})">
             <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
             ${t('com_responder')}
@@ -3031,7 +3051,7 @@ function renderComentarios(lista) {
           </button>
         </div>
         ${comRespostaForm(c.id)}
-        ${renderRespostas(c.respostas||[], c.id, uid)}
+        ${renderRespostas(c.respostas||[], c.id, uid, S.mAudAtual?.id)}
       </div>
     </div>`;
   }
@@ -3079,13 +3099,13 @@ async function enviarResposta(cid) {
   }
 }
 
-async function likeComentario(cid, ridOrBtn, btnOrUndef) {
+async function likeComentario(vid, cid, ridOrBtn, btnOrUndef) {
   if (!S.usuario) { abrirAuth('login'); return; }
-  // likeComentario(cid, btn) ou likeComentario(cid, rid, btn)
+  if (!vid) { toast('Erro: episódio não identificado.', 'err'); return; }
+  // likeComentario(vid, cid, btn) ou likeComentario(vid, cid, rid, btn)
   let rid = null, btn;
   if (typeof ridOrBtn === 'number') { rid = ridOrBtn; btn = btnOrUndef; }
   else btn = ridOrBtn;
-  const vid  = S.mAudAtual?.id;
   const body = rid ? { rid } : {};
   try {
     const r = await apiFetch('POST', `/audios/${vid}/comentarios/${cid}/like`, body);
