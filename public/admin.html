@@ -1634,15 +1634,25 @@ async function recToggle() {
       // RNNoise: supressão espectral real (rede neural), remove ruído
       // de fundo constante MESMO durante a fala — filtros sozinhos só
       // ajudam nas pausas. Mesma tecnologia usada em Discord/Krisp.
-      const { RnnoiseWorkletNode, loadRnnoise } = await import('/nsuppr/index.js');
-      await REC.audioCtx.audioWorklet.addModule('/nsuppr/rnnoise-worklet.js');
-      const wasmBinary = await loadRnnoise({ url: '/nsuppr/rnnoise.wasm', simdUrl: '/nsuppr/rnnoise_simd.wasm' });
-      const rnnoise = new RnnoiseWorkletNode(REC.audioCtx, { maxChannels: 1, wasmBinary });
+      // Timeout de 5s: alguns navegadores (ex: Brave, com proteção
+      // anti-fingerprinting em AudioContext/AudioWorklet) podem demorar
+      // demais ou travar aqui — nesse caso seguimos só com os filtros
+      // em vez de travar a gravação inteira.
+      const setupComTimeout = Promise.race([
+        (async () => {
+          const { RnnoiseWorkletNode, loadRnnoise } = await import('/nsuppr/index.js');
+          await REC.audioCtx.audioWorklet.addModule('/nsuppr/rnnoise-worklet.js');
+          const wasmBinary = await loadRnnoise({ url: '/nsuppr/rnnoise.wasm', simdUrl: '/nsuppr/rnnoise_simd.wasm' });
+          return new RnnoiseWorkletNode(REC.audioCtx, { maxChannels: 1, wasmBinary });
+        })(),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout 5s')), 5000)),
+      ]);
+      const rnnoise = await setupComTimeout;
       lp.connect(rnnoise);
       saida = rnnoise;
       REC._rnnoise = rnnoise;
     } catch(e) {
-      console.warn('[REC] RNNoise indisponível, usando só filtros:', e.message);
+      console.warn('[REC] RNNoise indisponível ou lento demais, usando só filtros:', e.message);
     }
     saida.connect(comp);
 
@@ -1722,6 +1732,12 @@ function recStop() {
   if (REC._rnnoise) { try { REC._rnnoise.destroy(); REC._rnnoise.disconnect(); } catch(e) {} }
   REC._rnnoise = null;
   REC._filtros = null;
+  // Limpa o canvas — sem isso, o último quadro desenhado (geralmente uma
+  // linha reta de silêncio) ficava congelado por baixo da mensagem idle.
+  const canvas = document.getElementById('rec-canvas');
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  const vuCanvas = document.getElementById('rec-vu-canvas');
+  if (vuCanvas) vuCanvas.getContext('2d').clearRect(0, 0, vuCanvas.width, vuCanvas.height);
 }
 
 function recOnStop() {
