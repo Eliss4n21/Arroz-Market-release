@@ -22,18 +22,7 @@ const DEFAULT = {
     { id:1, nome:'Fábio Toledo', email:'fabio.toledo@arrozmarket.online',
       senha:ADMIN_HASH, role:'admin', avatar:'FT', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
   ],
-  videos: [
-    { id:1,  titulo:'Safra 2025 e Impactos nos Preços',                    data:'07/04/2025', dur:'12:48', url:'', cat:'Podcast Diário',      status:'pub', views:3400, likes:1247, desc:'Análise do cenário da safra 2025 e seus reflexos nas cotações do arroz gaúcho.' },
-    { id:2,  titulo:'Impacto do clima na safra do RS',                     data:'03/04/2025', dur:'09:32', url:'', cat:'Podcast Diário',      status:'pub', views:2100, likes:87,   desc:'Como as condições climáticas afetam a produtividade e os preços no Rio Grande do Sul.' },
-    { id:3,  titulo:'Parboilizado em alta: por que sobe?',                 data:'02/04/2025', dur:'14:05', url:'', cat:'Cotações',            status:'pub', views:3800, likes:214,  desc:'Entenda os fatores por trás da valorização do arroz parboilizado nos últimos meses.' },
-    { id:4,  titulo:'Você sabia? O arroz alimenta metade da humanidade',   data:'01/04/2025', dur:'03:22', url:'', cat:'Curiosidades do Dia', status:'pub', views:5100, likes:376,  desc:'Fatos surpreendentes sobre o cereal mais consumido do mundo.' },
-    { id:5,  titulo:'Fechamento de março e balanço trimestral',            data:'31/03/2025', dur:'18:44', url:'', cat:'Especial',            status:'pub', views:5600, likes:312,  desc:'Resumo completo do primeiro trimestre de 2025 para o mercado orizícola.' },
-    { id:6,  titulo:'Arroz integral: demanda aquecida',                    data:'28/03/2025', dur:'08:55', url:'', cat:'Podcast Diário',      status:'pub', views:2900, likes:105,  desc:'A busca por alimentos mais saudáveis está aquecendo o mercado do arroz integral.' },
-    { id:7,  titulo:'Dólar e exportações — reflexo no preço',              data:'27/03/2025', dur:'13:22', url:'', cat:'Técnico',             status:'pub', views:3300, likes:143,  desc:'Como a variação cambial impacta diretamente as cotações do mercado interno.' },
-    { id:8,  titulo:'Colheita RS 2025: ritmo e projeções',                 data:'25/03/2025', dur:'12:38', url:'', cat:'Podcast Diário',      status:'pub', views:6100, likes:389,  desc:'Acompanhamento do ritmo da colheita e projeções para o volume final da safra gaúcha.' },
-    { id:9,  titulo:'Do campo ao prato: a jornada do grão',                data:'24/03/2025', dur:'04:15', url:'', cat:'Curiosidades do Dia', status:'pub', views:4100, likes:221,  desc:'Uma viagem fascinante pelo processo que transforma o arroz em casca no produto final.' },
-    { id:10, titulo:'Entrevista: produtor de Cachoeira do Sul conta tudo', data:'21/03/2025', dur:'22:14', url:'', cat:'Entrevista',          status:'pub', views:3700, likes:187,  desc:'Bate-papo com um produtor orizícola sobre desafios e perspectivas da safra 2025.' },
-  ],
+  videos: [],
   cotacoes: [
     { id:'cas',   nome:'Em Casca (ESALQ/Senar-RS)',   preco: 65.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
     { id:'mf_rs', nome:'Mercado Físico – Média RS',   preco: 62.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
@@ -57,11 +46,44 @@ const DEFAULT = {
   }
 };
 
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+try { if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {}
+
 function lerDB()    { try { if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8')); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
-function salvarDB(d){ try { fs.writeFileSync(DB_PATH, JSON.stringify(d,null,2)); } catch(e){} }
+
+/* Salva o banco + mantém backup rotativo (últimos 5) — proteção contra
+   perda de dados em redeploys onde DATA_DIR não persistiu corretamente.
+   Recuperável via SSH em DATA_DIR/backups/ mesmo se db.json sumir. */
+let _saveCount = 0;
+function salvarDB(d) {
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(d, null, 2));
+    // Backup a cada 20 salvamentos — evita I/O excessivo em uso normal
+    _saveCount++;
+    if (_saveCount % 20 === 0) {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const bpath = path.join(BACKUP_DIR, `db_${ts}.json`);
+      fs.writeFileSync(bpath, JSON.stringify(d, null, 2));
+      // Mantém só os 5 backups mais recentes
+      const backups = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('db_')).sort();
+      while (backups.length > 5) fs.unlinkSync(path.join(BACKUP_DIR, backups.shift()));
+    }
+  } catch(e) {}
+}
 
 let _db = lerDB();
-if (!_db.usuarios?.length) { _db = JSON.parse(JSON.stringify(DEFAULT)); salvarDB(_db); }
+if (!_db.usuarios?.length) {
+  // Backup de emergência do que existia antes de resetar — mesmo que
+  // pareça vazio/corrompido, pode ter dados parciais recuperáveis.
+  try {
+    if (_db && (_db.videos?.length || _db.comentarios)) {
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      fs.writeFileSync(path.join(BACKUP_DIR, `EMERGENCIA_pre-reset_${ts}.json`), JSON.stringify(_db, null, 2));
+    }
+  } catch(e) {}
+  _db = JSON.parse(JSON.stringify(DEFAULT));
+  salvarDB(_db);
+}
 // Migração: adiciona campos novos sem apagar dados existentes
 if (!_db.especialista) { _db.especialista = DEFAULT.especialista; salvarDB(_db); }
 if (!_db.comentarios)  { _db.comentarios  = {}; salvarDB(_db); }

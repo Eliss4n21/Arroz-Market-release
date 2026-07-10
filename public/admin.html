@@ -1617,9 +1617,27 @@ async function recToggle() {
     const comp = REC.audioCtx.createDynamicsCompressor();
     comp.threshold.value = -24; comp.knee.value = 30; comp.ratio.value = 3;
     comp.attack.value = 0.003; comp.release.value = 0.25;
-    src.connect(hp); hp.connect(lp); lp.connect(comp);
-    cadeia = comp;
-    REC._filtros = { hp, lp, comp };
+    // Noise gate — silencia ruído de fundo constante (ventilador, zumbido,
+    // trânsito) nos momentos de pausa da fala. Não corta 100% para evitar
+    // artefato de "buraco" no áudio — reduz para ~12% do volume original.
+    const gate = REC.audioCtx.createScriptProcessor(2048, 1, 1);
+    let envelope = 0;
+    const limiar  = 0.014;  // amplitude RMS abaixo disso é considerado ruído
+    const ataque  = 0.35;   // abre rápido quando a fala começa
+    const alivio  = 0.94;   // fecha suavemente quando a fala para
+    gate.onaudioprocess = (ev) => {
+      const inp = ev.inputBuffer.getChannelData(0);
+      const out = ev.outputBuffer.getChannelData(0);
+      for (let i = 0; i < inp.length; i++) {
+        const nivel = Math.abs(inp[i]);
+        envelope = nivel > envelope ? (envelope*ataque + nivel*(1-ataque)) : (envelope*alivio + nivel*(1-alivio));
+        const g = envelope > limiar ? 1 : Math.max(0, envelope/limiar) * 0.12;
+        out[i] = inp[i] * g;
+      }
+    };
+    src.connect(hp); hp.connect(lp); lp.connect(comp); comp.connect(gate);
+    cadeia = gate;
+    REC._filtros = { hp, lp, comp, gate };
   }
   cadeia.connect(REC.gainNode);
   REC.gainNode.connect(REC.analyser);
@@ -1680,6 +1698,9 @@ function recStop() {
   document.getElementById('btn-rec').style.display = 'flex';
   document.getElementById('btn-rec-pause').style.display = 'none';
   document.getElementById('btn-rec-stop').style.display = 'none';
+  // Desconecta o noise gate (ScriptProcessorNode) — evita processamento residual
+  if (REC._filtros?.gate) { try { REC._filtros.gate.onaudioprocess = null; REC._filtros.gate.disconnect(); } catch(e) {} }
+  REC._filtros = null;
 }
 
 function recOnStop() {
