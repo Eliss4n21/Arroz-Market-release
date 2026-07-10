@@ -47,9 +47,37 @@ const DEFAULT = {
 };
 
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
-try { if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {}
+try { if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch(e) {
+  console.error('❌ [DB] Não foi possível criar pasta de backups em', BACKUP_DIR, '—', e.message);
+}
 
-function lerDB()    { try { if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8')); } catch(e){} return JSON.parse(JSON.stringify(DEFAULT)); }
+/* Teste de permissão no boot — detecta problema de escrita ANTES de
+   qualquer dado real ser perdido, em vez de descobrir só depois. */
+(function testarPermissaoEscrita() {
+  const testPath = path.join(DATA_DIR, '.write_test');
+  try {
+    fs.writeFileSync(testPath, 'ok');
+    fs.readFileSync(testPath, 'utf8');
+    fs.unlinkSync(testPath);
+    console.log(`✅ [DB] Permissão de escrita OK em ${DATA_DIR}`);
+  } catch(e) {
+    console.error('\n❌❌❌ [DB] SEM PERMISSÃO DE ESCRITA EM DATA_DIR ❌❌❌');
+    console.error(`    Pasta: ${DATA_DIR}`);
+    console.error(`    Erro : ${e.message}`);
+    console.error('    Dados NÃO estão sendo salvos — tudo se perde ao reiniciar.');
+    console.error('    Verifique via SSH: ls -la ' + DATA_DIR + '  (dono/permissão da pasta)\n');
+  }
+})();
+
+function lerDB() {
+  try {
+    if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8'));
+    console.warn(`⚠️  [DB] ${DB_PATH} não existe ainda — iniciando banco novo (normal na primeira vez).`);
+  } catch(e) {
+    console.error(`❌ [DB] Falha ao ler ${DB_PATH}:`, e.message);
+  }
+  return JSON.parse(JSON.stringify(DEFAULT));
+}
 
 /* Salva o banco + mantém backup rotativo (últimos 5) — proteção contra
    perda de dados em redeploys onde DATA_DIR não persistiu corretamente.
@@ -68,7 +96,9 @@ function salvarDB(d) {
       const backups = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('db_')).sort();
       while (backups.length > 5) fs.unlinkSync(path.join(BACKUP_DIR, backups.shift()));
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error(`❌ [DB] FALHA AO SALVAR em ${DB_PATH}:`, e.message);
+  }
 }
 
 let _db = lerDB();
@@ -195,3 +225,4 @@ const db = {
 
 module.exports = db;
 module.exports.AUDIO_DIR = AUDIO_DIR;
+module.exports.DATA_DIR  = DATA_DIR;

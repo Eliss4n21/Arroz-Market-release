@@ -122,6 +122,15 @@ app.listen(PORT, () => {
   console.log(`\n🌾  ArrozMarket — http://localhost:${PORT}`);
   console.log(`    Ambiente : ${process.env.NODE_ENV || 'development'}`);
   console.log(`    CORS     : ${ORIGIN}`);
-  console.log(`    Scraping : a cada ${minutos} min\n`);
+  console.log(`    Scraping : a cada ${minutos} min`);
+  console.log(`    Banco    : ${require('./db').DATA_DIR}`);
+  if (!process.env.DATA_DIR) {
+    console.log('\n⚠️  ⚠️  ⚠️  AVISO CRÍTICO ⚠️  ⚠️  ⚠️');
+    console.log('    DATA_DIR não configurado nas variáveis de ambiente!');
+    console.log('    O banco de dados está sendo salvo DENTRO do projeto,');
+    console.log('    e será PERDIDO no próximo deploy (episódios, usuários,');
+    console.log('    comentários, tudo). Configure DATA_DIR e AUDIO_DIR no');
+    console.log('    painel da Hostinger AGORA para evitar perda de dados.\n');
+  }
   scrapeCEPEA().catch(e => console.warn('[Start]', e.message));
 });
