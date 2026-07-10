@@ -68,6 +68,9 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter);
 app.use('/api', require('../routes/api'));
 
+/* ── Health check — mantém servidor ativo ── */
+app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
 /* ── SPA fallback ── */
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api')) return res.status(404).json({ erro:'Rota não encontrada.' });

@@ -40,6 +40,16 @@ function gerarToken(u) { return jwt.sign({ id:u.id, role:u.role }, SEC(), { expi
 
 router.get('/cotacoes', (_, res) => res.json(db.getCotacoes()));
 
+/* /boot — uma chamada retorna tudo que o site precisa no load inicial */
+router.get('/boot', (_, res) => {
+  res.json({
+    audios:      db.getVideos(),
+    cotacoes:    db.getCotacoes(),
+    especialista:db.getEspecialista(),
+    config:      db.getConfig(),
+  });
+});
+
 router.get('/audios',   (_, res) => res.json(db.getVideos()));
 
 router.post('/auth/registro', async (req, res) => {

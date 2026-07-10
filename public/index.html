@@ -905,9 +905,26 @@ function notifLocal(titulo, corpo) {
         renderAudios(); renderDestaque(); atualizarContadoresFiltro();
       }
     } catch(e) { S.vids = VIDS_LOCAL; try { renderAudios(); renderDestaque(); } catch(_){} }
-    try { carregarCotacoes(); } catch(e) { try { renderTicker(); renderTabCot(); } catch(_){} }
-    try { carregarAudios(); }   catch(e) {}
-    try { carregarEspecialista(); } catch(e) {}
+    // /boot: uma chamada carrega tudo — reduz network dependency tree
+    try {
+      apiFetch('GET', '/boot').then(dados => {
+        if (dados.audios)       { S.vids  = dados.audios;       renderAudios(); renderDestaque(); atualizarContadoresFiltro(); }
+        if (dados.cotacoes)     { S.cots  = dados.cotacoes;     renderTicker(); renderTabCot(); atualizarGrafBarra(); }
+        if (dados.especialista) { S._esp  = { ...ESP_DEFAULT, ...dados.especialista }; renderEspecialista(); }
+        // Salva no localStorage para próxima visita offline
+        try { localStorage.setItem('am_v', JSON.stringify(S.vids)); } catch(e){}
+        // Re-aplica idioma após dados carregados
+        try { if (LANG !== 'pt') aplicarIdioma(); } catch(e){}
+      }).catch(e => {
+        // Fallback: chamadas individuais
+        try { carregarCotacoes(); } catch(_) {}
+        try { carregarAudios(); }   catch(_) {}
+        try { carregarEspecialista(); } catch(_) {}
+      });
+    } catch(e) {
+      try { carregarCotacoes(); } catch(_) {}
+      try { carregarAudios(); }   catch(_) {}
+    }
     try { renderLikeDest(); }   catch(e) {}
     // Aplica idioma DEPOIS de tudo renderizado para traduzir o DOM completo
     try { aplicarIdioma(); }    catch(e) {}
@@ -2029,15 +2046,17 @@ function destDrawStaticWave() {
   if (wrap)  wrap.style.setProperty('--prog', pctStr);
   // Canvas waveform (se disponível)
   const canvas = document.getElementById('dest-waveform-canvas');
-  if (!canvas || !DEST.waveData || canvas.offsetWidth === 0) return;
+  if (!canvas || !DEST.waveData) return;
   const dpr = window.devicePixelRatio || 1;
-  if (canvas.width !== canvas.offsetWidth * dpr) {
-    canvas.width  = canvas.offsetWidth  * dpr;
-    canvas.height = canvas.offsetHeight * dpr;
+  // Ler offsetWidth uma só vez — evita forced reflow duplo
+  const W = canvas.offsetWidth, H = canvas.offsetHeight;
+  if (!W || !H) return;
+  if (canvas.width !== W * dpr) {
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
   }
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  const W = canvas.offsetWidth, H = canvas.offsetHeight;
   if (!W || !H) return;
   ctx.clearRect(0,0,W,H);
   const { mins, maxs, W: wW } = DEST.waveData;
@@ -2175,11 +2194,15 @@ function destSpeed(v) {
 /* ── Seek na barra do player destaque (clique + arrasto) ── */
 const DEST_SEEK = { dragging: false };
 
+let _seekRect = null;
 function destSeekRatio(e) {
-  const wrap = document.getElementById('dest-waveform-wrap');
-  const rect  = wrap.getBoundingClientRect();
-  const cx    = e.touches ? e.touches[0].clientX : e.clientX;
-  return Math.max(0, Math.min(1, (cx - rect.left) / rect.width));
+  // Cacheia o rect durante o drag para evitar reflow em cada mousemove
+  if (!_seekRect) {
+    const wrap = document.getElementById('dest-waveform-wrap');
+    _seekRect = wrap.getBoundingClientRect();
+  }
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  return Math.max(0, Math.min(1, (cx - _seekRect.left) / _seekRect.width));
 }
 
 function destSeekApply(ratio) {
@@ -2212,12 +2235,12 @@ document.addEventListener('touchmove', e => {
 }, { passive: false });
 document.addEventListener('mouseup',  () => {
   if (!DEST_SEEK.dragging) return;
-  DEST_SEEK.dragging = false;
+  DEST_SEEK.dragging = false; _seekRect = null;
   document.getElementById('dest-waveform-wrap').classList.remove('dragging');
 });
 document.addEventListener('touchend', () => {
   if (!DEST_SEEK.dragging) return;
-  DEST_SEEK.dragging = false;
+  DEST_SEEK.dragging = false; _seekRect = null;
   document.getElementById('dest-waveform-wrap').classList.remove('dragging');
 });
 
