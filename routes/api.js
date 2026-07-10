@@ -28,6 +28,7 @@ const router  = require('express').Router();
 const bcrypt  = require('bcryptjs');
 const jwt     = require('jsonwebtoken');
 const db      = require('../src/db');
+const { contemPalavrao } = require('../src/profanityFilter');
 const { autenticar, soAdmin } = require('../middleware/auth');
 const { scrapeCEPEA }         = require('../src/scraper');
 
@@ -141,6 +142,7 @@ router.post('/audios/:id/comentarios', autenticar, (req, res) => {
   const texto = (req.body.texto || '').trim();
   if (!texto || texto.length < 2)  return res.status(400).json({ erro: 'Comentário muito curto.' });
   if (texto.length > 600)          return res.status(400).json({ erro: 'Máximo 600 caracteres.' });
+  if (contemPalavrao(texto))       return res.status(400).json({ erro: 'Comentário contém linguagem imprópria.' });
   const novo = db.addComentario(vid, {
     uid:    req.user.id,
     nome:   req.user.nome,
@@ -179,6 +181,7 @@ router.post('/audios/:id/comentarios/:cid/respostas', autenticar, (req, res) => 
   const texto = (req.body.texto || '').trim();
   if (!texto || texto.length < 2)  return res.status(400).json({ erro: 'Resposta muito curta.' });
   if (texto.length > 600)          return res.status(400).json({ erro: 'Máximo 600 caracteres.' });
+  if (contemPalavrao(texto))       return res.status(400).json({ erro: 'Resposta contém linguagem imprópria.' });
   const nova = db.addResposta(vid, cid, {
     uid:    req.user.id,
     nome:   req.user.nome,

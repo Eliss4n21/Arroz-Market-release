@@ -700,58 +700,9 @@ const COTS_LOCAL = [
   {id:'cat',   nome:'Cateto T1',                    preco: 95.00, variacao:-0.50, cls:'baixa',   unidade:'sc 60kg'},
   {id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg'},
 ];
-const VIDS_LOCAL = [
-  {id:1, titulo:'Impacto do clima na safra do RS',
-   titulo_en:'Climate impact on the RS harvest',
-   titulo_fr:'Impact du climat sur la récolte du RS',
-   titulo_es:'Impacto del clima en la cosecha de RS',
-   data:'03/04/2025',dur:'09:32',views:2100,likes:87,  cat:'Podcast Diário',status:'pub'},
-  {id:2, titulo:'Parboilizado em alta: por que sobe?',
-   titulo_en:'Parboiled rice rising: why?',
-   titulo_fr:'Riz étuvé en hausse : pourquoi ?',
-   titulo_es:'Parboilizado en alza: ¿por qué sube?',
-   data:'02/04/2025',dur:'14:05',views:3800,likes:214, cat:'Cotações',status:'pub'},
-  {id:3, titulo:'Abertura de abril: o que esperar',
-   titulo_en:'April opening: what to expect',
-   titulo_fr:'Ouverture d\'avril : à quoi s\'attendre',
-   titulo_es:'Apertura de abril: ¿qué esperar?',
-   data:'01/04/2025',dur:'11:18',views:4200,likes:198, cat:'Podcast Diário',status:'pub'},
-  {id:4, titulo:'Você sabia? O arroz é o 2° cereal mais consumido',
-   titulo_en:'Did you know? Rice is the 2nd most consumed grain',
-   titulo_fr:'Le saviez-vous ? Le riz est la 2e céréale la plus consommée',
-   titulo_es:'¿Sabías? El arroz es el 2° cereal más consumido',
-   data:'31/03/2025',dur:'04:15',views:5600,likes:312, cat:'Curiosidades do Dia',status:'pub'},
-  {id:5, titulo:'Arroz integral: demanda aquecida',
-   titulo_en:'Whole grain rice: heated demand',
-   titulo_fr:'Riz complet : demande en hausse',
-   titulo_es:'Arroz integral: demanda en alza',
-   data:'28/03/2025',dur:'08:55',views:2900,likes:105, cat:'Podcast Diário',status:'pub'},
-  {id:6, titulo:'Dólar e exportações — reflexo no preço',
-   titulo_en:'Dollar and exports — impact on prices',
-   titulo_fr:'Dollar et exportations — impact sur les prix',
-   titulo_es:'Dólar y exportaciones — reflejo en el precio',
-   data:'27/03/2025',dur:'13:22',views:3300,likes:143, cat:'Podcast Diário',status:'pub'},
-  {id:7, titulo:'Classificação Tipo 1 vs Tipo 2',
-   titulo_en:'Type 1 vs Type 2 classification',
-   titulo_fr:'Classification Type 1 vs Type 2',
-   titulo_es:'Clasificación Tipo 1 vs Tipo 2',
-   data:'26/03/2025',dur:'15:10',views:4700,likes:267, cat:'Técnico',status:'pub'},
-  {id:8, titulo:'Colheita RS 2025: ritmo e projeções',
-   titulo_en:'RS 2025 harvest: pace and projections',
-   titulo_fr:'Récolte RS 2025 : rythme et projections',
-   titulo_es:'Cosecha RS 2025: ritmo y proyecciones',
-   data:'25/03/2025',dur:'12:38',views:6100,likes:389, cat:'Podcast Diário',status:'pub'},
-  {id:9, titulo:'A jornada do arroz do campo ao prato',
-   titulo_en:'The rice journey from field to table',
-   titulo_fr:'Le voyage du riz du champ à l\'assiette',
-   titulo_es:'El viaje del arroz del campo al plato',
-   data:'24/03/2025',dur:'03:48',views:4100,likes:221, cat:'Curiosidades do Dia',status:'pub'},
-  {id:10, titulo:'Entrevista: produtor de Cachoeira do Sul fala da safra',
-   titulo_en:'Interview: Cachoeira do Sul farmer talks about harvest',
-   titulo_fr:'Entretien : un producteur de Cachoeira do Sul parle de la récolte',
-   titulo_es:'Entrevista: productor de Cachoeira do Sul habla de la cosecha',
-   data:'21/03/2025',dur:'22:14',views:3700,likes:187, cat:'Entrevista',status:'pub'},
-];
+/* Fallback vazio: usado apenas se a API estiver totalmente inacessível.
+   Sem episódios de exemplo — a grade fica vazia até a API responder. */
+const VIDS_LOCAL = [];
 
 /* Retorna o título do vídeo no idioma ativo (vetorial: O(1) via propriedade) */
 function vidTitulo(v) {
@@ -826,6 +777,14 @@ async function apiFetch(method, path, body) {
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (res.status === 401 && S.token) {
+    // Token inválido/expirado (ex: JWT_SECRET foi trocado no servidor) —
+    // limpa a sessão local para não ficar preso num loop de erro silencioso.
+    S.token = null; S.usuario = null;
+    ['am_u','am_tok','am_lembrar'].forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+    try { renderAvatar(); renderMenu(); } catch(e) {}
+    toast('Sua sessão expirou. Faça login novamente.', 'err');
+  }
   const json = await res.json();
   if (!res.ok) throw new Error(json.erro || 'Erro na requisição');
   return json;
