@@ -18,7 +18,7 @@
 <meta property="og:url"         content="https://arrozmarket.online/">
 <meta property="og:title"       content="ArrozMarket — Análises do Mercado do Arroz">
 <meta property="og:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro. Fábio Toledo, São Gabriel — RS.">
-<meta property="og:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
+<meta property="og:image"       content="https://arrozmarket.online/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale"      content="pt_BR">
@@ -27,7 +27,7 @@
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:title"       content="ArrozMarket — Análises do Mercado do Arroz">
 <meta name="twitter:description" content="Podcast diário com cotações e análises do mercado orizícola brasileiro.">
-<meta name="twitter:image"       content="https://www.arrozmarket.com.br/og-image.jpg">
+<meta name="twitter:image"       content="https://arrozmarket.online/og-image.jpg">
 
 <!-- ═══ PWA ═══ -->
 <meta name="theme-color" content="#C8A84B">
@@ -48,7 +48,7 @@
   "@type": "PodcastSeries",
   "name": "ArrozMarket",
   "description": "Análises diárias do mercado orizícola brasileiro com Fábio Toledo.",
-  "url": "https://www.arrozmarket.com.br/",
+  "url": "https://arrozmarket.online/",
   "author": {
     "@type": "Person",
     "name": "Fábio Toledo",
@@ -56,7 +56,7 @@
     "address": { "@type": "PostalAddress", "addressLocality": "São Gabriel", "addressRegion": "RS", "addressCountry": "BR" }
   },
   "inLanguage": "pt-BR",
-  "image": "https://www.arrozmarket.com.br/og-image.jpg"
+  "image": "https://arrozmarket.online/og-image.jpg"
 }
 </script>
 
@@ -167,7 +167,7 @@
           <span data-i18n="modal_sem_audio_p">Grave o áudio no painel admin e publique para ativar o player.</span>
         </div>
         <!-- Player HTML5 nativo (oculto, apenas processa) -->
-        <audio id="am-audio-el" preload="none" style="display:none"></audio>
+        <audio id="am-audio-el" preload="auto" style="display:none"></audio>
         <!-- Controles -->
         <div id="am-controls">
           <div id="am-progress-wrap" onmousedown="amSeek(event)" ontouchstart="amSeekTouch(event)">
@@ -598,7 +598,7 @@ const POLS = {
       <p style="font-size:.75rem;margin-bottom:1rem">Última atualização: abril de 2026 · Em conformidade com a <b style="color:var(--cream)">LGPD (Lei 13.709/2018)</b></p>
 
       <b style="color:var(--cream)">1. Responsável pelo tratamento</b>
-      <p style="margin:.3rem 0 .8rem">Fábio Toledo — ArrozMarket, São Gabriel — RS. Contato: <span style="color:var(--gold)">contato@arrozmarket.com.br</span></p>
+      <p style="margin:.3rem 0 .8rem">Fábio Toledo — ArrozMarket, São Gabriel — RS. Contato: <span style="color:var(--gold)">contato@arrozmarket.online</span></p>
 
       <b style="color:var(--cream)">2. Dados coletados</b>
       <p style="margin:.3rem 0 .8rem">Nome, endereço de e-mail e preferências de interface (tema e cor). Não coletamos CPF, telefone, localização ou dados financeiros.</p>
@@ -613,7 +613,7 @@ const POLS = {
       <p style="margin:.3rem 0 .8rem">Senhas armazenadas com hash bcrypt (salt 10). Sessões via JWT com expiração. Tráfego protegido por HTTPS.</p>
 
       <b style="color:var(--cream)">6. Seus direitos (LGPD Art. 18)</b>
-      <p style="margin:.3rem 0 .8rem">Você pode a qualquer momento: acessar seus dados, corrigi-los, excluir sua conta (Configurações → Excluir conta) ou solicitar portabilidade via <span style="color:var(--gold)">contato@arrozmarket.com.br</span>.</p>
+      <p style="margin:.3rem 0 .8rem">Você pode a qualquer momento: acessar seus dados, corrigi-los, excluir sua conta (Configurações → Excluir conta) ou solicitar portabilidade via <span style="color:var(--gold)">contato@arrozmarket.online</span>.</p>
 
       <b style="color:var(--cream)">7. Retenção</b>
       <p style="margin:.3rem 0 .8rem">Dados mantidos enquanto a conta estiver ativa. Após exclusão, removidos em até 30 dias.</p>
@@ -666,7 +666,7 @@ const POLS = {
       <p style="margin:.3rem 0 .8rem">Não utilizamos Google Analytics, Facebook Pixel, cookies de publicidade nem qualquer tecnologia de rastreamento de terceiros.</p>
 
       <b style="color:var(--cream)">Como remover</b>
-      <p style="margin:.3rem 0 .8rem">Acesse as Configurações do seu navegador → Privacidade → Limpar dados do site → arrozmarket.com.br. Isso encerrará sua sessão.</p>
+      <p style="margin:.3rem 0 .8rem">Acesse as Configurações do seu navegador → Privacidade → Limpar dados do site → arrozmarket.online. Isso encerrará sua sessão.</p>
     </div>`
   }
 };
@@ -928,6 +928,8 @@ function notifLocal(titulo, corpo) {
     try { renderLikeDest(); }   catch(e) {}
     // Aplica idioma DEPOIS de tudo renderizado para traduzir o DOM completo
     try { aplicarIdioma(); }    catch(e) {}
+    // Restaura a página do hash da URL (refresh mantém especialista/precos/tecnico)
+    try { irParaHashInicial(); } catch(e) {}
   }, 150);
   setInterval(function() {
     try { carregarCotacoes(); } catch(e) {}
@@ -961,16 +963,35 @@ function fecharDrawer() {
 }
 
 /* ═══ NAVEGAÇÃO ═══ */
-function ir(id, el) {
+function ir(id, el, semHash) {
   fecharDrawer();
   document.querySelectorAll('.pagina').forEach(p => p.classList.remove('ativa'));
   document.querySelectorAll('.nav-links a, #nav-drawer a').forEach(a => a.classList.remove('ativo'));
   const pg = document.getElementById(id);
   if (pg) pg.classList.add('ativa');
+  // Marca link ativo (mesmo quando chamado sem elemento, ex: via hash)
   if (el) el.classList.add('ativo');
+  else document.querySelectorAll(`.nav-links a[onclick*="'${id}'"], #nav-drawer a[onclick*="'${id}'"]`).forEach(a => a.classList.add('ativo'));
+  // Atualiza URL sem recarregar — refresh mantém a página
+  if (!semHash) { try { history.replaceState(null, '', '#' + id); } catch(e) {} }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (id === 'precos' && !S.G.linha) carregarChartJs(() => { try { initGraficos(); } catch(e){} });
 }
+
+/* Restaura a página a partir do hash da URL (chamado no boot) */
+function irParaHashInicial() {
+  const id = (location.hash || '').replace('#', '');
+  const validas = ['inicio', 'tecnico', 'precos', 'especialista'];
+  if (id && validas.includes(id) && id !== 'inicio') {
+    ir(id, null, true);
+  }
+}
+// Suporta botões voltar/avançar do navegador
+window.addEventListener('hashchange', () => {
+  const id = (location.hash || '').replace('#', '') || 'inicio';
+  const validas = ['inicio', 'tecnico', 'precos', 'especialista'];
+  if (validas.includes(id)) ir(id, null, true);
+});
 
 /* ═══ AVATAR ═══ */
 function renderAvatar() {
@@ -2359,19 +2380,6 @@ function abrirAudioDestaque() {
   }
 }
 
-function fecharModal() {
-  document.getElementById('modal').classList.remove('aberto');
-  document.body.style.overflow = '';
-  const a = document.getElementById('am-audio-el');
-  if (a) { a.pause(); }
-  cancelAnimationFrame(AM.rafId);
-  AM.playing = false;
-  document.getElementById('am-ico-play').style.display  = '';
-  document.getElementById('am-ico-pause').style.display = 'none';
-  document.getElementById('am-eq-bars').classList.remove('ativo');
-  if (S.G._modalViews) { S.G._modalViews.destroy(); S.G._modalViews = null; }
-}
-
 function fmtN(n) {
   if (n >= 1e6) return (n/1e6).toFixed(1).replace('.',',') + ' mi';
   if (n >= 1000) return (n/1000).toFixed(1).replace('.',',') + ' mil';
@@ -2818,14 +2826,35 @@ function abrirAudio(v) {
     AM.audioUrl  = v.url;
     AM.vidAtual  = v;           // ← armazena episódio atual para o seletor de idioma
     a.src = v.url;
+    a.load();                   // força carregar metadados (duração) imediatamente
     if (epTit) epTit.textContent = vidTitulo(v);
     cover.style.display  = '';
     noUrl.style.display  = 'none';
     amUpdateLangBtn(v);         // ← exibe/oculta botão de idioma conforme url_en
 
-    // Eventos do audio element
-    a.onloadedmetadata = () => {
-      document.getElementById('am-time').textContent = '0:00 / ' + amFmt(a.duration);
+    // Eventos do audio element — duração robusta (WAV pode dar Infinity/NaN)
+    function _amAtualizaDur() {
+      const d = a.duration;
+      if (!isFinite(d) || d <= 0) return;
+      const durStr = amFmt(d);
+      const timeEl = document.getElementById('am-time');
+      if (timeEl && !AM.playing) timeEl.textContent = amFmt(a.currentTime) + ' / ' + durStr;
+      if (S.token && v.id && (!v.dur || v.dur === '00:00' || v.dur === 'Infinity:NaN')) {
+        apiFetch('PUT', '/me/dur/' + v.id, { dur: durStr }).catch(()=>{});
+        v.dur = durStr;
+      }
+    }
+    a.onloadedmetadata = _amAtualizaDur;
+    a.ondurationchange = _amAtualizaDur;
+    a.oncanplay        = _amAtualizaDur;
+    // timeupdate: barra e tempo em tempo real, não só via RAF
+    a.ontimeupdate = () => {
+      const d = a.duration;
+      if (!isFinite(d) || d <= 0) return;
+      const prog = document.getElementById('am-prog');
+      if (prog) prog.style.width = (a.currentTime / d * 100).toFixed(2) + '%';
+      const timeEl = document.getElementById('am-time');
+      if (timeEl) timeEl.textContent = amFmt(a.currentTime) + ' / ' + amFmt(d);
     };
     a.onplay = () => {
       AM.playing = true;

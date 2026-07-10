@@ -259,7 +259,7 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
   <div class="login-box">
     <div class="login-logo">Arroz<span>Market</span></div>
     <div class="login-sub">Painel Administrativo</div>
-    <div class="form-grupo"><label>E-mail</label><input type="email" id="loginUser" placeholder="admin@arrozmarket.com.br" autocomplete="username"></div>
+    <div class="form-grupo"><label>E-mail</label><input type="email" id="loginUser" placeholder="admin@arrozmarket.online" autocomplete="username"></div>
     <div class="form-grupo"><label>Senha</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
     <div style="display:flex;align-items:center;justify-content:flex-start;gap:.5rem;margin-bottom:.8rem">
       <input type="checkbox" id="loginLembrar" style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer;flex-shrink:0">
@@ -398,6 +398,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
                 🎚 Volume mic:
                 <input type="range" id="rec-gain" min="0" max="3" step="0.1" value="1" oninput="setRecGain(this.value)" style="accent-color:var(--gold);width:90px">
                 <span id="rec-gain-val">1.0×</span>
+              </label>
+              <label style="font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;cursor:pointer" title="Cancela eco, suprime ruído de fundo, corta ronco e chiado, e uniformiza a voz">
+                <input type="checkbox" id="rec-antiruido" checked style="accent-color:var(--gold);width:15px;height:15px;cursor:pointer">
+                🔇 Anti-ruído
               </label>
             </div>
 
@@ -1484,23 +1488,51 @@ function recSetStatus(txt, cls='') {
 
 async function recToggle() {
   if (REC.recording) return;
-  // Solicita microfone
+  // Solicita microfone com supressão de ruído nativa do navegador
+  const antiRuido = document.getElementById('rec-antiruido')?.checked ?? true;
   try {
-    REC.stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    REC.stream = await navigator.mediaDevices.getUserMedia({
+      audio: antiRuido ? {
+        echoCancellation: true,       // cancela eco
+        noiseSuppression: true,       // suprime ruído de fundo
+        autoGainControl:  true,       // normaliza volume
+        channelCount:     1,          // mono (voz)
+        sampleRate:       48000,
+      } : true,
+      video: false
+    });
   } catch(e) {
     toast('Microfone não autorizado ou indisponível.', 'erro'); return;
   }
-  // Web Audio API para visualização e ganho
+  // Web Audio API para visualização, ganho e filtragem
   REC.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const src = REC.audioCtx.createMediaStreamSource(REC.stream);
   REC.gainNode = REC.audioCtx.createGain();
   REC.gainNode.gain.value = parseFloat(document.getElementById('rec-gain').value);
   REC.analyser = REC.audioCtx.createAnalyser();
   REC.analyser.fftSize = 256;
-  src.connect(REC.gainNode);
+
+  // ── Cadeia anti-ruído por filtros ──
+  let cadeia = src;
+  if (antiRuido) {
+    // Highpass 85Hz — corta ronco/rumble de mesa e ar-condicionado
+    const hp = REC.audioCtx.createBiquadFilter();
+    hp.type = 'highpass'; hp.frequency.value = 85; hp.Q.value = 0.7;
+    // Lowpass 12kHz — corta chiado agudo (hiss)
+    const lp = REC.audioCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 12000; lp.Q.value = 0.7;
+    // Compressor suave — uniformiza a voz e reduz picos
+    const comp = REC.audioCtx.createDynamicsCompressor();
+    comp.threshold.value = -24; comp.knee.value = 30; comp.ratio.value = 3;
+    comp.attack.value = 0.003; comp.release.value = 0.25;
+    src.connect(hp); hp.connect(lp); lp.connect(comp);
+    cadeia = comp;
+    REC._filtros = { hp, lp, comp };
+  }
+  cadeia.connect(REC.gainNode);
   REC.gainNode.connect(REC.analyser);
 
-  // Gravação via gain processado
+  // Gravação via cadeia processada
   const dest = REC.audioCtx.createMediaStreamDestination();
   REC.gainNode.connect(dest);
   REC.mediaRecorder = new MediaRecorder(dest.stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/ogg' });
@@ -2531,13 +2563,6 @@ function salvarBio(){
 }
 
 /* ═══ EXPORTAR ═══ */
-function exportar(tipo){
-  const d={videos:S.videos,cotacoes:S.nomes.map((n,i)=>({nome:n,preco:S.p[i]})),config:{versao:'1.0',proprietario:'Fábio Toledo',local:'São Gabriel — RS'}};
-  const blob=new Blob([JSON.stringify(d[tipo]||d,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`arrozmarket_${tipo}_${Date.now()}.json`; a.click();
-  toast(`Exportação de ${tipo} concluída!`,'sucesso');
-}
-
 /* ═══ SCRAPER (Notícias Agrícolas) ═══ */
 async function forcarScraping() {
   toast('Iniciando coleta...', 'ouro');

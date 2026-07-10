@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.arrozmarket.com.br/</loc>
+    <loc>https://arrozmarket.online/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.arrozmarket.com.br/#tecnico</loc>
+    <loc>https://arrozmarket.online/#tecnico</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.arrozmarket.com.br/#precos</loc>
+    <loc>https://arrozmarket.online/#precos</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.arrozmarket.com.br/#especialista</loc>
+    <loc>https://arrozmarket.online/#especialista</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
