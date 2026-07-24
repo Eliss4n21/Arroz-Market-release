@@ -2064,7 +2064,6 @@ function destRaf() {
 }
 
 function destToggle() {
-  if (!S.usuario) { toast(t('toast_login_ouvir'), 'err'); abrirAuth('registro'); return; }
   const audio = document.getElementById('dest-audio-el');
   const v = S.vidDest;
 
@@ -2601,7 +2600,6 @@ function amSkip(sec) {
 
 /* Play/Pause */
 function amToggle() {
-  if (!S.usuario) { toast(t('toast_login_ouvir'), 'err'); abrirAuth('registro'); return; }
   const a = amGetAudio();
   if (!a || !AM.audioUrl) return;
   if (AM.playing) { a.pause(); AM.playing = false; document.getElementById('am-ico-play').style.display=''; document.getElementById('am-ico-pause').style.display='none'; document.getElementById('am-eq-bars').classList.remove('ativo'); cancelAnimationFrame(AM.rafId); }
