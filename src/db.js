@@ -36,7 +36,7 @@ const DEFAULT = {
   ],
   curtidas: {},
   comentarios: {},  /* { videoId: [ {id, uid, nome, avatar, texto, ts, aprovado} ] } */
-  config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10 },
+  config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10, sheetsUrl:'' },
   especialista: {
     nome:'Fábio Toledo', cargo:'Especialista em Mercado Orizícola', local:'São Gabriel — RS',
     frase:'O arroz gaúcho é o termômetro do agronegócio brasileiro.',
@@ -118,6 +118,7 @@ if (!_db.usuarios?.length) {
 if (!_db.especialista) { _db.especialista = DEFAULT.especialista; salvarDB(_db); }
 if (!_db.comentarios)  { _db.comentarios  = {}; salvarDB(_db); }
 if (!_db.thumbs)       { _db.thumbs       = {}; salvarDB(_db); }
+if (_db.config && _db.config.sheetsUrl === undefined) { _db.config.sheetsUrl = ''; salvarDB(_db); }
 
 const db = {
   get()  { return _db; },

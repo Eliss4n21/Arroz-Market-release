@@ -3510,10 +3510,10 @@ function renderEspecialista() {
      <div class="lt-txt"><h4>${t.titulo}</h4><div class="empresa">${t.empresa}</div>
      <p>${t.desc}</p></div></div>`).join('');
   const redes = [
-    e.yt ? `<button class="btn-rede" onclick="window.open('${e.yt}','_blank')">YouTube</button>` : '',
+    e.yt ? `<button class="btn-rede" onclick="window.open('${e.yt}','_blank')">WhatsApp</button>` : '',
     e.li ? `<button class="btn-rede" onclick="window.open('${e.li}','_blank')">LinkedIn</button>` : '',
     e.ig ? `<button class="btn-rede" onclick="window.open('${e.ig}','_blank')">Instagram</button>` : '',
-    (!e.yt && !e.li && !e.ig) ? '<button class="btn-rede">YouTube</button><button class="btn-rede">LinkedIn</button><button class="btn-rede">Instagram</button>' : ''
+    (!e.yt && !e.li && !e.ig) ? '<button class="btn-rede">WhatsApp</button><button class="btn-rede">LinkedIn</button><button class="btn-rede">Instagram</button>' : ''
   ].join('');
   const el = document.getElementById('esp-render');
   if (!el) return;

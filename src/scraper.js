@@ -18,10 +18,10 @@
 
 const db = require('./db');
 
-/* ── Importação dinâmica: não quebra se libs não instaladas ainda ── */
-let fetch, cheerio;
-try { fetch   = require('node-fetch'); } catch(e) { fetch   = null; }
-try { cheerio = require('cheerio');    } catch(e) { cheerio = null; }
+/* ── fetch nativo do Node 18+ (sem depender de node-fetch instalado) ── */
+const fetch = globalThis.fetch;
+let cheerio;
+try { cheerio = require('cheerio'); } catch(e) { cheerio = null; }
 
 /* ─────────────────────────────────────────
    MAPEAMENTO DE FONTES
@@ -133,34 +133,116 @@ function parseHtml(html, fonte) {
 }
 
 /* ─────────────────────────────────────────
+   GOOGLE SHEETS — fonte primária opcional
+   Mais confiável que scraping direto: usa a API pública
+   gviz do Google, que não sofre bloqueio anti-bot como
+   sites de notícias costumam aplicar.
+   Formato esperado da aba "Cotacoes": id,nome,preco,variacao,unidade
+───────────────────────────────────────── */
+async function lerGoogleSheets(sheetsUrl) {
+  if (!fetch) throw new Error('fetch nativo indisponível (requer Node 18+)');
+  const match = (sheetsUrl || '').match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!match) throw new Error('URL de planilha inválida');
+  const id = match[1];
+  const jsonUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=Cotacoes`;
+
+  const resp = await fetch(jsonUrl, { timeout: 15000 });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} ao acessar a planilha`);
+  const txt = await resp.text();
+  const json = JSON.parse(txt.replace(/^[^(]+\(|\);?$/g, ''));
+  const rows = json.table?.rows || [];
+
+  const cotacoesAtuais = db.getCotacoes();
+  let atualizados = 0;
+
+  for (const row of rows) {
+    const c = row.c;
+    const cid      = (c[0]?.v || '').toString().trim();
+    const preco    = parseFloat((c[2]?.v ?? '0').toString().replace(',', '.'));
+    const variacao = parseFloat((c[3]?.v ?? '0').toString().replace(',', '.'));
+    if (!cid || !isFinite(preco) || preco <= 0) continue;
+
+    const idx = cotacoesAtuais.findIndex(x => x.id === cid);
+    if (idx >= 0) {
+      cotacoesAtuais[idx].preco    = preco;
+      cotacoesAtuais[idx].variacao = isFinite(variacao) ? variacao : 0;
+      cotacoesAtuais[idx].cls      = variacao > 0.01 ? 'alta' : variacao < -0.01 ? 'baixa' : 'estavel';
+      cotacoesAtuais[idx].ts       = Date.now();
+      cotacoesAtuais[idx].fonte    = 'Google Sheets';
+      atualizados++;
+    }
+  }
+
+  if (atualizados === 0) throw new Error('Nenhuma cotação válida encontrada na aba "Cotacoes"');
+  db.updateCotacoes(cotacoesAtuais);
+  console.log(`[Scraper] ✅ Google Sheets: ${atualizados}/${cotacoesAtuais.length} cotações atualizadas — ${new Date().toLocaleTimeString('pt-BR')}`);
+  return cotacoesAtuais;
+}
+
+/* ─────────────────────────────────────────
    SCRAPING REAL via fetch + cheerio
 ───────────────────────────────────────── */
 async function scrapeCEPEA() {
-  // Se as libs não estiverem instaladas, usa simulação
+  // Se cheerio não estiver instalado, ou fetch nativo indisponível (Node <18), usa simulação
   if (!fetch || !cheerio) {
-    console.warn('[Scraper] node-fetch ou cheerio não instalados → simulação');
+    console.warn('[Scraper] fetch nativo ou cheerio indisponível → simulação');
     return simular();
   }
 
   const cotacoes  = db.getCotacoes();
   let   atualizados = 0;
 
+  // Headers mais completos — imita um browser real com mais fidelidade.
+  // Isso NÃO garante passar por proteção anti-bot baseada em impressão
+  // digital de TLS (WAFs tipo Cloudflare verificam a conexão em si, não
+  // só os headers), mas aumenta a chance em bloqueios mais simples.
   const HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'pt-BR,pt;q=0.9',
-    'Referer': BASE_URL,
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Referer': BASE_URL + '/',
+    'Sec-Ch-Ua': '"Chromium";v="126", "Not.A/Brand";v="8"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"Windows"',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+    'Connection': 'keep-alive',
   };
+
+  /* Busca com retry — 2 tentativas com pausa crescente, já que alguns
+     bloqueios anti-bot são por limite de taxa (rate limit), não bloqueio
+     permanente, e uma segunda tentativa pode ter sucesso. */
+  async function fetchComRetry(url, tentativas = 2) {
+    let ultimoErro;
+    for (let i = 0; i < tentativas; i++) {
+      try {
+        const ctrl = new AbortController();
+        const tid  = setTimeout(() => ctrl.abort(), 20000);
+        const resp = await fetch(url, { headers: HEADERS, signal: ctrl.signal });
+        clearTimeout(tid);
+        if (!resp.ok) {
+          const corpo = await resp.text().catch(() => '');
+          throw new Error(`HTTP ${resp.status} — ${corpo.slice(0, 150).replace(/\s+/g, ' ')}`);
+        }
+        return await resp.text();
+      } catch(err) {
+        ultimoErro = err;
+        if (i < tentativas - 1) await new Promise(r => setTimeout(r, 2000 * (i + 1)));
+      }
+    }
+    throw ultimoErro;
+  }
 
   for (const fonte of FONTES) {
     try {
       const url = BASE_URL + fonte.url;
       console.log(`[Scraper] → ${fonte.nome}`);
 
-      const resp = await fetch(url, { headers: HEADERS, timeout: 20000 });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const html = await resp.text();
-
+      const html = await fetchComRetry(url);
       const resultado = parseHtml(html, fonte);
       if (resultado && resultado.preco > 0) {
         const idx = cotacoes.findIndex(c => c.id === fonte.id);
@@ -177,7 +259,7 @@ async function scrapeCEPEA() {
           console.log(`[Scraper] ✓ ${fonte.id}: R$ ${resultado.preco} (${s}${cotacoes[idx].variacao})`);
         }
       } else {
-        console.warn(`[Scraper] ✗ ${fonte.id}: sem dados → mantém anterior`);
+        console.warn(`[Scraper] ✗ ${fonte.id}: página respondeu mas sem dados reconhecíveis → mantém anterior`);
       }
 
       // Pausa educada: 1,5s entre requests para não sobrecarregar o site fonte
@@ -194,8 +276,19 @@ async function scrapeCEPEA() {
     return cotacoes;
   }
 
+  // Fallback: Google Sheets, se configurado, antes de cair para simulação
+  const sheetsUrl = db.getConfig()?.sheetsUrl;
+  if (sheetsUrl) {
+    try {
+      console.warn('[Scraper] Scraping direto falhou em todas as fontes — tentando Google Sheets configurado...');
+      return await lerGoogleSheets(sheetsUrl);
+    } catch(e) {
+      console.warn('[Scraper] Google Sheets também falhou:', e.message);
+    }
+  }
+
   console.warn('[Scraper] Nenhuma cotação real obtida → simulação');
   return simular();
 }
 
-module.exports = { scrapeCEPEA, simular };
+module.exports = { scrapeCEPEA, simular, lerGoogleSheets };

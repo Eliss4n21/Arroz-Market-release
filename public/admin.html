@@ -729,7 +729,7 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
       <!-- GOOGLE SHEETS -->
       <div class="painel" id="p-sheets">
         <div class="painel-titulo">Google Sheets — Cotações</div>
-        <div class="painel-sub">Configure uma planilha pública do Google como fonte de cotações. Ela tem prioridade sobre o scraper.</div>
+        <div class="painel-sub">Configure uma planilha pública do Google como reserva, usada automaticamente só se o scraper do site de notícias falhar em todas as fontes. O scraper direto continua sendo a fonte principal.</div>
         <div class="grid2">
           <div class="card"><div class="card-cab"><div class="card-titulo">🔗 URL da Planilha</div></div><div class="card-corpo">
             <div class="form-grupo">
@@ -746,7 +746,10 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
             </div>
             <div style="display:flex;gap:.6rem">
               <button class="btn btn-prim" style="flex:1" onclick="salvarSheetUrl()">💾 Salvar URL</button>
-              <button class="btn btn-sec" onclick="testarSheet()">🔍 Testar</button>
+              <button class="btn btn-sec" onclick="testarSheet()">🔍 Testar planilha</button>
+            </div>
+            <div style="margin-top:.6rem">
+              <button class="btn btn-sec" style="width:100%" onclick="forcarAtualizacaoSheet()">🔄 Forçar atualização real agora (scraper direto)</button>
             </div>
             <div id="sh-status" style="margin-top:.8rem;font-size:.78rem;display:none"></div>
           </div></div>
@@ -821,7 +824,7 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
               <div class="form-grupo"><label>Stat 4 — Legenda</label><input type="text" id="esp-s4l" value="Abrangência"></div>
             </div>
             <hr style="border-color:rgba(200,168,75,.1);margin:1rem 0">
-            <div class="form-grupo"><label>YouTube</label><input type="url" id="esp-yt" placeholder="https://youtube.com/@..."></div>
+            <div class="form-grupo"><label>WhatsApp</label><input type="url" id="esp-yt" placeholder="https://wa.me/55XXXXXXXXXXX"></div>
             <div class="form-grupo"><label>LinkedIn</label><input type="url" id="esp-li" placeholder="https://linkedin.com/in/..."></div>
             <div class="form-grupo"><label>Instagram</label><input type="url" id="esp-ig" placeholder="https://instagram.com/..."></div>
           </div></div>
@@ -2849,11 +2852,26 @@ function renderMiniFromApi(cots) {
 
 
 /* ═══ GOOGLE SHEETS ═══ */
-function salvarSheetUrl(){
+async function salvarSheetUrl(){
   const url = document.getElementById('sh-url').value.trim();
   if (!url) { toast('Cole a URL da planilha.','erro'); return; }
-  localStorage.setItem('am_sheets_url', url);
-  toast('URL salva! As cotações do site usarão a planilha.','sucesso');
+  try {
+    await apiAdm('PUT', '/admin/config', { sheetsUrl: url });
+    localStorage.setItem('am_sheets_url', url); // cache local só para preencher o campo mais rápido
+    toast('✅ Salvo no servidor! As cotações do site inteiro usarão a planilha.','sucesso');
+  } catch(e) {
+    toast('Erro ao salvar: ' + e.message, 'erro');
+  }
+}
+async function forcarAtualizacaoSheet(){
+  const st = document.getElementById('sh-status');
+  st.style.display='block'; st.style.color='var(--gold)'; st.textContent='🔄 Buscando cotações agora...';
+  try {
+    await apiAdm('POST', '/admin/scrape');
+    st.style.color='var(--green2)'; st.textContent='✅ Cotações atualizadas no site agora mesmo!';
+  } catch(e) {
+    st.style.color='var(--red)'; st.textContent='❌ Erro: ' + e.message;
+  }
 }
 async function testarSheet(){
   const url = document.getElementById('sh-url').value.trim() || localStorage.getItem('am_sheets_url');
