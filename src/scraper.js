@@ -18,6 +18,16 @@
 
 const db = require('./db');
 
+/* ── Polyfill: cheerio 1.x depende da classe global File (Web API),
+   que só é exposta automaticamente a partir do Node 20. Em Node 18.x
+   ela existe dentro do módulo node:buffer mas precisa ser promovida
+   manualmente a globalThis, senão o require('cheerio') falha com
+   "File is not defined". Seguro em qualquer versão — no Node 20+
+   isso não faz nada, pois globalThis.File já existe. ── */
+if (typeof globalThis.File === 'undefined') {
+  try { globalThis.File = require('node:buffer').File; } catch(e) { /* Node muito antigo, sem File nem em node:buffer */ }
+}
+
 /* ── fetch nativo do Node 18+ (sem depender de node-fetch instalado) ── */
 const fetch = globalThis.fetch;
 let cheerio;
