@@ -29,10 +29,6 @@ const DEFAULT = {
     { id:'agl',   nome:'Agulhinha Irrigado (RS)',      preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
     { id:'lf',    nome:'Longo Fino (MT)',              preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
     { id:'ben',   nome:'Beneficiado Tipo 1 (SP)',      preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-    { id:'parb',  nome:'Parboilizado T1',              preco:155.20, variacao:+2.40, cls:'alta',    unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-    { id:'int',   nome:'Integral T1',                  preco:175.80, variacao:+3.10, cls:'alta',    unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-    { id:'cat',   nome:'Cateto T1',                    preco: 95.00, variacao:-0.50, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-    { id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
   ],
   curtidas: {},
   comentarios: {},  /* { videoId: [ {id, uid, nome, avatar, texto, ts, aprovado} ] } */
@@ -119,6 +115,14 @@ if (!_db.especialista) { _db.especialista = DEFAULT.especialista; salvarDB(_db);
 if (!_db.comentarios)  { _db.comentarios  = {}; salvarDB(_db); }
 if (!_db.thumbs)       { _db.thumbs       = {}; salvarDB(_db); }
 if (_db.config && _db.config.sheetsUrl === undefined) { _db.config.sheetsUrl = ''; salvarDB(_db); }
+// Remove cotações sem fonte real que nunca foram cobertas pelo scraper
+// (rotuladas incorretamente como "Notícias Agrícolas" mas sempre simuladas)
+if (Array.isArray(_db.cotacoes)) {
+  const idsRemover = new Set(['parb', 'int', 'cat', 'qui']);
+  const antes = _db.cotacoes.length;
+  _db.cotacoes = _db.cotacoes.filter(c => !idsRemover.has(c.id));
+  if (_db.cotacoes.length !== antes) { salvarDB(_db); console.log(`[DB] Removidas ${antes - _db.cotacoes.length} cotações sem fonte real.`); }
+}
 
 const db = {
   get()  { return _db; },

@@ -525,10 +525,6 @@
       <button class="fil-btn" onclick="apFiltro('agl',this)" data-i18n="pre_fil_agl">Agulhinha</button>
       <button class="fil-btn" onclick="apFiltro('lf',this)" data-i18n="pre_fil_lf">Longo Fino</button>
       <button class="fil-btn" onclick="apFiltro('ben',this)" data-i18n="pre_fil_ben">Beneficiado</button>
-      <button class="fil-btn" onclick="apFiltro('parb',this)" data-i18n="pre_fil_parb">Parboilizado</button>
-      <button class="fil-btn" onclick="apFiltro('int',this)" data-i18n="pre_fil_int">Integral</button>
-      <button class="fil-btn" onclick="apFiltro('cat',this)" data-i18n="pre_fil_cat">Cateto</button>
-      <button class="fil-btn" onclick="apFiltro('qui',this)" data-i18n="pre_fil_qui">Quirera</button>
     </div>
     <canvas id="grafLinha" height="100"></canvas>
   </div>
@@ -695,10 +691,6 @@ const COTS_LOCAL = [
   {id:'agl',   nome:'Agulhinha Irrigado (RS)',      preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg'},
   {id:'lf',    nome:'Longo Fino (MT)',              preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg'},
   {id:'ben',   nome:'Beneficiado Tipo 1 (SP)',      preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg'},
-  {id:'parb',  nome:'Parboilizado T1',              preco:155.20, variacao:+2.40, cls:'alta',    unidade:'sc 60kg'},
-  {id:'int',   nome:'Integral T1',                  preco:175.80, variacao:+3.10, cls:'alta',    unidade:'sc 60kg'},
-  {id:'cat',   nome:'Cateto T1',                    preco: 95.00, variacao:-0.50, cls:'baixa',   unidade:'sc 60kg'},
-  {id:'qui',   nome:'Quirera',                      preco: 38.50, variacao:-0.30, cls:'baixa',   unidade:'sc 60kg'},
 ];
 /* Fallback vazio: usado apenas se a API estiver totalmente inacessível.
    Sem episódios de exemplo — a grade fica vazia até a API responder. */
@@ -3376,10 +3368,6 @@ function initGraficos() {
     agl:   { r:'Agulhinha Irrigado',         c:'#6BA67A' },
     lf:    { r:'Longo Fino (MT)',            c:'#7B9FD4' },
     ben:   { r:'Beneficiado T1',             c:'#9B7ED4' },
-    parb:  { r:'Parboilizado T1',            c:'#4AB8B8' },
-    int:   { r:'Integral T1',               c:'#D47B8F' },
-    cat:   { r:'Cateto T1',                 c:'#E09050' },
-    qui:   { r:'Quirera',                   c:'#8FA87A' },
   };
 
   /* Séries históricas (12 meses) — baseadas nos preços reais de fechamento */
@@ -3389,10 +3377,6 @@ function initGraficos() {
     agl:   [46,48,49,48,46,45,47,48,49,50,50,48],
     lf:    [58,60,61,60,58,57,59,60,61,62,62,60],
     ben:   [124,126,124,122,118,116,118,120,122,122,120,118],
-    parb:  [148,150,148,145,140,138,142,148,152,154,155,155],
-    int:   [168,172,168,165,160,158,162,168,173,175,176,176],
-    cat:   [98,100,98,96,93,92,94,96,97,97,96,95],
-    qui:   [40,41,40,39,37,36,38,39,39,39,38,38],
   };
 
   function series(f) {

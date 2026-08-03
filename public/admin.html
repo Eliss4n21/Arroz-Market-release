@@ -764,7 +764,6 @@ body{background:var(--dark);color:var(--text);font-family:'DM Sans',sans-serif;f
                 <tr><td style="color:var(--gold)">agl</td><td>Agulhinha Irrigado</td><td>48.00</td><td>0.00</td><td>sc 50kg</td></tr>
                 <tr><td style="color:var(--gold)">lf</td><td>Longo Fino MT</td><td>60.00</td><td>0.00</td><td>sc 60kg</td></tr>
                 <tr><td style="color:var(--gold)">ben</td><td>Beneficiado T1</td><td>118.00</td><td>-6.35</td><td>sc 60kg</td></tr>
-                <tr><td style="color:var(--gold)">parb</td><td>Parboilizado T1</td><td>155.20</td><td>2.40</td><td>sc 60kg</td></tr>
               </tbody>
             </table>
             <div style="margin-top:.8rem">
@@ -2908,7 +2907,7 @@ async function testarSheet(){
 }
 function criarModeloSheet(e){
   e.preventDefault();
-  const csv = 'id,nome,preco,variacao,unidade\ncas,Em Casca ESALQ,65.00,0.00,sc 50kg\nmf_rs,Mercado Fisico RS,62.00,0.00,sc 50kg\nagl,Agulhinha Irrigado,48.00,0.00,sc 50kg\nlf,Longo Fino MT,60.00,0.00,sc 60kg\nben,Beneficiado T1,118.00,-6.35,sc 60kg\nparb,Parboilizado T1,155.20,2.40,sc 60kg\nint,Integral T1,175.80,3.10,sc 60kg\ncat,Cateto T1,95.00,-0.50,sc 60kg\nqui,Quirera,38.50,-0.30,sc 60kg';
+  const csv = 'id,nome,preco,variacao,unidade\ncas,Em Casca ESALQ,65.00,0.00,sc 50kg\nmf_rs,Mercado Fisico RS,62.00,0.00,sc 50kg\nagl,Agulhinha Irrigado,48.00,0.00,sc 50kg\nlf,Longo Fino MT,60.00,0.00,sc 60kg\nben,Beneficiado T1,118.00,-6.35,sc 60kg';
   const a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = 'cotacoes_modelo.csv'; a.click();
