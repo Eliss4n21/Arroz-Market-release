@@ -183,9 +183,10 @@ async function lerGoogleSheets(sheetsUrl) {
    SCRAPING REAL via fetch + cheerio
 ───────────────────────────────────────── */
 async function scrapeCEPEA() {
-  // Se cheerio não estiver instalado, ou fetch nativo indisponível (Node <18), usa simulação
   if (!fetch || !cheerio) {
-    console.warn('[Scraper] fetch nativo ou cheerio indisponível → simulação');
+    if (!fetch)   console.error('❌ [Scraper] fetch nativo indisponível — Node.js < 18 no servidor. Verifique a versão do Node no painel Hostinger.');
+    if (!cheerio) console.error('❌ [Scraper] cheerio não instalado — rode "npm install" no servidor ou verifique o deploy.');
+    console.warn('[Scraper] → usando simulação até isso ser corrigido');
     return simular();
   }
 

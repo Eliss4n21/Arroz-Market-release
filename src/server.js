@@ -124,6 +124,14 @@ app.listen(PORT, () => {
   console.log(`    CORS     : ${ORIGIN}`);
   console.log(`    Scraping : a cada ${minutos} min`);
   console.log(`    Banco    : ${require('./db').DATA_DIR}`);
+  console.log(`    Node.js  : ${process.version}`);
+  try {
+    require('cheerio');
+    console.log(`    Cheerio  : ✅ instalado`);
+  } catch(e) {
+    console.log(`    Cheerio  : ❌ FALHA — ${e.message}`);
+  }
+  console.log(`    fetch()  : ${typeof globalThis.fetch === 'function' ? '✅ disponível' : '❌ INDISPONÍVEL (Node < 18)'}`);
   if (!process.env.DATA_DIR) {
     console.log('\n⚠️  ⚠️  ⚠️  AVISO CRÍTICO ⚠️  ⚠️  ⚠️');
     console.log('    DATA_DIR não configurado nas variáveis de ambiente!');
