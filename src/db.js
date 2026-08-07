@@ -65,32 +65,60 @@ try { if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true
   }
 })();
 
+/* Lê o backup mais recente disponível — usado como rede de segurança
+   quando o db.json principal está corrompido/ilegível. */
+function lerBackupMaisRecente() {
+  try {
+    const backups = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('db_')).sort();
+    if (!backups.length) return null;
+    const maisRecente = backups[backups.length - 1];
+    const conteudo = fs.readFileSync(path.join(BACKUP_DIR, maisRecente), 'utf8');
+    console.warn(`⚠️  [DB] Recuperando dados do backup mais recente: ${maisRecente}`);
+    return JSON.parse(conteudo);
+  } catch(e) {
+    console.error('❌ [DB] Falha ao ler backups também:', e.message);
+    return null;
+  }
+}
+
 function lerDB() {
   try {
     if (fs.existsSync(DB_PATH)) return JSON.parse(fs.readFileSync(DB_PATH,'utf8'));
     console.warn(`⚠️  [DB] ${DB_PATH} não existe ainda — iniciando banco novo (normal na primeira vez).`);
   } catch(e) {
-    console.error(`❌ [DB] Falha ao ler ${DB_PATH}:`, e.message);
+    // db.json existe mas está corrompido (ex: gravação interrompida no meio).
+    // Antes de desistir e começar do zero, tenta recuperar do backup mais
+    // recente — evita perda total de dados por um problema recuperável.
+    console.error(`❌❌❌ [DB] ${DB_PATH} está CORROMPIDO: ${e.message}`);
+    const backup = lerBackupMaisRecente();
+    if (backup) return backup;
+    console.error('❌ [DB] Nenhum backup disponível — iniciando banco vazio. DADOS ANTERIORES PODEM TER SIDO PERDIDOS.');
   }
   return JSON.parse(JSON.stringify(DEFAULT));
 }
 
-/* Salva o banco + mantém backup rotativo (últimos 5) — proteção contra
-   perda de dados em redeploys onde DATA_DIR não persistiu corretamente.
-   Recuperável via SSH em DATA_DIR/backups/ mesmo se db.json sumir. */
-let _saveCount = 0;
+/* Salva o banco de forma ATÔMICA (grava em arquivo temporário e troca
+   o nome só depois de terminar) — evita que uma interrupção no meio da
+   gravação (queda do processo, reinício forçado, etc.) deixe o db.json
+   corrompido pela metade. Mantém backup rotativo por TEMPO (a cada 5
+   minutos, não por contagem de saves — contagem zera a cada restart e
+   pode levar dias para gerar um backup em sites de baixo tráfego). */
+let _ultimoBackup = 0;
 function salvarDB(d) {
+  const tmpPath = DB_PATH + '.tmp';
   try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(d, null, 2));
-    // Backup a cada 20 salvamentos — evita I/O excessivo em uso normal
-    _saveCount++;
-    if (_saveCount % 20 === 0) {
+    fs.writeFileSync(tmpPath, JSON.stringify(d, null, 2));
+    fs.renameSync(tmpPath, DB_PATH); // rename é atômico no mesmo filesystem
+
+    const agora = Date.now();
+    if (agora - _ultimoBackup > 5 * 60 * 1000) { // no máximo 1 backup a cada 5 min
+      _ultimoBackup = agora;
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const bpath = path.join(BACKUP_DIR, `db_${ts}.json`);
       fs.writeFileSync(bpath, JSON.stringify(d, null, 2));
-      // Mantém só os 5 backups mais recentes
+      // Mantém só os 10 backups mais recentes
       const backups = fs.readdirSync(BACKUP_DIR).filter(f => f.startsWith('db_')).sort();
-      while (backups.length > 5) fs.unlinkSync(path.join(BACKUP_DIR, backups.shift()));
+      while (backups.length > 10) fs.unlinkSync(path.join(BACKUP_DIR, backups.shift()));
     }
   } catch(e) {
     console.error(`❌ [DB] FALHA AO SALVAR em ${DB_PATH}:`, e.message);
