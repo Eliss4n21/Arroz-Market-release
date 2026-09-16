@@ -70,3 +70,21 @@ test('falha sem criar novo preço quando todas as fontes estão indisponíveis',
     assert.equal(JSON.stringify(db.getCotacoes()), antes);
   } finally { global.fetch = fetchOriginal; }
 });
+
+test('consulta Cepea sem agente customizado e Notícias Agrícolas com agente', async () => {
+  const chamadas = [];
+  const fetchOriginal = global.fetch;
+  const data = new Date().toLocaleDateString('pt-BR', { timeZone:'America/Sao_Paulo' });
+  global.fetch = async (url, opcoes) => {
+    chamadas.push({ url, opcoes });
+    if (url.includes('cepea.org.br')) return { ok:true, text:async () =>
+      `<table><tr><th>Data</th><th>Valor R$</th><th>Var./Dia</th></tr>` +
+      `<tr><td>${data}</td><td>81,39</td><td>0,00%</td></tr></table>` };
+    return { ok:false, status:503 };
+  };
+  try {
+    await scraper.scrapeCEPEA();
+    assert.equal(chamadas[0].opcoes.headers, undefined);
+    assert.match(chamadas[1].opcoes.headers['User-Agent'], /Mozilla/);
+  } finally { global.fetch = fetchOriginal; }
+});

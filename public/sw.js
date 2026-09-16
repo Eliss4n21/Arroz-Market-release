@@ -6,7 +6,7 @@
    3. Ao clicar na notificação, abre o site
 ═══════════════════════════════════════════════════════════ */
 
-const CACHE_NAME   = 'arrozmarket-v3';
+const CACHE_NAME   = 'arrozmarket-v4';
 const CACHE_ASSETS = ['/', '/index.html'];
 
 /* ── Instalação: pré-cache dos assets principais ── */

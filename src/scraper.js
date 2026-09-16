@@ -96,12 +96,16 @@ function parseNoticias(html, fonte) {
   });
 }
 
-async function buscarHtml(url) {
+async function buscarHtml(url, agenteNoticias = false) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12000);
   try {
-    const resposta = await fetch(url, { signal:controller.signal,
-      headers:{ 'User-Agent':'Mozilla/5.0 ArrozMarket/1.1', 'Accept':'text/html' } });
+    const opcoes = { signal:controller.signal };
+    // O Cepea recusa um User-Agent customizado; Notícias Agrícolas exige um.
+    if (agenteNoticias) opcoes.headers = {
+      'User-Agent':'Mozilla/5.0 ArrozMarket/1.1', 'Accept':'text/html'
+    };
+    const resposta = await fetch(url, opcoes);
     if (!resposta.ok) {
       const erro = new Error(`HTTP ${resposta.status}`);
       erro.status = resposta.status;
@@ -150,7 +154,7 @@ function scrapeCEPEA() {
     try { coletados.push(...parseCepea(await buscarHtml(CEPEA_URL))); }
     catch (e) { erros.push(`Cepea: ${e.message}`); }
     for (const fonte of FONTES) {
-      try { coletados.push(...parseNoticias(await buscarHtml(NA_BASE + fonte.caminho), fonte)); }
+      try { coletados.push(...parseNoticias(await buscarHtml(NA_BASE + fonte.caminho, true), fonte)); }
       catch (e) {
         erros.push(`${fonte.id}: ${e.message}`);
         if (e.status === 403) break;

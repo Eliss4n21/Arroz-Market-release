@@ -118,6 +118,9 @@ indisponível, desde que a coluna F informe a data da cotação em `AAAA-MM-DD`.
 Quando uma fonte falha, o último preço conserva sua data original. O sistema não
 gera preços simulados, não atribui a data de hoje a um preço antigo e não preenche
 lacunas do gráfico com valores inventados. A página mostra a data de cada fonte.
+No gráfico, o Em Casca mostra até quatro fechamentos reais por mês; o histórico
+diário completo permanece armazenado. Cada linha termina na última data que sua
+fonte publicou.
 Algumas classificações podem ter fechamentos antigos ou ficar indisponíveis até
 que haja uma cotação verificável.
 

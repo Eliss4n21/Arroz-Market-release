@@ -519,8 +519,8 @@
     <h3 data-i18n="pre_graf_h">Evolução de Preços por Classificação</h3>
     <p data-i18n="pre_graf_p">Histórico dos últimos 12 meses — unidade conforme a fonte</p>
     <div class="filtros">
-      <button class="fil-btn ativo" onclick="apFiltro('todos',this)" data-i18n="fil_todos">Todos</button>
-      <button class="fil-btn" onclick="apFiltro('cas',this)" data-i18n="pre_fil_cas">Em Casca</button>
+      <button class="fil-btn" onclick="apFiltro('todos',this)" data-i18n="fil_todos">Todos</button>
+      <button class="fil-btn ativo" onclick="apFiltro('cas',this)" data-i18n="pre_fil_cas">Em Casca</button>
       <button class="fil-btn" onclick="apFiltro('mf_rs',this)" data-i18n="pre_fil_mf">Merc. Físico</button>
       <button class="fil-btn" onclick="apFiltro('agl',this)" data-i18n="pre_fil_agl">Agulhinha</button>
       <button class="fil-btn" onclick="apFiltro('lf',this)" data-i18n="pre_fil_lf">Longo Fino</button>
@@ -675,6 +675,7 @@ const S = {
   vids:     [],          /* lista de vídeos   */
   cots:     [],          /* cotações          */
   histCot:  [],          /* histórico com datas reais */
+  filtroCot:'cas',        /* começa pela série contínua com datas verificadas */
   mVidAtual: null,       /* vídeo aberto no modal */
   vidDest:   null,       /* vídeo destaque (primeiro da API) */
   curtidos: JSON.parse(localStorage.getItem('am_cur') || '{}'),
@@ -723,16 +724,20 @@ function textoCotacoes(chave) {
   const mensagens = {
     pt:{ indisponivel:'Cotações indisponíveis no momento', vazio:'Nenhuma cotação com data e fonte disponível.',
       ultima:'Última cotação', detalhe:'veja a data de cada fonte', semHistorico:'Sem histórico para esta classificação',
-      historico:'Cotações de', ate:'a', unidades:'unidades conforme a fonte' },
+      historico:'Cotações de', ate:'a', unidades:'unidades conforme a fonte',
+      cobertura:'cada linha começa e termina onde há dados da fonte', amostra:'até 4 cotações reais por mês' },
     en:{ indisponivel:'Prices currently unavailable', vazio:'No dated price with a source available.',
       ultima:'Latest price date', detalhe:'check each source date', semHistorico:'No history for this classification',
-      historico:'Prices from', ate:'to', unidades:'units as reported by the source' },
+      historico:'Prices from', ate:'to', unidades:'units as reported by the source',
+      cobertura:'each line starts and ends where source data exists', amostra:'up to 4 real quotes per month' },
     fr:{ indisponivel:'Prix indisponibles', vazio:'Aucun prix daté avec source disponible.',
       ultima:'Dernière cotation', detalhe:'vérifiez la date de chaque source', semHistorico:'Aucun historique pour cette catégorie',
-      historico:'Prix du', ate:'au', unidades:'unités selon la source' },
+      historico:'Prix du', ate:'au', unidades:'unités selon la source',
+      cobertura:'chaque ligne suit les dates disponibles', amostra:'jusqu’à 4 cotations réelles par mois' },
     es:{ indisponivel:'Precios no disponibles', vazio:'No hay precios fechados con fuente disponible.',
       ultima:'Última cotización', detalhe:'consulte la fecha de cada fuente', semHistorico:'Sin historial para esta categoría',
-      historico:'Precios del', ate:'al', unidades:'unidades según la fuente' },
+      historico:'Precios del', ate:'al', unidades:'unidades según la fuente',
+      cobertura:'cada línea sigue las fechas disponibles', amostra:'hasta 4 cotizaciones reales por mes' },
   };
   return (mensagens[LANG] || mensagens.pt)[chave];
 }
@@ -3294,7 +3299,7 @@ function initGraficos() {
   /* ── Paleta completa espelhando as cotações ── */
   const pal = {
     cas:   { r:'Em Casca (ESALQ)',          c:'#A0845C' },
-    mf_rs: { r:'Mercado Físico – RS',        c:'#C8A84B' },
+    mf_rs: { r:'Mercado Físico – RS',        c:'#D85C56' },
     agl:   { r:'Agulhinha Irrigado',         c:'#6BA67A' },
     lf:    { r:'Longo Fino (MT)',            c:'#7B9FD4' },
     ben:   { r:'Beneficiado T1',             c:'#9B7ED4' },
@@ -3303,17 +3308,20 @@ function initGraficos() {
   function series(f) {
     const keys = f === 'todos' ? Object.keys(pal) : [f];
     const inicio = dataCorteHistoricoCotacoes();
-    return keys.filter(k => pal[k] && S.histCot.some(h => h.id === k && h.dataCotacao >= inicio)).map(k => ({
-      label: pal[k].r,
-      unidade: S.histCot.find(h => h.id === k)?.unidade || 'sc',
-      data: S.histCot.filter(h => h.id === k && h.dataCotacao >= inicio)
-        .sort((a,b) => a.dataCotacao.localeCompare(b.dataCotacao))
-        .map(h => ({ x: Date.parse(`${h.dataCotacao}T12:00:00Z`), y:h.preco })),
-      borderColor: pal[k].c, backgroundColor: pal[k].c + '18',
-      borderWidth: 2, pointRadius: S.histCot.filter(h => h.id === k).length > 40 ? 0 : 3,
-      pointHoverRadius: 4, pointBackgroundColor: pal[k].c,
-      tension: 0, fill: false,
-    }));
+    return keys.filter(k => pal[k] && S.histCot.some(h => h.id === k && h.dataCotacao >= inicio)).map(k => {
+      const historico = S.histCot.filter(h => h.id === k && h.dataCotacao >= inicio)
+        .sort((a,b) => a.dataCotacao.localeCompare(b.dataCotacao));
+      const pontos = k === 'cas' ? amostrarAteQuatroPorMes(historico) : historico;
+      return {
+        label: pal[k].r,
+        unidade: historico[0]?.unidade || 'sc',
+        data: pontos.map(h => ({ x: Date.parse(`${h.dataCotacao}T12:00:00Z`), y:h.preco })),
+        borderColor: pal[k].c, backgroundColor: pal[k].c + '18',
+        borderWidth: 2, pointRadius: k === 'cas' ? 2 : 3,
+        pointHoverRadius: 4, pointBackgroundColor: pal[k].c,
+        tension: 0, fill: false,
+      };
+    });
   }
 
   S.G._s    = series;
@@ -3368,6 +3376,20 @@ function dataCorteHistoricoCotacoes() {
   corte.setFullYear(corte.getFullYear() - 1);
   return corte.toISOString().slice(0,10);
 }
+function amostrarAteQuatroPorMes(historico) {
+  const meses = new Map();
+  for (const cotacao of historico) {
+    const mes = cotacao.dataCotacao.slice(0,7);
+    if (!meses.has(mes)) meses.set(mes, []);
+    meses.get(mes).push(cotacao);
+  }
+  return [...meses.values()].flatMap(cotacoes => {
+    if (cotacoes.length <= 4) return cotacoes;
+    const ultimo = cotacoes.length - 1;
+    return [0, Math.round(ultimo/3), Math.round(2*ultimo/3), ultimo]
+      .map(indice => cotacoes[indice]);
+  });
+}
 function datasHistoricoCotacoes(filtro = 'todos') {
   const inicio = dataCorteHistoricoCotacoes();
   return [...new Set(S.histCot.filter(h => h.dataCotacao >= inicio &&
@@ -3376,12 +3398,24 @@ function datasHistoricoCotacoes(filtro = 'todos') {
 
 function atualizarGrafLinha() {
   if (!S.G.linha || !S.G._s) return;
-  const datas = datasHistoricoCotacoes(S.filtroCot || 'todos');
+  const filtro = S.filtroCot || 'todos';
+  const datas = datasHistoricoCotacoes(filtro);
   S.G.linha.data.datasets = S.G._s(S.filtroCot || 'todos');
+  const eixos = S.G.linha.data.datasets.flatMap(serie => serie.data.map(ponto => ponto.x));
+  if (eixos.length > 1) {
+    S.G.linha.options.scales.x.min = Math.min(...eixos);
+    S.G.linha.options.scales.x.max = Math.max(...eixos);
+  } else if (eixos.length === 1) {
+    S.G.linha.options.scales.x.min = eixos[0] - 86400000;
+    S.G.linha.options.scales.x.max = eixos[0] + 86400000;
+  } else {
+    delete S.G.linha.options.scales.x.min;
+    delete S.G.linha.options.scales.x.max;
+  }
   S.G.linha.update('active');
   const legenda = document.querySelector('[data-i18n="pre_graf_p"]');
   if (legenda) legenda.textContent = S.G.linha.data.datasets.length
-    ? `${textoCotacoes('historico')} ${dataCotacaoBR(datas[0])} ${textoCotacoes('ate')} ${dataCotacaoBR(datas.at(-1))} · ${textoCotacoes('unidades')}`
+    ? `${textoCotacoes('historico')} ${dataCotacaoBR(datas[0])} ${textoCotacoes('ate')} ${dataCotacaoBR(datas.at(-1))} · ${textoCotacoes('unidades')} · ${filtro === 'cas' ? textoCotacoes('amostra') : textoCotacoes('cobertura')}`
     : textoCotacoes('semHistorico');
 }
 
