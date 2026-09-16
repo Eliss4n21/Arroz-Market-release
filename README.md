@@ -106,11 +106,24 @@ arrozmarket/
 
 ---
 
-## 📈 Cotações reais
+## 📈 Cotações e histórico
 
-O scraper usa **fetch + cheerio** para raspar o site Notícias Agrícolas.  
-Funciona em qualquer VPS sem Chrome headless.  
-Se o scraping falhar, usa simulação vetorial como fallback automático.
+O arroz em casca usa o indicador diário do **Cepea/Esalq**. O projeto inclui 250
+observações oficiais com suas datas originais, de 16/09/2025 a 16/09/2026, e
+acrescenta as novas cotações quando a fonte responde. As outras classificações
+usam os fechamentos datados exibidos no Notícias Agrícolas, com a fonte original
+de cada tabela identificada. A planilha Google Sheets pode suprir uma classificação
+indisponível, desde que a coluna F informe a data da cotação em `AAAA-MM-DD`.
+
+Quando uma fonte falha, o último preço conserva sua data original. O sistema não
+gera preços simulados, não atribui a data de hoje a um preço antigo e não preenche
+lacunas do gráfico com valores inventados. A página mostra a data de cada fonte.
+Algumas classificações podem ter fechamentos antigos ou ficar indisponíveis até
+que haja uma cotação verificável.
+
+O histórico Cepea indica licença **CC BY-NC 4.0** na página do indicador.
+Antes de publicar esses dados em uma operação comercial, confirme a autorização
+de uso com o Cepea.
 
 Para alterar o intervalo: edite `SCRAPE_INTERVAL_MIN` no `.env` e reinicie:
 ```bash

@@ -513,11 +513,11 @@
   <div class="hero">
     <div class="tag" data-i18n="pre_tag">Cotações &amp; Tendências</div>
     <h1><span data-i18n="pre_h1a">Tabela de</span> <em data-i18n="pre_h1b">Preços</em></h1>
-    <p data-i18n="pre_p">Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.</p>
+    <p data-i18n="pre_p">Cotações com data e fonte identificadas. Confira a unidade de cada classificação.</p>
   </div>
   <div class="b-graf">
     <h3 data-i18n="pre_graf_h">Evolução de Preços por Classificação</h3>
-    <p data-i18n="pre_graf_p">Últimos 12 meses — R$ por saca de 60 kg</p>
+    <p data-i18n="pre_graf_p">Histórico dos últimos 12 meses — unidade conforme a fonte</p>
     <div class="filtros">
       <button class="fil-btn ativo" onclick="apFiltro('todos',this)" data-i18n="fil_todos">Todos</button>
       <button class="fil-btn" onclick="apFiltro('cas',this)" data-i18n="pre_fil_cas">Em Casca</button>
@@ -529,14 +529,14 @@
     <canvas id="grafLinha" height="100"></canvas>
   </div>
   <div class="b-graf">
-    <h3 data-i18n="pre_comp_h">Comparativo Atual por Tipo</h3>
-    <p data-i18n="pre_comp_p">Cotação de hoje — R$ por saca 60 kg</p>
+    <h3 data-i18n="pre_comp_h">Último preço por classificação</h3>
+    <p data-i18n="pre_comp_p">Último preço disponível de cada classificação</p>
     <canvas id="grafBarra" height="80"></canvas>
   </div>
   <div class="rotulo" data-i18n="pre_det_titulo">Cotações Detalhadas</div>
   <div class="b-tab">
     <div class="b-tab-cab">
-      <span data-i18n="cot_titulo" style="font-family:'Playfair Display',serif;color:var(--cream)">Cotações de Hoje</span>
+      <span data-i18n="cot_titulo" style="font-family:'Playfair Display',serif;color:var(--cream)">Últimas cotações registradas</span>
       <span style="font-size:.75rem;color:var(--muted)" id="tsAtt">—</span>
     </div>
     <table class="tab">
@@ -575,9 +575,7 @@
 'use strict';
 
 /* ═══ CONFIGURAÇÕES ═══ */
-const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'http://localhost:3000/api'
-  : '/api';
+const API = '/api';
 
 const CORES = [
   {hex:'#C8A84B',n:'Dourado'},  {hex:'#6BA67A',n:'Verde'},    {hex:'#7B9FD4',n:'Azul'},
@@ -676,6 +674,7 @@ const S = {
   G:        {},          /* gráficos Chart.js */
   vids:     [],          /* lista de vídeos   */
   cots:     [],          /* cotações          */
+  histCot:  [],          /* histórico com datas reais */
   mVidAtual: null,       /* vídeo aberto no modal */
   vidDest:   null,       /* vídeo destaque (primeiro da API) */
   curtidos: JSON.parse(localStorage.getItem('am_cur') || '{}'),
@@ -684,14 +683,6 @@ const S = {
   curtidoDest: false,  // Carregado por episódio em renderDestaque
 };
 
-/* ═══ DADOS LOCAIS DE FALLBACK ═══ */
-const COTS_LOCAL = [
-  {id:'cas',   nome:'Em Casca (ESALQ/Senar-RS)',   preco: 65.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg'},
-  {id:'mf_rs', nome:'Mercado Fisico - Media RS',   preco: 62.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg'},
-  {id:'agl',   nome:'Agulhinha Irrigado (RS)',      preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg'},
-  {id:'lf',    nome:'Longo Fino (MT)',              preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg'},
-  {id:'ben',   nome:'Beneficiado Tipo 1 (SP)',      preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg'},
-];
 /* Fallback vazio: usado apenas se a API estiver totalmente inacessível.
    Sem episódios de exemplo — a grade fica vazia até a API responder. */
 const VIDS_LOCAL = [];
@@ -705,59 +696,45 @@ function vidTitulo(v) {
   return v.titulo || '';
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MOTOR VETORIAL DE COTAÇÕES — Float32Array (site público)
-   Opera em paralelo sobre todos os preços sem loops JS explícitos
-   ═══════════════════════════════════════════════════════════════ */
-
-// Buffers globais reutilizáveis (evita alocação a cada ciclo)
-const _COT_N      = 9;                                     // número fixo de cotações
-const _vecPrecos  = new Float32Array(_COT_N);              // preços actuais
-const _vecVars    = new Float32Array(_COT_N);              // variações absolutas
-const _vecBase    = new Float32Array(                      // preços de referência
-  [65, 62, 48, 60, 118, 155.20, 175.80, 95, 38.50]
-);
-
-/** vecLoadCots(cots) — preenche _vecPrecos e _vecVars a partir do array de objetos */
-function vecLoadCots(cots) {
-  const n = Math.min(cots.length, _COT_N);
-  for (let i = 0; i < n; i++) {
-    _vecPrecos[i] = cots[i].preco    || 0;
-    _vecVars[i]   = cots[i].variacao || 0;
-  }
-}
-
-/** vecGetPriceAt(i) — leitura O(1) de preço pelo índice */
-function vecGetPriceAt(i) { return _vecPrecos[i]; }
-
-/** vecGetVarAt(i) — leitura O(1) de variação pelo índice */
-function vecGetVarAt(i) { return _vecVars[i]; }
-
-/** vecMeanPrice() — média de preços (sum / n via Float32) */
-function vecMeanPrice() {
-  let s = 0;
-  for (let i = 0; i < _COT_N; i++) s += _vecPrecos[i];
-  return s / _COT_N;
-}
-
-/** vecDeltaPctBase(i) — variação percentual em relação ao preço de referência */
-function vecDeltaPctBase(i) {
-  const b = _vecBase[i];
-  return b > 0 ? ((_vecPrecos[i] - b) / b) * 100 : 0;
-}
-
-/** vecTickerStrings(cots) — gera array de strings do ticker em uma passagem */
+/* Monta o letreiro somente com as cotações recebidas da API. */
 function vecTickerStrings(cots) {
-  vecLoadCots(cots);
   const s = { alta:'▲', baixa:'▼', estavel:'►' };
-  const n = Math.min(cots.length, _COT_N);
+  const n = cots.length;
   const parts = new Array(n);
   for (let i = 0; i < n; i++) {
     const c   = cots[i];
-    const sgn = _vecVars[i] >= 0 ? '+' : '';
-    parts[i]  = `<span class="tk-item"><strong>${c.nome}</strong> — R$&nbsp;${_vecPrecos[i].toFixed(2)}/sc&nbsp;<span class="${c.cls}">${s[c.cls]||'►'} ${sgn}${_vecVars[i].toFixed(2)}</span></span><span class="tk-sep">|</span>`;
+    const v = Number(c.variacao) || 0;
+    const sgn = v > 0 ? '+' : v < 0 ? '-' : '';
+    parts[i]  = `<span class="tk-item" title="${dataCotacaoBR(c.dataCotacao)} · ${c.fonte}"><strong>${c.nome}</strong> — R$&nbsp;${formatarPrecoCotacao(c.preco)}/${c.unidade||'sc'}&nbsp;<span class="${c.cls}">${s[c.cls]||'►'} ${sgn}${formatarPrecoCotacao(Math.abs(v))}</span></span><span class="tk-sep">|</span>`;
   }
   return parts;
+}
+
+function dataCotacaoBR(iso) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return '—';
+  const [ano, mes, dia] = iso.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+function formatarPrecoCotacao(valor) {
+  const local = {pt:'pt-BR', en:'en-US', fr:'fr-FR', es:'es-ES'}[LANG] || 'pt-BR';
+  return Number(valor).toLocaleString(local, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function textoCotacoes(chave) {
+  const mensagens = {
+    pt:{ indisponivel:'Cotações indisponíveis no momento', vazio:'Nenhuma cotação com data e fonte disponível.',
+      ultima:'Última cotação', detalhe:'veja a data de cada fonte', semHistorico:'Sem histórico para esta classificação',
+      historico:'Cotações de', ate:'a', unidades:'unidades conforme a fonte' },
+    en:{ indisponivel:'Prices currently unavailable', vazio:'No dated price with a source available.',
+      ultima:'Latest price date', detalhe:'check each source date', semHistorico:'No history for this classification',
+      historico:'Prices from', ate:'to', unidades:'units as reported by the source' },
+    fr:{ indisponivel:'Prix indisponibles', vazio:'Aucun prix daté avec source disponible.',
+      ultima:'Dernière cotation', detalhe:'vérifiez la date de chaque source', semHistorico:'Aucun historique pour cette catégorie',
+      historico:'Prix du', ate:'au', unidades:'unités selon la source' },
+    es:{ indisponivel:'Precios no disponibles', vazio:'No hay precios fechados con fuente disponible.',
+      ultima:'Última cotización', detalhe:'consulte la fecha de cada fuente', semHistorico:'Sin historial para esta categoría',
+      historico:'Precios del', ate:'al', unidades:'unidades según la fuente' },
+  };
+  return (mensagens[LANG] || mensagens.pt)[chave];
 }
 
 /* ═══ HELPER API ═══ */
@@ -860,7 +837,7 @@ function notifLocal(titulo, corpo) {
     try {
       apiFetch('GET', '/boot').then(dados => {
         if (dados.audios)       { S.vids  = dados.audios;       renderAudios(); renderDestaque(); atualizarContadoresFiltro(); }
-        if (dados.cotacoes)     { S.cots  = dados.cotacoes;     renderTicker(); renderTabCot(); atualizarGrafBarra(); }
+        if (dados.cotacoes)     { S.cots = dados.cotacoes; S.histCot = dados.historicoCotacoes || []; renderTicker(); renderTabCot(); atualizarGrafBarra(); atualizarGrafLinha(); }
         if (dados.especialista) { S._esp  = { ...ESP_DEFAULT, ...dados.especialista }; renderEspecialista(); }
         // Salva no localStorage para próxima visita offline
         try { localStorage.setItem('am_v', JSON.stringify(S.vids)); } catch(e){}
@@ -1075,16 +1052,16 @@ const I18N = {
     modal_escutas:'escutas', modal_esc_7d:'Escutas — últimos 7 dias',
     modal_sem_audio_h:'🎧 Episódio sem áudio',
     modal_sem_audio_p:'Grave o áudio no painel admin e publique para ativar o player.',
-    cot_titulo:'Cotações de Hoje',
+    cot_titulo:'Últimas cotações registradas',
     cot_produto:'Produto', cot_unidade:'Unidade', cot_preco:'Preço',
     cot_variacao:'Variação', cot_tendencia:'Tendência', cot_fonte:'Fonte',
     cot_alta:'↑ Alta', cot_baixa:'↓ Baixa', cot_estavel:'→ Estável',
     pre_tag:'Cotações & Tendências', pre_h1a:'Tabela de', pre_h1b:'Preços',
-    pre_p:'Cotações atualizadas por classificação — referência: saca 60 kg, franco fábrica, RS.',
+    pre_p:'Cotações com data e fonte identificadas. Confira a unidade de cada classificação.',
     pre_graf_h:'Evolução de Preços por Classificação',
-    pre_graf_p:'Últimos 12 meses — R$ por saca de 60 kg',
-    pre_comp_h:'Comparativo Atual por Tipo',
-    pre_comp_p:'Cotação de hoje — R$ por saca 60 kg',
+    pre_graf_p:'Histórico dos últimos 12 meses — unidade conforme a fonte',
+    pre_comp_h:'Último preço por classificação',
+    pre_comp_p:'Último preço disponível de cada classificação',
     pre_det_titulo:'Cotações Detalhadas',
     pre_fil_cas:'Em Casca', pre_fil_mf:'Merc. Físico', pre_fil_agl:'Agulhinha',
     pre_fil_lf:'Longo Fino', pre_fil_ben:'Beneficiado', pre_fil_parb:'Parboilizado',
@@ -1183,16 +1160,16 @@ const I18N = {
     modal_escutas:'plays', modal_esc_7d:'Plays — last 7 days',
     modal_sem_audio_h:'🎧 Episode without audio',
     modal_sem_audio_p:'Record audio in the admin panel and publish to activate the player.',
-    cot_titulo:"Today's Prices",
+    cot_titulo:'Latest recorded prices',
     cot_produto:'Product', cot_unidade:'Unit', cot_preco:'Price',
     cot_variacao:'Change', cot_tendencia:'Trend', cot_fonte:'Source',
     cot_alta:'↑ Rising', cot_baixa:'↓ Falling', cot_estavel:'→ Stable',
     pre_tag:'Prices & Trends', pre_h1a:'Price', pre_h1b:'Table',
-    pre_p:'Updated prices by classification — reference: 60 kg bag, ex-factory, RS.',
+    pre_p:'Prices with identified date and source. Check each classification’s unit.',
     pre_graf_h:'Price Evolution by Classification',
-    pre_graf_p:'Last 12 months — BRL per 60 kg bag',
-    pre_comp_h:'Current Comparison by Type',
-    pre_comp_p:"Today's price — BRL per 60 kg bag",
+    pre_graf_p:'Last 12 months of recorded prices — unit as reported by source',
+    pre_comp_h:'Latest price by classification',
+    pre_comp_p:'Latest available price for each classification',
     pre_det_titulo:'Detailed Prices',
     pre_fil_cas:'Paddy Rice', pre_fil_mf:'Physical Market', pre_fil_agl:'Irrigated',
     pre_fil_lf:'Long Grain', pre_fil_ben:'Milled', pre_fil_parb:'Parboiled',
@@ -1291,16 +1268,16 @@ const I18N = {
     modal_escutas:'écoutes', modal_esc_7d:'Écoutes — 7 derniers jours',
     modal_sem_audio_h:'🎧 Épisode sans audio',
     modal_sem_audio_p:"Enregistrez l'audio dans le panneau admin et publiez pour activer le lecteur.",
-    cot_titulo:'Prix du Jour',
+    cot_titulo:'Derniers prix enregistrés',
     cot_produto:'Produit', cot_unidade:'Unité', cot_preco:'Prix',
     cot_variacao:'Variation', cot_tendencia:'Tendance', cot_fonte:'Source',
     cot_alta:'↑ Hausse', cot_baixa:'↓ Baisse', cot_estavel:'→ Stable',
     pre_tag:'Prix & Tendances', pre_h1a:'Tableau des', pre_h1b:'Prix',
-    pre_p:'Prix actualisés par classification — référence : sac 60 kg, départ usine, RS.',
+    pre_p:'Prix avec date et source identifiées. Vérifiez l’unité de chaque catégorie.',
     pre_graf_h:'Évolution des Prix par Classification',
-    pre_graf_p:'12 derniers mois — R$ par sac de 60 kg',
-    pre_comp_h:'Comparatif Actuel par Type',
-    pre_comp_p:'Prix du jour — R$ par sac 60 kg',
+    pre_graf_p:'Historique des 12 derniers mois — unité selon la source',
+    pre_comp_h:'Dernier prix par catégorie',
+    pre_comp_p:'Dernier prix disponible pour chaque catégorie',
     pre_det_titulo:'Prix Détaillés',
     pre_fil_cas:'Riz Paddy', pre_fil_mf:'Marché Physique', pre_fil_agl:'Irrigué',
     pre_fil_lf:'Long Grain', pre_fil_ben:'Usiné', pre_fil_parb:'Étuvé',
@@ -1399,16 +1376,16 @@ const I18N = {
     modal_escutas:'reproducciones', modal_esc_7d:'Reproducciones — últimos 7 días',
     modal_sem_audio_h:'🎧 Episodio sin audio',
     modal_sem_audio_p:'Graba el audio en el panel admin y publícalo para activar el reproductor.',
-    cot_titulo:'Precios del Día',
+    cot_titulo:'Últimos precios registrados',
     cot_produto:'Producto', cot_unidade:'Unidad', cot_preco:'Precio',
     cot_variacao:'Variación', cot_tendencia:'Tendencia', cot_fonte:'Fuente',
     cot_alta:'↑ Alza', cot_baixa:'↓ Baja', cot_estavel:'→ Estable',
     pre_tag:'Precios & Tendencias', pre_h1a:'Tabla de', pre_h1b:'Precios',
-    pre_p:'Precios actualizados por clasificación — referencia: saco 60 kg, franco fábrica, RS.',
+    pre_p:'Precios con fecha y fuente identificadas. Consulte la unidad de cada categoría.',
     pre_graf_h:'Evolución de Precios por Clasificación',
-    pre_graf_p:'Últimos 12 meses — R$ por saco de 60 kg',
-    pre_comp_h:'Comparativo Actual por Tipo',
-    pre_comp_p:'Precio de hoy — R$ por saco 60 kg',
+    pre_graf_p:'Historial de los últimos 12 meses — unidad según la fuente',
+    pre_comp_h:'Último precio por categoría',
+    pre_comp_p:'Último precio disponible de cada categoría',
     pre_det_titulo:'Precios Detallados',
     pre_fil_cas:'Arroz Cáscara', pre_fil_mf:'Mercado Físico', pre_fil_agl:'Riego',
     pre_fil_lf:'Grano Largo', pre_fil_ben:'Beneficiado', pre_fil_parb:'Parboilizado',
@@ -1579,7 +1556,7 @@ function aplicarIdioma() {
 
   // 9. Re-renderiza componentes gerados por JS com strings
   try { renderMenu(); }      catch(e) {}
-  try { renderTabCot(); }    catch(e) {}
+  try { renderTicker(); renderTabCot(); atualizarGrafLinha(); } catch(e) {}
 
   // 10. Atributo lang do html
   const langs = { pt:'pt-BR', en:'en', fr:'fr', es:'es' };
@@ -1664,80 +1641,36 @@ function aplicarCor(hex, salvar = true) {
 }
 
 /* ═══ COTAÇÕES ═══ */
-/* ─── Google Sheets como fonte de cotações ───
-   Configure a URL da planilha pública no admin (Fonte de Cotações).
-   Formato esperado na planilha (aba Planilha1, cols A-E):
-     A: id  B: nome  C: preco  D: variacao  E: unidade
-   ─────────────────────────────────────────── */
-async function buscarSheetsCoT() {
-  const url = localStorage.getItem('am_sheets_url');
-  if (!url) return null;
-  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (!match) return null;
-  const id = match[1];
-  const jsonUrl = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:json&sheet=Cotacoes`;
-  const r = await fetch(jsonUrl, { cache:'no-store' });
-  if (!r.ok) throw new Error('Sheets HTTP ' + r.status);
-  const txt = await r.text();
-  // gviz retorna algo como: google.visualization.Query.setResponse({...});
-  // Extraímos apenas o JSON do argumento
-  const stripped = txt.replace(/^[\s\S]*?setResponse\(/, '').replace(/\);?\s*$/, '');
-  const json = JSON.parse(stripped);
-  const rows = json.table.rows;
-  return rows.map(row => {
-    const c = row.c;
-    const preco = parseFloat((c[2]?.v || '0').toString().replace(',','.'));
-    const variacao = parseFloat((c[3]?.v || '0').toString().replace(',','.'));
-    return {
-      id:       (c[0]?.v || '').toString().trim(),
-      nome:     (c[1]?.v || '').toString().trim(),
-      preco:    isNaN(preco) ? 0 : preco,
-      variacao: isNaN(variacao) ? 0 : variacao,
-      unidade:  (c[4]?.v || 'sc 60kg').toString().trim(),
-      cls:      variacao > 0.01 ? 'alta' : variacao < -0.01 ? 'baixa' : 'estavel',
-      fonte:    'Google Sheets',
-      ts:       Date.now()
-    };
-  }).filter(c => c.id && c.preco > 0);
-}
-
 async function carregarCotacoes() {
-  // 1. Tenta Google Sheets (se configurado)
   try {
-    const sheets = await buscarSheetsCoT();
-    if (sheets && sheets.length > 0) {
-      S.cots = sheets;
-      renderTicker(); renderTabCot();
-      try { atualizarGrafBarra(); } catch(e) {}
-      const el = document.getElementById('tsAtt');
-      if (el) el.textContent = 'Sheets • ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
-      return;
-    }
-  } catch(e) { /* Sheets falhou, tenta API */ }
-
-  // 2. Tenta API do servidor
-  try {
-    const dados = await apiFetch('GET', '/cotacoes');
-    if (Array.isArray(dados) && dados.length > 0) S.cots = dados;
-    else S.cots = COTS_LOCAL;
+    const [cotacoes, historico] = await Promise.all([
+      apiFetch('GET', '/cotacoes'), apiFetch('GET', '/cotacoes/historico')
+    ]);
+    S.cots = Array.isArray(cotacoes) ? cotacoes : [];
+    S.histCot = Array.isArray(historico) ? historico : [];
   } catch(e) {
-    S.cots = COTS_LOCAL;
+    console.warn('[Cotações] Mantendo os últimos registros datados:', e.message);
   }
-  if (!S.cots || S.cots.length === 0) S.cots = COTS_LOCAL;
   renderTicker();
   renderTabCot();
   try { atualizarGrafBarra(); } catch(e) {}
-  const elTs = document.getElementById('tsAtt');
-  if (elTs) elTs.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+  try { atualizarGrafLinha(); } catch(e) {}
 }
 
 /* atualizarGrafBarra definida abaixo junto ao initGraficos */
 
 function renderTicker() {
-  // Usa motor vetorial: gera todas as strings em uma passagem O(n)
   const parts = vecTickerStrings(S.cots);
-  const html  = parts.join('');
+  const html  = parts.length ? parts.join('') : `<span class="tk-item">${textoCotacoes('indisponivel')}</span>`;
   document.getElementById('tkInner').innerHTML = html + html; // duplica para scroll contínuo
+}
+
+function atualizarDataCotacoes() {
+  const elTs = document.getElementById('tsAtt');
+  if (!elTs) return;
+  if (!S.cots.length) { elTs.textContent = textoCotacoes('vazio'); return; }
+  const ultima = S.cots.map(c => c.dataCotacao).sort().at(-1);
+  elTs.textContent = `${textoCotacoes('ultima')}: ${dataCotacaoBR(ultima)} · ${textoCotacoes('detalhe')}`;
 }
 
 function renderTabCot() {
@@ -1745,25 +1678,24 @@ function renderTabCot() {
   const cor  = { alta:'var(--green2)', baixa:'var(--red)', estavel:'var(--gold)' };
   const tb = document.getElementById('tbCot');
   if (!tb) return;
-  vecLoadCots(S.cots);
   const rows = new Array(S.cots.length);
   for (let i = 0; i < S.cots.length; i++) {
     const c   = S.cots[i];
-    const p   = _vecPrecos[i];
-    const v   = _vecVars[i];
-    const dPct= vecDeltaPctBase(i).toFixed(1);
-    const sgn = v >= 0 ? '+' : '';
+    const p   = Number(c.preco);
+    const v   = Number(c.variacao) || 0;
+    const sgn = v > 0 ? '+' : v < 0 ? '-' : '';
     const bdgCls = c.cls==='alta' ? 'bdg-alta' : c.cls==='baixa' ? 'bdg-baixa' : 'bdg-est';
     rows[i] = `<tr>
       <td>${c.nome}</td>
       <td><span class="t-badge">${c.unidade||'sc 60kg'}</span></td>
-      <td><span class="p-tag">R$ ${p.toFixed(2)}</span></td>
-      <td><span class="bdg ${bdgCls}">${sgn}R$ ${Math.abs(v).toFixed(2)}</span></td>
+      <td><span class="p-tag">R$ ${formatarPrecoCotacao(p)}</span></td>
+      <td><span class="bdg ${bdgCls}">${sgn}R$ ${formatarPrecoCotacao(Math.abs(v))}</span></td>
       <td style="color:${cor[c.cls]}">${tend[c.cls]}</td>
-      <td style="font-size:.72rem;color:var(--muted)" title="Δ base: ${dPct}%">${c.fonte||'Notícias Agrícolas'}</td>
+      <td style="font-size:.72rem;color:var(--muted)" title="${c.fonteUrl||''}">${c.fonte} · ${dataCotacaoBR(c.dataCotacao)}</td>
     </tr>`;
   }
-  tb.innerHTML = rows.join('');
+  tb.innerHTML = rows.length ? rows.join('') : `<tr><td colspan="6">${textoCotacoes('vazio')}</td></tr>`;
+  atualizarDataCotacoes();
   // Atualiza cabeçalhos da tabela
   const ths = document.querySelectorAll('#tbCotHead th');
   if (ths.length >= 6) {
@@ -3327,8 +3259,6 @@ function carregarChartJs(cb) {
 }
 
 function initGraficos() {
-  const meses = ['Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez','Jan','Fev','Mar'];
-
   /* Cores do tema atual */
   function tC() {
     const claro = document.documentElement.getAttribute('data-tema') === 'claro';
@@ -3350,7 +3280,7 @@ function initGraficos() {
         tooltip: {
           backgroundColor: t.tooltip, titleColor: t.ttText,
           bodyColor: t.ttMuted, borderColor:'rgba(200,168,75,.28)', borderWidth:1,
-          callbacks: { label: c => ` R$ ${c.parsed.y.toFixed(2)}/sc` }
+          callbacks: { label: c => ` R$ ${formatarPrecoCotacao(c.parsed.y)}/${c.dataset.unidade || 'sc'}` }
         }
       },
       scales: {
@@ -3370,50 +3300,46 @@ function initGraficos() {
     ben:   { r:'Beneficiado T1',             c:'#9B7ED4' },
   };
 
-  /* Séries históricas (12 meses) — baseadas nos preços reais de fechamento */
-  const sr = {
-    cas:   [58,59,60,59,58,57,59,61,63,64,65,65],
-    mf_rs: [55,57,58,57,55,54,56,58,60,61,62,62],
-    agl:   [46,48,49,48,46,45,47,48,49,50,50,48],
-    lf:    [58,60,61,60,58,57,59,60,61,62,62,60],
-    ben:   [124,126,124,122,118,116,118,120,122,122,120,118],
-  };
-
   function series(f) {
     const keys = f === 'todos' ? Object.keys(pal) : [f];
-    return keys.filter(k => pal[k]).map(k => ({
-      label: pal[k].r, data: sr[k],
+    const inicio = dataCorteHistoricoCotacoes();
+    return keys.filter(k => pal[k] && S.histCot.some(h => h.id === k && h.dataCotacao >= inicio)).map(k => ({
+      label: pal[k].r,
+      unidade: S.histCot.find(h => h.id === k)?.unidade || 'sc',
+      data: S.histCot.filter(h => h.id === k && h.dataCotacao >= inicio)
+        .sort((a,b) => a.dataCotacao.localeCompare(b.dataCotacao))
+        .map(h => ({ x: Date.parse(`${h.dataCotacao}T12:00:00Z`), y:h.preco })),
       borderColor: pal[k].c, backgroundColor: pal[k].c + '18',
-      borderWidth: 2, pointRadius: 3, pointBackgroundColor: pal[k].c,
-      tension: .42, fill: true,
+      borderWidth: 2, pointRadius: S.histCot.filter(h => h.id === k).length > 40 ? 0 : 3,
+      pointHoverRadius: 4, pointBackgroundColor: pal[k].c,
+      tension: 0, fill: false,
     }));
   }
 
   S.G._s    = series;
+  const opcoesLinha = makeBase();
+  opcoesLinha.scales.x.type = 'linear';
+  opcoesLinha.scales.x.ticks.callback = v => dataCotacaoBR(new Date(Number(v)).toISOString().slice(0,10));
+  opcoesLinha.plugins.tooltip.callbacks.title = itens =>
+    itens.length ? dataCotacaoBR(new Date(itens[0].parsed.x).toISOString().slice(0,10)) : '';
   S.G.linha = new Chart(el('grafLinha').getContext('2d'), {
-    type:'line', data:{ labels:meses, datasets:series('todos') }, options: makeBase()
+    type:'line', data:{ datasets:series(S.filtroCot || 'todos') }, options:opcoesLinha
   });
 
   /* Gráfico de barras — usa _vecPrecos (Float32Array) direto */
-  const palVals = Object.values(pal);
-
   function buildBarra() {
-    const cots = S.cots.length > 0 ? S.cots : COTS_LOCAL;
+    const cots = S.cots;
     const n    = cots.length;
-    // Garante que o buffer vetorial está sincronizado
-    vecLoadCots(cots);
-
-    // Lê preços do buffer tipado em uma passagem — sem allocar array de objetos
     const precos = new Array(n);
     const bgArr  = new Array(n);
     const bdArr  = new Array(n);
     const labels = new Array(n);
     for (let i = 0; i < n; i++) {
-      precos[i] = _vecPrecos[i];                        // leitura O(1) do Float32Array
-      const c   = palVals[i % palVals.length].c;
+      precos[i] = Number(cots[i].preco);
+      const c   = pal[cots[i].id]?.c || '#C8A84B';
       bgArr[i]  = c + 'BB';
       bdArr[i]  = c;
-      labels[i] = cots[i].nome;
+      labels[i] = `${cots[i].nome} (${dataCotacaoBR(cots[i].dataCotacao)})`;
     }
     return {
       labels,
@@ -3423,11 +3349,40 @@ function initGraficos() {
     };
   }
 
+  const opcoesBarra = makeBase();
+  opcoesBarra.plugins.legend = { display:false };
+  opcoesBarra.plugins.tooltip.callbacks.label = c => {
+    const cot = S.cots[c.dataIndex];
+    return ` R$ ${formatarPrecoCotacao(c.parsed.y)}/${cot?.unidade || 'sc'} · ${cot?.fonte || ''}`;
+  };
   S.G.barra = new Chart(el('grafBarra').getContext('2d'), {
     type:'bar', data: buildBarra(),
-    options:{ ...makeBase(), plugins:{ ...makeBase().plugins, legend:{ display:false } } }
+    options:opcoesBarra
   });
   S.G._buildBarra = buildBarra;
+  atualizarGrafLinha();
+}
+
+function dataCorteHistoricoCotacoes() {
+  const corte = new Date();
+  corte.setFullYear(corte.getFullYear() - 1);
+  return corte.toISOString().slice(0,10);
+}
+function datasHistoricoCotacoes(filtro = 'todos') {
+  const inicio = dataCorteHistoricoCotacoes();
+  return [...new Set(S.histCot.filter(h => h.dataCotacao >= inicio &&
+    (filtro === 'todos' || h.id === filtro)).map(h => h.dataCotacao))].sort();
+}
+
+function atualizarGrafLinha() {
+  if (!S.G.linha || !S.G._s) return;
+  const datas = datasHistoricoCotacoes(S.filtroCot || 'todos');
+  S.G.linha.data.datasets = S.G._s(S.filtroCot || 'todos');
+  S.G.linha.update('active');
+  const legenda = document.querySelector('[data-i18n="pre_graf_p"]');
+  if (legenda) legenda.textContent = S.G.linha.data.datasets.length
+    ? `${textoCotacoes('historico')} ${dataCotacaoBR(datas[0])} ${textoCotacoes('ate')} ${dataCotacaoBR(datas.at(-1))} · ${textoCotacoes('unidades')}`
+    : textoCotacoes('semHistorico');
 }
 
 /* Atualiza gráfico de barras quando cotações chegam — usa Float32Array */
@@ -3441,7 +3396,8 @@ function atualizarGrafBarra() {
 function apFiltro(f, btn) {
   document.querySelectorAll('.fil-btn').forEach(b => b.classList.remove('ativo'));
   btn.classList.add('ativo');
-  if (S.G.linha) { S.G.linha.data.datasets = S.G._s(f); S.G.linha.update('active'); }
+  S.filtroCot = f;
+  atualizarGrafLinha();
 }
 
 

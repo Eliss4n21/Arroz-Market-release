@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "test": "node tests/price-data.test.js",
     "pm2": "pm2 start src/server.js --name arrozmarket --restart-delay=3000"
   },
   "dependencies": {

@@ -30,7 +30,7 @@ const jwt     = require('jsonwebtoken');
 const db      = require('../src/db');
 const { contemPalavrao } = require('../src/profanityFilter');
 const { autenticar, soAdmin } = require('../middleware/auth');
-const { scrapeCEPEA }         = require('../src/scraper');
+const { scrapeCEPEA, dataISO } = require('../src/scraper');
 
 const SEC = () => process.env.JWT_SECRET || 'dev-secret-change-me';
 const EXP = () => process.env.JWT_EXPIRES || '7d';
@@ -40,12 +40,14 @@ function gerarToken(u) { return jwt.sign({ id:u.id, role:u.role }, SEC(), { expi
 /* ═══ PÚBLICAS ═══════════════════════════════════════════════════════ */
 
 router.get('/cotacoes', (_, res) => res.json(db.getCotacoes()));
+router.get('/cotacoes/historico', (_, res) => res.json(db.getHistoricoCotacoes()));
 
 /* /boot — uma chamada retorna tudo que o site precisa no load inicial */
 router.get('/boot', (_, res) => {
   res.json({
     audios:      db.getVideos(),
     cotacoes:    db.getCotacoes(),
+    historicoCotacoes: db.getHistoricoCotacoes(),
     especialista:db.getEspecialista(),
     config:      db.getConfig(),
   });
@@ -229,8 +231,26 @@ router.delete('/admin/audios/:id', autenticar, soAdmin, (req, res) => {
 
 router.put('/admin/cotacoes', autenticar, soAdmin, (req, res) => {
   const { cotacoes } = req.body;
-  if (!Array.isArray(cotacoes)) return res.status(400).json({ erro:'Formato inválido.' });
-  db.updateCotacoes(cotacoes); res.json(db.getCotacoes());
+  if (!Array.isArray(cotacoes) || cotacoes.length > 20) return res.status(400).json({ erro:'Formato inválido.' });
+  const anteriores = db.getCotacoes();
+  const atualizadas = [];
+  for (const c of cotacoes) {
+    const anterior = anteriores.find(x => x.id === c.id);
+    const preco = Number(c.preco);
+    const dataCotacao = dataISO(c.dataCotacao);
+    if (!anterior || !Number.isFinite(preco) || preco <= 0 || !dataCotacao) {
+      return res.status(400).json({ erro:'Informe preço positivo e data válida para cada cotação.' });
+    }
+    if (preco === anterior.preco && dataCotacao === anterior.dataCotacao) {
+      atualizadas.push(anterior);
+      continue;
+    }
+    const variacao = Math.round((preco - anterior.preco) * 100) / 100;
+    atualizadas.push({ ...anterior, preco, dataCotacao, variacao,
+      cls:variacao > 0.01 ? 'alta' : variacao < -0.01 ? 'baixa' : 'estavel',
+      fonte:'Manual', fonteUrl:null, ts:Date.now() });
+  }
+  res.json(db.updateCotacoes(atualizadas));
 });
 
 router.get('/admin/usuarios', autenticar, soAdmin, (_, res) => {
@@ -264,7 +284,7 @@ router.put('/admin/config', autenticar, soAdmin, (req, res) => {
 
 // Força scraping imediato
 router.post('/admin/scrape', autenticar, soAdmin, async (_, res) => {
-  try { res.json({ ok:true, cotacoes: await scrapeCEPEA(), ts: Date.now() }); }
+  try { res.json({ ok:true, ...await scrapeCEPEA(), ts: Date.now() }); }
   catch (e) { res.status(500).json({ erro: e.message }); }
 });
 

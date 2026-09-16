@@ -23,13 +23,8 @@ const DEFAULT = {
       senha:ADMIN_HASH, role:'admin', avatar:'FT', criadoEm:'2025-01-01T00:00:00Z', ativo:true },
   ],
   videos: [],
-  cotacoes: [
-    { id:'cas',   nome:'Em Casca (ESALQ/Senar-RS)',   preco: 65.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
-    { id:'mf_rs', nome:'Mercado Físico – Média RS',   preco: 62.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
-    { id:'agl',   nome:'Agulhinha Irrigado (RS)',      preco: 48.00, variacao: 0.00, cls:'estavel', unidade:'sc 50kg', fonte:'Notícias Agrícolas' },
-    { id:'lf',    nome:'Longo Fino (MT)',              preco: 60.00, variacao: 0.00, cls:'estavel', unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-    { id:'ben',   nome:'Beneficiado Tipo 1 (SP)',      preco:118.00, variacao:-6.35, cls:'baixa',   unidade:'sc 60kg', fonte:'Notícias Agrícolas' },
-  ],
+  cotacoes: [],
+  historicoCotacoes: [],
   curtidas: {},
   comentarios: {},  /* { videoId: [ {id, uid, nome, avatar, texto, ts, aprovado} ] } */
   config: { siteTitulo:'ArrozMarket', corDestaque:'#C8A84B', tickerAtivo:true, proximoId:10, sheetsUrl:'' },
@@ -152,6 +147,46 @@ if (Array.isArray(_db.cotacoes)) {
   if (_db.cotacoes.length !== antes) { salvarDB(_db); console.log(`[DB] Removidas ${antes - _db.cotacoes.length} cotações sem fonte real.`); }
 }
 
+function dataCotacaoValida(valor) {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+  const data = new Date(`${valor}T12:00:00Z`);
+  const hoje = new Date().toLocaleDateString('sv-SE', { timeZone:'America/Sao_Paulo' });
+  return !Number.isNaN(data.getTime()) && data.toISOString().startsWith(valor) && valor <= hoje;
+}
+function cotacaoValida(c) {
+  return c && dataCotacaoValida(c.dataCotacao) && Number.isFinite(c.preco) && c.preco > 0 &&
+    c.fonte && c.fonte !== 'Simulação';
+}
+if (!Array.isArray(_db.historicoCotacoes)) _db.historicoCotacoes = [];
+_db.cotacoes = (_db.cotacoes || []).filter(cotacaoValida);
+_db.historicoCotacoes = _db.historicoCotacoes.filter(cotacaoValida);
+
+// Série diária oficial exportada do Cepea em 16/09/2026. Cada ponto mantém
+// a data de sua cotação. Coletas futuras acrescentam dias novos.
+const serieCepea = require('./cepea-history.json');
+const datasCas = new Set(_db.historicoCotacoes.filter(c => c.id === 'cas').map(c => c.dataCotacao));
+let importados = 0;
+for (const ponto of serieCepea.cotacoes) {
+  if (datasCas.has(ponto.dataCotacao)) continue;
+  _db.historicoCotacoes.push({ id:'cas', nome:'Em Casca (CEPEA/IRGA-RS)',
+    preco:ponto.preco, dataCotacao:ponto.dataCotacao, unidade:serieCepea.unidade,
+    fonte:serieCepea.fonte, fonteUrl:serieCepea.fonteUrl });
+  importados++;
+}
+_db.historicoCotacoes.sort((a,b) => a.dataCotacao.localeCompare(b.dataCotacao) || a.id.localeCompare(b.id));
+const serieCas = _db.historicoCotacoes.filter(c => c.id === 'cas');
+const ultimoCas = serieCas[serieCas.length - 1];
+const atualCas = _db.cotacoes.find(c => c.id === 'cas');
+if (ultimoCas && (!atualCas || atualCas.dataCotacao < ultimoCas.dataCotacao)) {
+  const anterior = serieCas[serieCas.length - 2];
+  const variacao = anterior ? Math.round((ultimoCas.preco - anterior.preco) * 100) / 100 : 0;
+  _db.cotacoes = _db.cotacoes.filter(c => c.id !== 'cas');
+  _db.cotacoes.unshift({ ...ultimoCas, variacao,
+    cls:variacao > 0.01 ? 'alta' : variacao < -0.01 ? 'baixa' : 'estavel' });
+  importados++;
+}
+if (importados) salvarDB(_db);
+
 const db = {
   get()  { return _db; },
   save() { salvarDB(_db); },
@@ -161,8 +196,39 @@ const db = {
   updateVideo(id,d) { const i=_db.videos.findIndex(v=>v.id===id); if(i<0)return null; _db.videos[i]={..._db.videos[i],...d}; salvarDB(_db); return _db.videos[i]; },
   deleteVideo(id)   { _db.videos=_db.videos.filter(v=>v.id!==id); salvarDB(_db); },
   incrementView(id) { const i=_db.videos.findIndex(v=>v.id===id); if(i<0)return 0; _db.videos[i].views=(_db.videos[i].views||0)+1; salvarDB(_db); return _db.videos[i].views; },
-  getCotacoes()     { return _db.cotacoes; },
-  updateCotacoes(l) { _db.cotacoes=l; _db.cotacoes.forEach(c=>{c.ts=Date.now();}); salvarDB(_db); },
+  getCotacoes()     { return _db.cotacoes.filter(cotacaoValida); },
+  getHistoricoCotacoes() {
+    const corte = new Date();
+    corte.setFullYear(corte.getFullYear() - 1);
+    const dataCorte = corte.toISOString().slice(0,10);
+    return _db.historicoCotacoes.filter(c => c.dataCotacao >= dataCorte);
+  },
+  updateCotacoes(l) {
+    _db.cotacoes = l.filter(cotacaoValida);
+    salvarDB(_db);
+    return db.getCotacoes();
+  },
+  mergeCotacoes(registros) {
+    let atualizados = 0;
+    for (const registro of registros) {
+      if (!cotacaoValida(registro)) continue;
+      const c = { ...registro, ts:Date.now() };
+      const hi = _db.historicoCotacoes.findIndex(h => h.id === c.id && h.dataCotacao === c.dataCotacao);
+      if (hi < 0) _db.historicoCotacoes.push(c);
+      else if (_db.historicoCotacoes[hi].preco !== c.preco) _db.historicoCotacoes[hi] = c;
+      const ci = _db.cotacoes.findIndex(x => x.id === c.id);
+      if (ci < 0) { _db.cotacoes.push(c); atualizados++; }
+      else if (_db.cotacoes[ci].dataCotacao <= c.dataCotacao) {
+        _db.cotacoes[ci] = c;
+        atualizados++;
+      }
+    }
+    if (registros.length) {
+      _db.historicoCotacoes.sort((a,b) => a.dataCotacao.localeCompare(b.dataCotacao) || a.id.localeCompare(b.id));
+      salvarDB(_db);
+    }
+    return atualizados;
+  },
   getUsers()        { return _db.usuarios; },
   findUser(email)   { return _db.usuarios.find(u=>u.email===email?.toLowerCase().trim()); },
   findById(id)      { return _db.usuarios.find(u=>u.id===id); },
